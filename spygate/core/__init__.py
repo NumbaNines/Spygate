@@ -1,0 +1,3 @@
+"""
+Spygate Core Module
+""" 

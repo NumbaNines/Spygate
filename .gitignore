@@ -80,4 +80,16 @@ node_modules/
 
 # Task files
 tasks.json
-tasks/ 
+tasks/
+
+# Added by Task Master AI
+# Logs
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dev-debug.log
+# Environment variables
+.idea
+.vscode
+# OS specific

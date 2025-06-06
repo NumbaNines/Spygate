@@ -1,0 +1,3 @@
+"""
+Spygate Video Processing Module
+""" 

@@ -1,5 +1,7 @@
 # Core ML and Computer Vision
-opencv-python>=4.8.0
+opencv-python>=4.6.0
+# If you need contrib modules, uncomment the next line:
+# opencv-contrib-python>=4.6.0
 ultralytics>=8.0.0  # For YOLO11
 torch>=2.0.0
 torchvision>=0.15.0

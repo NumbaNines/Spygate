@@ -2,7 +2,8 @@
 Dashboard component for the main application window.
 """
 
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QComboBox,
     QFrame,
@@ -12,6 +13,7 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QListWidget,
     QMainWindow,
+    QProgressBar,
     QPushButton,
     QScrollArea,
     QTreeWidget,
@@ -19,6 +21,9 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from ...data.process import VideoProcessor
+from ..themes.theme_manager import ThemeManager
 
 
 class ClipCard(QFrame):
@@ -177,12 +182,24 @@ class Sidebar(QFrame):
 class Dashboard(QMainWindow):
     """Main dashboard window."""
 
-    def __init__(self, parent=None):
-        """Initialize the dashboard."""
+    def __init__(self, video_processor: VideoProcessor, parent=None):
+        """Initialize the dashboard.
+
+        Args:
+            video_processor: VideoProcessor instance for hardware-aware processing
+            parent: Optional parent widget
+        """
         super().__init__(parent)
+        self.video_processor = video_processor
+        self.theme = ThemeManager()
         self.clips = []
         self.gameplan_clips = {}
         self.setup_ui()
+
+        # Start performance monitoring
+        self.update_timer = QTimer()
+        self.update_timer.timeout.connect(self._update_metrics)
+        self.update_timer.start(1000)  # Update every second
 
     def setup_ui(self):
         """Set up the dashboard UI."""
@@ -370,3 +387,24 @@ class Dashboard(QMainWindow):
         """Clear gameplan filtering and show all clips."""
         for clip in self.clips:
             clip.setVisible(True)
+
+    def _update_metrics(self) -> None:
+        """Update performance metrics display."""
+        metrics = self.video_processor.get_performance_metrics()
+        params = self.video_processor.optimizer.get_current_params()
+
+        # Update FPS and stability
+        self.fps_label.setText(f"FPS: {metrics['avg_fps']:.1f}")
+        self.stability_bar.setValue(int(metrics["stability"] * 100))
+
+        # Update processing settings
+        self.resolution_label.setText(
+            f"Resolution Scale: {params.resolution_scale:.2f}x"
+        )
+        self.frame_skip_label.setText(f"Frame Skip: {params.frame_skip}")
+        self.batch_size_label.setText(f"Batch Size: {params.batch_size}")
+
+    def closeEvent(self, event) -> None:
+        """Handle widget close event."""
+        self.update_timer.stop()
+        super().closeEvent(event)

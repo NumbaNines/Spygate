@@ -121,3 +121,81 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - OpenCV for video processing
 - PyQt6 for the GUI framework
 - The Madden NFL community for support and feedback
+
+## Development with Docker
+
+### Prerequisites
+
+- [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop)
+- Windows 10 Pro/Enterprise/Education (required for Docker Desktop)
+- WSL2 enabled
+
+### Quick Start with Docker
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/yourusername/spygate.git
+   cd spygate
+   ```
+
+2. Build and start the containers:
+
+   ```bash
+   docker-compose up --build
+   ```
+
+3. Access the application:
+   - Web interface: http://localhost:8000
+   - PostgreSQL: localhost:5432
+
+### Docker Commands
+
+- Start containers in background:
+
+  ```bash
+  docker-compose up -d
+  ```
+
+- Stop containers:
+
+  ```bash
+  docker-compose down
+  ```
+
+- View logs:
+
+  ```bash
+  docker-compose logs -f
+  ```
+
+- Run tests:
+
+  ```bash
+  docker-compose exec app pytest
+  ```
+
+- Access PostgreSQL:
+  ```bash
+  docker-compose exec db psql -U postgres -d spygate
+  ```
+
+### Development Workflow
+
+1. Make changes to the code
+2. Docker will automatically reload the application
+3. Run tests inside the container:
+   ```bash
+   docker-compose exec app pytest
+   ```
+
+### Volumes
+
+- `./data`: Persistent data storage
+- `./logs`: Application logs
+- `./models`: ML model storage
+- `postgres_data`: PostgreSQL data (persistent)
+
+### Environment Variables
+
+Default environment variables are set in `docker-compose.yml`. For local development, you can override them by creating a `.env` file.

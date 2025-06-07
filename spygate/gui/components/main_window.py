@@ -2,159 +2,239 @@
 Spygate - Main Window Component
 """
 
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtWidgets import (
-    QMainWindow,
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QToolBar,
-    QStatusBar,
-    QDockWidget,
-    QMenuBar,
-    QMenu,
-    QDialog,
+    QApplication,
     QComboBox,
+    QDialog,
+    QDockWidget,
+    QHBoxLayout,
     QLabel,
+    QMainWindow,
+    QMenu,
+    QMenuBar,
+    QMessageBox,
     QPushButton,
+    QStackedWidget,
+    QStatusBar,
+    QToolBar,
+    QVBoxLayout,
+    QWidget,
 )
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction
 
-from .video_player import VideoPlayer
-from .analysis_panel import AnalysisPanel
-from .toolbar import create_main_toolbar
-from .menu_bar import create_menu_bar
+from ..components.composite.dashboard import Dashboard
 from ..themes.theme_manager import ThemeManager
+from ..video.video_import_widget import VideoImportWidget
+from .analysis_panel import AnalysisPanel
+from .menu_bar import create_menu_bar
+from .sidebar import Sidebar
+from .toolbar import create_main_toolbar
+from .video_player import VideoPlayer
 
 
 class ThemeDialog(QDialog):
     """Dialog for selecting and managing themes."""
-    
-    def __init__(self, theme_manager: ThemeManager, parent=None):
-        """Initialize the theme dialog.
-        
-        Args:
-            theme_manager: The application's theme manager
-            parent: Parent widget
-        """
+
+    def __init__(self, theme_manager, parent=None):
         super().__init__(parent)
         self.theme_manager = theme_manager
-        
         self.setWindowTitle("Theme Settings")
-        self.setModal(True)
-        
-        # Create layout
+        self.setup_ui()
+
+    def setup_ui(self):
+        """Set up the dialog UI."""
         layout = QVBoxLayout(self)
-        
-        # Theme selection
+
+        # Theme selector
         theme_layout = QHBoxLayout()
         theme_label = QLabel("Select Theme:")
         self.theme_combo = QComboBox()
+        themes = self.theme_manager.get_available_themes()
+        self.theme_combo.addItems(themes.keys())
         theme_layout.addWidget(theme_label)
         theme_layout.addWidget(self.theme_combo)
         layout.addLayout(theme_layout)
-        
-        # Populate themes
-        themes = theme_manager.get_available_themes()
-        for name, type_ in themes.items():
-            self.theme_combo.addItem(f"{name} ({type_})", (name, type_ == 'custom'))
-        
-        # Set current theme
-        current_theme = theme_manager.get_current_theme()
-        index = self.theme_combo.findText(current_theme, Qt.MatchFlag.MatchStartsWith)
-        if index >= 0:
-            self.theme_combo.setCurrentIndex(index)
-        
-        # Apply button
-        apply_button = QPushButton("Apply Theme")
-        apply_button.clicked.connect(self._apply_theme)
-        layout.addWidget(apply_button)
-    
-    def _apply_theme(self):
+
+        # Buttons
+        button_layout = QHBoxLayout()
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.apply_theme)
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.reject)
+        button_layout.addWidget(apply_button)
+        button_layout.addWidget(cancel_button)
+        layout.addLayout(button_layout)
+
+    def apply_theme(self):
         """Apply the selected theme."""
-        current_data = self.theme_combo.currentData()
-        if current_data:
-            name, is_custom = current_data
-            self.theme_manager.apply_theme(name, custom=is_custom)
+        theme = self.theme_combo.currentText()
+        self.theme_manager.apply_theme(theme)
+        self.accept()
 
 
 class MainWindow(QMainWindow):
-    """Main window of the application."""
+    """Main window of the Spygate application."""
 
-    def __init__(self, app):
-        """Initialize the main window.
-        
-        Args:
-            app: The QApplication instance
-        """
+    def __init__(self):
         super().__init__()
-        self.setWindowTitle("Spygate")
-        self.setMinimumSize(1024, 768)
-        
-        # Initialize theme manager
-        self.theme_manager = ThemeManager(app)
-        
-        # Create central widget and main layout
-        self.central_widget = QWidget()
-        self.setCentralWidget(self.central_widget)
-        layout = QVBoxLayout(self.central_widget)
-        
-        # Create menu bar
-        self.menu_bar = create_menu_bar(self)
-        self.setMenuBar(self.menu_bar)
-        
-        # Add theme menu
-        self._setup_theme_menu()
-        
-        # Create toolbar
+        self.theme_manager = ThemeManager()
+
+        # Initialize UI components
+        self.dashboard = None
+        self.video_player = None
+        self.analysis_panel = None
+        self.video_import = None
+        self.analysis_dock = None
+        self.sidebar = None
+
+        self._setup_ui()
+
+    def _setup_ui(self):
+        """Set up the main window UI."""
+        # Window properties
+        self.setWindowTitle("Spygate - Football Analysis")
+        self.setMinimumSize(1200, 800)
+
+        # Create main widget and layout
+        main_widget = QWidget()
+        main_layout = QHBoxLayout(main_widget)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+        self.setCentralWidget(main_widget)
+
+        # Create and add sidebar
+        self.sidebar = Sidebar()
+        main_layout.addWidget(self.sidebar)
+
+        # Create stacked widget for main content
+        self.central_widget = QStackedWidget()
+        main_layout.addWidget(self.central_widget)
+
+        # Create components
+        self._create_dashboard()
+        self._create_video_player()
+        self._create_analysis_panel()
+        self._create_video_import()
+
+        # Create toolbar and menu
         self.toolbar = create_main_toolbar(self)
         self.addToolBar(self.toolbar)
-        
-        # Create video player
-        self.video_player = VideoPlayer()
-        layout.addWidget(self.video_player)
-        
-        # Create analysis panel as dock widget
-        self.analysis_dock = QDockWidget("Analysis", self)
-        self.analysis_panel = AnalysisPanel()
-        self.analysis_dock.setWidget(self.analysis_panel)
-        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.analysis_dock)
-        
+        self.menu_bar = create_menu_bar(self)
+        self.setMenuBar(self.menu_bar)
+
         # Create status bar
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
-        self.status_bar.showMessage("Ready")
-        
-        # Apply default theme
-        self.theme_manager.apply_theme("spygate_dark", custom=True)
-    
-    def _setup_theme_menu(self):
-        """Set up the theme menu in the menu bar."""
-        view_menu = self.menu_bar.addMenu("&View")
-        
-        # Theme settings action
-        theme_action = QAction("&Theme Settings...", self)
-        theme_action.setStatusTip("Configure application theme")
-        theme_action.triggered.connect(self._show_theme_dialog)
-        view_menu.addAction(theme_action)
-    
-    def _show_theme_dialog(self):
+
+        # Connect sidebar signals
+        self._connect_sidebar_signals()
+
+        # Show dashboard by default
+        self.show_dashboard()
+
+        # Apply theme
+        self.theme_manager.apply_theme("dark_teal")
+
+    def _connect_sidebar_signals(self):
+        """Connect sidebar signals to navigation methods."""
+        self.sidebar.home_clicked.connect(self.show_dashboard)
+        self.sidebar.upload_clicked.connect(self.show_video_import)
+        self.sidebar.clips_clicked.connect(self.show_video_player)
+        self.sidebar.analytics_clicked.connect(self.show_analytics)
+        self.sidebar.playbooks_clicked.connect(self.show_playbooks)
+        self.sidebar.community_clicked.connect(self.show_community)
+        self.sidebar.settings_clicked.connect(self.show_theme_dialog)
+
+    def _create_dashboard(self):
+        """Create the dashboard component."""
+        self.dashboard = Dashboard()
+        self.central_widget.addWidget(self.dashboard)
+
+    def _create_video_player(self):
+        """Create the video player component."""
+        self.video_player = VideoPlayer()
+        self.central_widget.addWidget(self.video_player)
+
+    def _create_analysis_panel(self):
+        """Create the analysis panel component."""
+        self.analysis_panel = AnalysisPanel()
+        self.analysis_dock = QDockWidget("Analysis", self)
+        self.analysis_dock.setWidget(self.analysis_panel)
+        self.analysis_dock.setAllowedAreas(Qt.DockWidgetArea.RightDockWidgetArea)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.analysis_dock)
+        self.analysis_dock.hide()  # Hidden by default
+
+    def _create_video_import(self):
+        """Create the video import component."""
+        self.video_import = VideoImportWidget()
+        self.central_widget.addWidget(self.video_import)
+
+        # Connect signals
+        self.video_import.import_started.connect(
+            lambda: self.status_bar.showMessage("Importing videos...", 0)
+        )
+        self.video_import.import_progress.connect(
+            lambda p: self.status_bar.showMessage(f"Import progress: {p}%", 0)
+        )
+        self.video_import.import_finished.connect(
+            lambda: self.status_bar.showMessage("Import completed", 5000)
+        )
+        self.video_import.import_error.connect(
+            lambda msg: self.status_bar.showMessage(f"Import error: {msg}", 5000)
+        )
+
+    def show_dashboard(self):
+        """Switch to dashboard view."""
+        self.central_widget.setCurrentWidget(self.dashboard)
+        self.status_bar.showMessage("Dashboard")
+        self.sidebar.set_active("home")
+
+    def show_video_player(self):
+        """Switch to video player view."""
+        self.central_widget.setCurrentWidget(self.video_player)
+        self.status_bar.showMessage("Video Player")
+        self.sidebar.set_active("clips")
+
+    def show_video_import(self):
+        """Switch to video import view."""
+        self.central_widget.setCurrentWidget(self.video_import)
+        self.status_bar.showMessage("Import Videos")
+        self.sidebar.set_active("upload")
+
+    def show_analytics(self):
+        """Switch to analytics view."""
+        # TODO: Implement analytics view
+        self.status_bar.showMessage("Analytics (Coming Soon)")
+        self.sidebar.set_active("analytics")
+
+    def show_playbooks(self):
+        """Switch to playbooks view."""
+        # TODO: Implement playbooks view
+        self.status_bar.showMessage("Playbooks (Coming Soon)")
+        self.sidebar.set_active("playbooks")
+
+    def show_community(self):
+        """Switch to community view."""
+        # TODO: Implement community view
+        self.status_bar.showMessage("Community (Coming Soon)")
+        self.sidebar.set_active("community")
+
+    def show_theme_dialog(self):
         """Show the theme selection dialog."""
         dialog = ThemeDialog(self.theme_manager, self)
         dialog.exec()
+        self.sidebar.set_active("settings")
 
-    # Set dark theme style adjustments
-    def _set_dark_theme(self):
-        self.setStyleSheet("""
-            QMainWindow {
-                background-color: #2d2d2d;
-            }
-            QDockWidget {
-                color: #ffffff;
-                titlebar-close-icon: url(close.png);
-                titlebar-normal-icon: url(float.png);
-            }
-            QStatusBar {
-                color: #ffffff;
-            }
-        """) 
+    def closeEvent(self, event):
+        """Handle application close event."""
+        # Clean up video player
+        if self.video_player:
+            self.video_player.cleanup()
+
+        # Clean up video import
+        if self.video_import:
+            self.video_import.cleanup_import_thread()
+
+        # Accept the close event
+        event.accept()

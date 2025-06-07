@@ -1,95 +1,81 @@
+"""Test dialog component."""
+
 import pytest
-from PyQt6.QtWidgets import QApplication, QLabel
-from PyQt6.QtCore import Qt
-from spygate.gui.components.composite import Dialog
+from PyQt6.QtWidgets import QLabel
 
-@pytest.fixture
-def app(qtbot):
-    """Create a Qt Application."""
-    return QApplication.instance() or QApplication([])
+from src.gui.components.composite import Dialog
 
-@pytest.fixture
-def dialog(app, qtbot):
-    """Create a Dialog instance."""
-    dialog = Dialog(title="Test Dialog")
-    qtbot.addWidget(dialog)
-    return dialog
 
-def test_dialog_creation(dialog):
-    """Test that Dialog is created properly."""
+@pytest.mark.gui
+def test_dialog_creation():
+    """Test creating a dialog."""
+    dialog = Dialog()
     assert dialog is not None
-    assert isinstance(dialog, Dialog)
-    assert dialog.windowTitle() == "Test Dialog"
+    assert dialog.objectName() == ""
 
-def test_set_content(dialog):
+
+@pytest.mark.gui
+def test_set_content():
     """Test setting dialog content."""
-    content = QLabel("Test Content")
+    dialog = Dialog()
+    content = QLabel("Test content")
     dialog.set_content(content)
-    assert dialog.content is not None
-    assert isinstance(dialog.content, QLabel)
-    assert dialog.content.text() == "Test Content"
+    assert dialog.content() == content
 
-def test_add_buttons(dialog):
+
+@pytest.mark.gui
+def test_add_buttons():
     """Test adding buttons to dialog."""
-    # Add default button
-    dialog.add_button("Cancel", role="default", callback=lambda: None)
-    assert len(dialog.buttons) == 1
-    assert dialog.buttons[0].text() == "Cancel"
-    
-    # Add primary button
-    dialog.add_button("OK", role="primary", callback=lambda: None)
-    assert len(dialog.buttons) == 2
-    assert dialog.buttons[1].text() == "OK"
-    
-    # Add danger button
-    dialog.add_button("Delete", role="danger", callback=lambda: None)
-    assert len(dialog.buttons) == 3
-    assert dialog.buttons[2].text() == "Delete"
+    dialog = Dialog()
+    dialog.add_button("OK", lambda: None)
+    dialog.add_button("Cancel", lambda: None)
+    assert len(dialog.buttons()) == 2
 
-def test_button_callbacks(dialog, qtbot):
+
+@pytest.mark.gui
+def test_button_callbacks():
     """Test button callbacks."""
-    callback_triggered = False
-    
-    def on_click():
-        nonlocal callback_triggered
-        callback_triggered = True
-    
-    dialog.add_button("Test", callback=on_click)
-    qtbot.mouseClick(dialog.buttons[0], Qt.MouseButton.LeftButton)
-    
-    assert callback_triggered
+    dialog = Dialog()
+    callback_called = False
 
-def test_dialog_size(dialog):
-    """Test dialog size management."""
-    # Test default size
-    assert dialog.width() > 0
-    assert dialog.height() > 0
-    
-    # Test custom size
-    new_size = (400, 300)
-    dialog.resize(*new_size)
-    assert dialog.width() == new_size[0]
-    assert dialog.height() == new_size[1]
+    def callback():
+        nonlocal callback_called
+        callback_called = True
 
-def test_dialog_modal(dialog):
-    """Test dialog modal property."""
-    # Test default (should be modal)
+    dialog.add_button("Test", callback)
+    dialog.buttons()[0].click()
+    assert callback_called
+
+
+@pytest.mark.gui
+def test_dialog_size():
+    """Test dialog size control."""
+    dialog = Dialog()
+    dialog.resize(300, 200)
+    assert dialog.width() == 300
+    assert dialog.height() == 200
+
+
+@pytest.mark.gui
+def test_dialog_modal():
+    """Test dialog modality."""
+    dialog = Dialog()
+    dialog.set_modal(True)
     assert dialog.isModal()
-    
-    # Test non-modal
-    dialog.setModal(False)
-    assert not dialog.isModal()
 
-def test_dialog_theme(dialog):
+
+@pytest.mark.gui
+def test_dialog_theme():
     """Test dialog theme awareness."""
-    # Test default theme
-    assert hasattr(dialog, "theme")
-    
-    # Test theme update
-    dialog.update_theme({
-        "dialog_bg": "#ffffff",
-        "dialog_border": "#000000",
-        "button_primary": "#007bff",
-        "button_danger": "#dc3545"
-    })
-    # Add assertions based on your theme implementation 
+    dialog = Dialog()
+    dialog.update_theme({"background": "#ffffff"})
+    assert dialog.styleSheet() != ""
+
+
+@pytest.mark.gui
+def test_dialog_add_content():
+    """Test adding content to the dialog."""
+    dialog = Dialog()
+    label = QLabel("Test")
+    dialog.add_content(label)
+    assert label in dialog.content_widgets

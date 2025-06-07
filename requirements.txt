@@ -1,51 +1,60 @@
-# Core ML and Computer Vision
-opencv-python>=4.6.0
-# If you need contrib modules, uncomment the next line:
-# opencv-contrib-python>=4.6.0
-ultralytics>=8.0.0  # For YOLO11
-torch>=2.0.0
-torchvision>=0.15.0
-numpy>=1.24.0
-pillow>=10.0.0
 
-# GUI and Interface
-PyQt6>=6.5.0
-qt-material>=2.14
+# Async
+aiohttp>=3.9.1
+av>=10.0.0  # For efficient frame extraction
+black>=23.7.0
 darkdetect>=0.8.0  # For automatic dark/light mode detection
 
-# Video Processing
-python-vlc>=3.0.20000  # For video playback
+# API and Integration
+discord.py==2.3.0  # For Discord integration
+flake8>=6.1.0
+isort>=5.12.0
+
+# Logging and Monitoring
+loguru>=0.7.0
+matplotlib>=3.7.0
 moviepy>=1.0.3  # For video manipulation
-av>=10.0.0  # For efficient frame extraction
+mypy>=1.5.0
+numpy>=1.24.0
+# Core ML and Computer Vision
+opencv-python>=4.6.0
 
 # Data Management and Analysis
 pandas>=2.0.0
-matplotlib>=3.7.0
-seaborn>=0.12.0
+pillow>=10.0.0
+prometheus-client>=0.19.0
+
+# GUI and Interface
+PyQt6>=6.5.0
 
 # Development and Testing
 pytest>=7.4.0
-black>=23.7.0
-flake8>=6.1.0
-mypy>=1.5.0
-isort>=5.12.0
+
+# Testing
+pytest-qt>=4.2.0
+
+# Utilities
+python-dotenv==1.1.0
+python-json-logger>=2.0.7
+
+# Video Processing
+python-vlc>=3.0.20000  # For video playback
+qt-material>=2.14
+requests>=2.31.0  # Required for health checks
+seaborn>=0.12.0
+sentry-sdk>=1.39.1
 
 # Documentation
 sphinx>=7.1.0
 sphinx-rtd-theme>=1.3.0
 
-# Utilities
-python-dotenv>=1.0.0
-tqdm>=4.65.0
-loguru>=0.7.0
-
-# Machine Learning
-scikit-learn==1.2.2
-
 # Database
 SQLAlchemy==2.0.15
-psycopg2-binary==2.9.6  # PostgreSQL adapter
-
-# API and Integration
-requests==2.31.0
-discord.py==2.3.0  # For Discord integration 
+structlog>=23.1.0
+torch>=2.0.0
+torchvision>=0.15.0
+tqdm>=4.65.0
+# If you need contrib modules, uncomment the next line:
+# opencv-contrib-python>=4.6.0
+ultralytics>=8.0.0  # For YOLO11
+watchtower>=3.0.1  # For CloudWatch logging support

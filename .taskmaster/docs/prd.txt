@@ -1,280 +1,419 @@
 # Spygate: ML-Powered Football Gameplay Analysis Tool
 
-Product Requirements Document (PRD)
+## Product Requirements Document (PRD)
+**Version**: 2.7
+**Date**: June 6, 2025
+**Status**: Draft
 
-Version: 2.5
-Date: June 6, 2025
-Status: Draft
+## 1. Overview
+Spygate is a Python-based desktop application for Windows, designed to revolutionize football gameplay analysis, starting with Madden NFL 25. Leveraging YOLO11 and OpenCV for computer vision, Spygate automates detection, categorization, and organization of game situations, empowering competitive players to analyze both their own and opponents' gameplay clips to identify mistakes, optimize strategies, and elevate skills through AI-driven insights. A vibrant Discord community drives collaborative learning, enabling clip sharing, strategy discussions, and gamification. The application supports live stream recording from Twitch and YouTube using `streamlink` and `ffmpeg` or OBS Studio screen capture for personal use, ensuring compliance with platform terms. A Playbook Integration System allows users to select their in-game Madden NFL 25 playbook from a developer-maintained database, with updates managed on the backend. The game-agnostic architecture ensures extensibility for yearly Madden releases (<4 weeks for Madden NFL 26) and future support for EA Sports College Football (<8 weeks by Q3 2026). The UI features a minimal, clean, sleek, dark theme inspired by modern SaaS applications (e.g., Notion, Linear) with a YouTube-like dashboard and easy navigation bar, achieving WCAG 2.1 AA compliance for inclusivity and delivering an intuitive user experience.
 
-1. Overview
+## 2. Objectives
+**Primary Goal**: Create the ultimate tool for Madden NFL 25 players, especially competitive pros, to analyze their own and opponents' gameplay, learn from mistakes, and advance skills through AI-powered analysis and community engagement.
+**Success Targets & Mitigations**
+- **Situation Detection Accuracy**: ≥75%
+  - *Mitigation*: Hybrid rule-based + ML approach, user correction tools.
+- **Formation Recognition**: ≥70% on 60% of common formations
+  - *Mitigation*: Start with common formations, progressive enhancement with transfer learning.
+- **Processing Speed**: ≤3x real-time (≤2x for premium cloud users)
+  - *Mitigation*: Cloud processing option, quality/speed trade-offs.
+- **User Adoption Increase**: 30% within 3 months
+  - *Mitigation*: Progressive disclosure, simplified onboarding with player attribution.
+- **User Retention (30-day)**: ≥40%
+  - *Mitigation*: Interactive tutorial, community engagement via Discord events.
+- **Discord Community Engagement**: >30% of users share clips monthly, >50% engage in strategy discussions
+  - *Mitigation*: Webhooks before bot, weekly clip contests with badge rewards.
+- **Mistake Detection Accuracy**: ≥70% with specific tips (e.g., "Adjust QB position to avoid sacks")
+  - *Mitigation*: Rule-based detection for obvious errors, ML for complex patterns.
+- **Extensibility for New Madden Releases**: <30% effort, <4 weeks for Madden NFL 26
+  - *Mitigation*: Game-agnostic architecture, plugin system, versioned data management.
+- **Community Growth**: >500 active Discord members within 6 months
+  - *Mitigation*: Community incentives, gamification, pro AMAs.
+- **EA Sports College Football Support**: <8 weeks for integration by Q3 2026
+  - *Mitigation*: Early footage collection, transfer learning for YOLO11.
 
-Spygate is a Python-based desktop application for Windows, designed to revolutionize football gameplay analysis, starting with Madden NFL 25. Leveraging YOLO11 and OpenCV for computer vision, Spygate automates detection, categorization, and organization of game situations, empowering competitive players to identify mistakes, learn from them, and elevate their skills through AI-driven insights. A vibrant Discord community drives collaborative learning and feedback, enhancing skill development via clip sharing, strategy discussions, and gamification. The application supports live stream recording from Twitch and YouTube using streamlink and ffmpeg for personal use, ensuring compliance with platform terms. A Playbook Integration System allows users to select their in-game Madden NFL 25 playbook from a developer-maintained database, with developers updating plays and playbooks on the backend. The game-agnostic architecture ensures extensibility for yearly Madden releases (<4 weeks for Madden NFL 26) and future support for EA Sports College Football (<8 weeks by Q3 2026). The UI features a minimal, clean, sleek, dark theme inspired by modern SaaS applications (e.g., Notion, Linear) with WCAG 2.1 AA compliance for inclusivity, delivering an intuitive and beautiful user experience.
+## 3. Personas
+**Primary Personas**
+- **Amateur Competitive Player**
+  - *Age*: 16-28
+  - *Technical Proficiency*: Low-Medium
+  - *Needs*: Learn from mistakes, improve win rate, understand pro strategies, analyze opponents' clips, community support, accessible UI with high-contrast mode
+  - *Pain Points*: Can't identify subtle mistakes, lacks structured improvement path, complex interfaces
+  - *Discord Usage*: Moderate - shares clips, seeks advice
+- **Professional Player/Coach**
+  - *Age*: 22-50
+  - *Technical Proficiency*: Medium-High
+  - *Needs*: Advanced analytics for self and opponent clips, team performance insights, efficient workflow, opponent scouting and tendency profiling, community recognition, new game version support
+  - *Pain Points*: Time-consuming manual analysis, limited opponent-specific tools, outdated data
+  - *Discord Usage*: High - leads discussions, shares expertise
+**Secondary Personas**
+- **Content Creator**
+  - *Age*: 18-30
+  - *Technical Proficiency*: Medium
+  - *Needs*: Highlight generation for self and opponent clips, stream integration, audience engagement, community building, legal content sharing
+  - *Pain Points*: Manual highlight creation, limited analysis tools, compliance concerns
+  - *Discord Usage*: High - shares content, engages followers
+- **Community Contributor**
+  - *Age*: 20-35
+  - *Technical Proficiency*: Medium
+  - *Needs*: Recognition for contributions, easy clip sharing (self and others), structured feedback, strategy discussions
+  - *Pain Points*: Lack of platforms for meaningful discussions, no recognition system
+  - *Discord Usage*: Very High - active, shares analysis
 
-## Objectives
+**Cross-Persona Needs**
+- Support for analyzing self and other players' clips for comprehensive analysis
+- Accessible, intuitive interface with screen reader support and player-specific filters
+- Legal compliance for content sharing and stream recording
 
-1. If we implement YOLO11-based situation detection with >90% accuracy, then players will reduce video review time by 75% because AI automation eliminates manual clip searching.
+## 4. Features
+### Core Features (P1 - MVP)
+| Feature | Task | User Story | Priority | Complexity | Description |
+|---------|------|-------------|----------|-------------|-------------|
+| **Video Import** | 2 | As a player, I want to upload my own or other players' gameplay clips with player identification, so I can analyze any match. | P1 | Low | Drag-and-drop or file picker in Upload page to import clips (MP4, AVI, MOV) from any player, prompting for `player_name` ("Self" or "Opponent: Name") via QDialog. Validates codecs (H.264, H.265, VP8, VP9) with FFmpeg, stores metadata (filename, duration, `player_name`) in SQLite, and generates thumbnails. Blue "Upload" button (#3B82F6), QProgressDialog, integrates with VideoTimeline (Task 3). |
+| **Situation Detection** | 7 | As a player, I want automatic detection of downs, yards, score, and time in my or opponents' clips with 75% accuracy, so I can review key moments. | P1 | High | YOLO11 detects situations, tagged with `player_name`, displayed in clip cards with red mistake indicators and VideoTimeline overlays. Requires frame extraction (Task 4). |
+| **Clip Organization** | 10 | As a player, I want automatic categorization and tagging of my or opponents' clips, so I can filter by player and situation. | P1 | Medium | Grid view in Clips page with thumbnail cards labeled with `player_name`, QComboBox filters for situations, tags, and `player_name`. Stores clips in SQLite, supports sharing (Task 10). |
+| **Smart Search** | 11 | As a player, I want to search clips by situation, formation, or player, so I can find specific plays. | P1 | Medium | QLineEdit in header and QComboBox in Clips page to search by `player_name`, situation, or tags, displaying results in VideoTimeline. |
+| **Basic Mistake Detection** | - | As a player, I want to identify errors in my or opponents' clips with tips, so I can improve or exploit weaknesses. | P1 | Medium | Rule-based detection of errors (e.g., interceptions), tagged with `player_name`, shown in clip tooltips. Requires Task 7's YOLO11 data. |
+| **Game Selection** | - | As a player, I want to select the game version (Madden NFL 25) for analysis, so clips are compatible. | P1 | Low | QComboBox in Playbooks page to select game, applicable to all clips, filterable by `player_name`. |
+| **Interactive Tutorial** | 15 | As a player, I want guided onboarding to analyze my and opponents' clips, so I learn quickly. | P1 | Medium | QDialog with steps for importing (self/opponent clips), navigating (VideoTimeline), tagging (`player_name`), and sharing (Discord), with accessibility options. |
+| **Error Recovery** | - | As a player, I want robust error handling for all clip uploads, so I avoid data loss. | P1 | Medium | QMessageBox for errors (e.g., invalid codec), supporting any clip with retry options. |
 
-2. If we develop an intuitive PyQt interface with drag-and-drop video upload, then user adoption will increase by 50% because the tool becomes accessible to non-technical players.
+### Enhanced Features (P2 - Post-MVP)
+| Feature | Task | User Story | Priority | Complexity | Description |
+|---------|------|-------------|----------|-------------|-------------|
+| **Formation Recognition** | 8 | As a player, I want detection of formations in my or opponents' clips, so I can scout strategies. | P2 | High | Detects formations (e.g., Shotgun) using template matching + ML, tagged with `player_name`, displayed in clip cards and VideoTimeline. |
+| **Export Tools** | 14 | As a player, I want to export my or opponents' analyzed clips, so I can share or review offline. | P2 | Low | QDialog to export clips (MP4, JSON) with `player_name`, motion, and tracking data (Tasks 5-6), accessible via Clips page. |
+| **Performance Analytics** | 14 | As a player, I want stats for my or opponents' clips, so I can track performance. | P2 | Medium | QChart/matplotlib in Analytics page for stats (e.g., pass completion), filterable by `player_name`, with CSV export. Includes play tendency dashboard (pre-Task 7). |
+| **Clip Sharing** | 10 | As a player, I want to share my or opponents' clips to Discord, so I can discuss strategies. | P2 | Medium | QPushButton in Clips page to share clips with `player_name` and annotations via webhook to #strategy-discussion. |
+| **Playbook Selection** | - | As a player, I want to select playbooks for analysis, so I can compare with opponents' clips. | P2 | Medium | QComboBox in Playbooks page with preview cards, filterable by `player_name` for opponent playbooks. |
+| **Game Data Update Management** | - | As a player, I want to download game data updates, so I can analyze new versions. | P2 | Low | Notification and button in Settings for updates, applicable to all clips. |
+| **Stream Recording** | 14 | As a player, I want to record my or opponents' streams, so I can analyze live gameplay. | P2 | High | Community page controls for `streamlink`/`ffmpeg` or OBS screen capture, prompting `player_name`, importing to VideoTimeline with compliance modal. |
+| **Stream Recording Compliance** | 14 | As a player, I want clear terms for stream recording, so I stay compliant. | P2 | Low | QDialog with consent checkbox before recording, tagged with `player_name` for all clips. |
+| **Channel Management** | - | As a player, I want to manage Twitch/YouTube channels, so I can record opponents' streams. | P2 | Medium | QTableWidget in Community page to manage channels, linking to `player_name`. |
+| **Cloud Processing** | - | As a player, I want cloud processing for faster analysis of any clip, so I save time. | P2 | High | Toggle in Settings for cloud, supporting all clips with `player_name`. |
+| **Community Footage Submission** | - | As a player, I want to submit my or others' clips, so I contribute to training data. | P2 | Medium | File picker modal in Community page, tagging clips with `player_name`. |
+| **Accessibility Support** | - | As a player, I want accessible features for all clip analysis, so I can use the tool easily. | P2 | Medium | High-contrast mode, font size slider, screen reader support in Settings, for all UI elements. |
 
-3. If we achieve formation/play recognition with >85% accuracy using transfer learning, then players will improve their strategic understanding because they can analyze play-calling patterns across multiple games.
+### Advanced Features (P3 - Future)
+| Feature | Task | User Story | Priority | Complexity | Description |
+|---------|------|-------------|----------|-------------|-------------|
+| **Play Detection** | 9 | As a player, I want identification of plays in my or opponents' clips, so I can scout strategies. | P3 | High | Identifies top 20 plays (e.g., Run Inside), tagged with `player_name`, displayed in clip cards and Analytics. |
+| **Pro Comparison** | 12 | As a player, I want to compare my clips with opponents' side-by-side, so I can benchmark performance. | P3 | Medium | Side-by-side playback in VideoTimeline, filterable by `player_name`, with legal compliance. |
+| **Batch Processing** | 13 | As a player, I want to analyze multiple clips (self/opponents) simultaneously, so I save time. | P3 | Medium | Cloud-based batch processing, tagged with `player_name`. |
+| **Community Gamification** | - | As a player, I want leaderboards and badges for analyzing opponent clips, so I gain recognition. | P3 | Medium | Discord bot for leaderboards, rewarding clip contributions with `player_name`. |
+| **Community Contribution Incentives** | - | As a player, I want badges for sharing opponent clips, so I'm motivated to contribute. | P3 | Low | Badges linked to `player_name` for clip submissions. |
+| **Community Event Management** | - | As a player, I want to participate in clip contests for self/opponent clips, so I engage with the community. | P3 | Low | Weekly contests with `player_name` tagging. |
+| **Model Retraining** | - | As a player, I want to submit self/opponent clips for model improvement, so the tool gets better. | P3 | High | Clip submissions tagged with `player_name`. |
+| **Highlight Generation** | - | As a player, I want auto-generated highlights for any clip, so I can showcase key moments. | P3 | Medium | Highlights tagged with `player_name`. |
+| **Premium Tier Access** | - | As a player, I want unlimited clip storage for self/opponent clips, so I can analyze extensively. | P3 | Medium | Unlimited storage with `player_name` tagging, $9.99/month. |
 
-4. If we maintain video processing speed at ≤2x real-time duration, then user engagement will increase because feedback is nearly immediate.
+## 5. User Flow and Design
+**UI Structure**
+- **Overview**: A YouTube-like dashboard with a header, collapsible sidebar, and main content area, styled in a minimal, clean, sleek, dark theme inspired by SaaS applications (e.g., Notion, Linear). Supports quick access to features for analyzing self and opponent clips, with player-specific filtering, ensuring WCAG 2.1 AA compliance (>90% by Enhanced Release).
+- **Header**:
+  - Logo: "Spygate" text, Inter font, 18px, bold, white (#FFFFFF), left-aligned.
+  - Search Bar: QLineEdit, placeholder "Search clips by player or situation...", dark background (#1E1E1E), blue border (#3B82F6), accessible name "Search clips".
+  - Profile: QPushButton, "Profile", Inter 12px, blue-filled (#3B82F6), white text, accessible name "User profile", opens settings with freemium prompt (14-day trial, blue CTA #3B82F6).
+  - Styling: QFrame, background #2A2A2A, fixed height 60px.
+- **Collapsible Sidebar**:
+  - Navigation: QPushButton for Home, Upload, Clips, Analytics, Playbooks, Community, Settings, Inter 14px, white (#D1D5DB), background #2A2A2A, blue hover (#3B82F6).
+  - Toggle: Icon-based QPushButton, top, accessible name "Toggle sidebar", collapses to 50px from 200px.
+  - Tooltips: Descriptive (e.g., "View dashboard" for Home), ARIA labels.
+- **Main Content Area**:
+  - **Dashboard (Home)**: QFrame with title ("Welcome to Spygate", Inter 24px, white #FFFFFF), quick action buttons ("Upload Video", "View Clips", "Join Discord", blue #3B82F6, Inter 14px, accessible names), 2x2 clip grid (QFrame cards, #2A2A2A, thumbnails with `player_name`, red mistake dots, accessible names).
+  - **Upload Page**: Drag-and-drop zone (QWidget, #1E1E1E), blue "Upload" button (#3B82F6), QProgressDialog, QDialog for `player_name` ("Self" or "Opponent: Name"), embeds VideoTimeline (Task 3).
+  - **Clips Page**: QGridLayout with 2x3 thumbnail cards labeled with `player_name`, QComboBox filters for situation, tags, and `player_name`, share buttons (Discord QDialog, Task 10).
+  - **Analytics Page**: QChart/matplotlib for stats (e.g., play frequencies), filterable by `player_name` via QComboBox, CSV export button (Task 14). Includes play tendency dashboard (pre-Task 7).
+  - **Playbooks Page**: QComboBox for game (Madden NFL 25) and playbook, preview cards, filterable by `player_name` for opponent playbooks.
+  - **Community Page**: QWebEngineView for Discord widget or buttons for clip sharing, footage submission, and OBS capture ("Start OBS Capture", Task 14), with `player_name` tagging.
+  - **Settings Page**: QCheckBox for high-contrast mode (black #000000, white #FFFFFF, yellow #FBBF24), QSlider for font size (16px-20px), feedback QDialog.
+- **Color Palette**:
+  - Dark Theme: Background #1E1E1E, Surface #2A2A2A, Accent #3B82F6, Text #FFFFFF (primary), #D1D5DB (secondary).
+  - High-Contrast Mode: Black #000000, White #FFFFFF, Yellow #FBBF24.
+  - Light Mode: White #FFFFFF, Dark Gray #1F2937, Blue #3B82F6.
+- **Typography**: Inter font (24px headers, 16px body, adjustable 18px/20px, 14px captions), 4.5:1 contrast for text, 3:1 for UI elements.
+- **Components**:
+  - Buttons: Rounded, blue-filled (#3B82F6) for primary, outlined for secondary, hover glow.
+  - Cards: Clip previews with thumbnails, situation tags, `player_name`, red mistake dots.
+  - Dropdowns: QComboBox for game/playbook, `player_name`, search-enabled.
+  - Modals: QDialog for freemium, compliance, feedback, player attribution, with blue CTAs.
+  - Progress Bars: QProgressBar for imports, processing, dark theme.
+  - Accessibility: ARIA labels (setAccessibleName), keyboard navigation, focus states.
+- **Performance**: Dashboard load time <2s, optimized QGridLayout updates.
 
-## Personas
+**Core User Flows**
+- **Onboarding**:
+  - Welcome QDialog: "Upload First Video" CTA, select Madden NFL 25, join Discord, accessibility settings (contrast, font size), freemium prompt.
+  - Steps: Click "Upload Video" → Drag-and-drop file → Enter `player_name` ("Self" or "Opponent: Name") → View timeline → Join Discord.
+- **Video Upload**:
+  - Navigate to Upload page via sidebar.
+  - Drag-and-drop file or select via dialog, enter `player_name` in QDialog, click blue "Upload" (#3B82F6).
+  - View QProgressDialog, handle errors via QMessageBox.
+  - Interact with VideoTimeline, filtered by `player_name`.
+- **Stream Recording**:
+  - Navigate to Community page, choose "Start OBS Capture" or "Record Stream" (`streamlink`/`ffmpeg`).
+  - Enter `player_name` in QDialog, agree to terms, import stream to VideoTimeline.
+- **Analysis Review**:
+  - Navigate to Clips page, filter clips by `player_name`, situation, or tags via QComboBox.
+  - Click clip card (labeled with `player_name`) to open VideoTimeline with overlays (Task 7).
+- **Analytics Review**:
+  - Navigate to Analytics page, filter stats (e.g., play tendencies) by `player_name` using QComboBox.
+  - Export data as CSV, view opponent insights (e.g., "PlayerX: 60% Shotgun").
+- **Discord Integration**:
+  - Navigate to Community page, click "Share Clip" (QDialog, includes `player_name` and annotations).
+  - Post to #strategy-discussion, view feedback, join contests.
+- **Feedback Submission**:
+  - In Settings, click "Submit Feedback" (QDialog), report errors or suggestions for self/other clips.
+- **Game Updates**:
+  - Notification in Settings for data pack downloads (e.g., Madden NFL 26).
 
-### 1. Amateur Competitive Player (Primary)
-- Role: Dedicated player seeking improvement
-- Technical Proficiency: Basic computer skills
-- Needs:
-  - Quick identification of mistake patterns
-  - Easy-to-use interface
-  - Clear situation categorization
-- Pain Points:
-  - Hours spent manually reviewing footage
-  - Difficulty organizing game situations
-  - Limited access to pro-level analysis
+**Design Principles**
+- Minimal, clean layout with whitespace for clarity.
+- Sleek, modern dark theme with subtle animations (e.g., hover glow).
+- Accessible with WCAG 2.1 AA compliance (>90%), screen reader support (>95%).
+- Intuitive, progressive disclosure for amateurs, efficient for pros with opponent filtering.
+- Action-oriented, with quick access to features via sidebar and dashboard.
 
-### 2. Professional Player/Coach
-- Role: Tournament player/team coach
-- Technical Proficiency: Moderate
-- Needs:
-  - Detailed formation analysis
-  - Batch processing of multiple games
-  - Advanced filtering capabilities
-- Pain Points:
-  - Time-intensive strategy analysis
-  - Challenge in demonstrating concepts
-  - Need for objective performance metrics
+**UI Framework**
+- Primary: PyQt6 for native Windows performance.
+- Wireframes: Figma with Claude 3.5 descriptions (e.g., "Grid view with player filter, VideoTimeline panel, Discord share").
+- Theme: Dark mode default, light/high-contrast modes.
 
-### 3. Content Creator
-- Role: Strategy guide creator
-- Technical Proficiency: Moderate to High
-- Needs:
-  - Clip export functionality
-  - Situation comparison tools
-  - Batch annotation capabilities
-- Pain Points:
-  - Manual clip extraction
-  - Inconsistent situation labeling
-  - Time-consuming content preparation
+## 6. Technical Requirements
+**Core Architecture**
+- **Language**: Python 3.9+
+- **UI Framework**: PyQt6
+- **Computer Vision**: YOLO11, OpenCV 4.6.0+
+- **Database**: PostgreSQL 13+ with automated backups to AWS S3, SQLite fallback for local clip storage with `player_name`.
+- **Game Interface**: Abstract base class for playbooks, HUD detection, model loading.
+```python
+class GameInterface(ABC):
+    @abstractmethod
+    def get_playbooks(self) -> List[Playbook]:
+        pass
 
-## Features
+    @abstractmethod
+    def detect_hud_elements(self, frame) -> HUDData:
+        pass
 
-| User Story Short Name | Description | Priority | Complexity |
-|----------------------|-------------|----------|------------|
-| Video Import | Upload and process Madden NFL 25 gameplay recordings with drag-and-drop | P1 | Low |
-| Situation Detection | Use YOLO11 to identify downs, yards, score, time | P1 | High |
-| Clip Organization | Automatically categorize and tag detected situations | P1 | Medium |
-| Smart Search | Filter clips by situation type, formation, or custom tags | P1 | Medium |
-| Formation Recognition | Detect offensive/defensive formations using ML | P2 | High |
-| Play Detection | Identify specific plays and strategies | P2 | High |
-| Pro Comparison | Side-by-side analysis with pro gameplay | P2 | Medium |
-| Batch Processing | Analyze multiple games simultaneously | P3 | Medium |
-| Export Tools | Save and share analyzed clips | P3 | Low |
-| Performance Analytics | Generate statistics and trend reports | P4 | Medium |
-| Community Integration | Share and discuss clips via Discord | P5 | Low |
-| Custom Playbook | Create and integrate custom playbook analysis rules | P3 | High |
-| Interactive Tutorial | Guide new users through key features with interactive demos | P2 | Medium |
-| Model Retraining | Submit and retrain models with user-provided data | P3 | High |
+    @abstractmethod
+    def load_detection_models(self) -> ModelSet:
+        pass
+```
 
-## User Flow and Design
+**Game-Agnostic Design**
+- **Plugin System**: Modular game support; plugins include JSON config, playbook DB, YOLO11 weights.
+- **Versioned Data Management**: Support multiple game versions with `player_name` tagging.
+- **Documentation**: Sphinx-generated developer guides, public docs at https://github.com/spygate/spygate-docs by Phase 3.
 
-Key Flows:
-1. User Onboarding
-   - Interactive first-time tutorial
-   - Feature discovery guide
-   - Sample video analysis walkthrough
-   - Custom settings configuration
+**Performance & Quality**
+- Test Coverage: ≥85% with pytest.
+- Processing Speed: 3x real-time minimum.
+- Accuracy Targets: 75% situation detection, 70% formation recognition.
+- Error Rate: <5% user errors in core workflows.
 
-2. Video Upload & Processing
-   - Drag-and-drop interface
-   - Progress indication
-   - Initial ML analysis
-   - Codec validation
+**Infrastructure**
+- Cloud Processing: AWS (S3 for clip storage, EC2 for processing), optional GCP integration.
+- Legal Compliance: GDPR-compliant data export, stream recording guidelines.
+- Privacy Controls: Local processing default, cloud opt-in with AES-256 encryption.
+- Update Mechanism: REST API for playbook/model updates.
+- Telemetry: In-app usage tracking (opt-in, GDPR-compliant) for API latency, error rates, clip processing time.
 
-3. Situation Review
-   - Grid/list view of detected situations
-   - Preview thumbnails
-   - Quick filters
+**UI Implementation**
+- **Framework**: PyQt6 with QMainWindow, QGridLayout for clips, QComboBox for `player_name` filtering, QWebEngineView for Discord widgets, QFileSystemWatcher for OBS output.
+- **Styling**: CSS-like stylesheets for dark theme (#1E1E1E background, #3B82F6 buttons), high-contrast mode, hover effects.
+- **Accessibility**: ARIA labels (setAccessibleName), keyboard navigation, WCAG 2.1 AA compliance (>90%).
+- **Performance**: <2s dashboard load time, optimized QGridLayout updates.
+- **Dependencies**: PyQt6, Inter font (local or Roboto fallback), OBS Studio (optional).
 
-4. Detailed Analysis
-   - Side-by-side comparison
-   - Formation overlay
-   - Play prediction
+## 7. Success Metrics
+**Technical Performance**
+- Situation Detection Accuracy: ≥75%
+- Formation Recognition Accuracy: ≥70%
+- Processing Speed: 3x real-time minimum
+- Stream Recording Success Rate: ≥85% (OBS and `streamlink` methods)
+- User Error Rate: <5% in core workflows
+- Legal Compliance Incidents: 0 violations by Phase 3 end
 
-5. Clip Management
-   - Custom organization
-   - Tagging system
-   - Export options
+**User Engagement**
+- 30-day Retention: ≥40%
+- User Satisfaction: ≥4.0/5.0
+- Discord Clip Sharing: >30% of active users, including opponent clips
+- Discord Interaction Rate: >50% engage in strategy discussions
+- Community Growth: >500 active Discord members within 6 months
+- User Feedback Submissions: >100 corrections monthly
 
-[Design Note: Wireframes to be created in Figma, focusing on intuitive layout and clear visual hierarchy]
+**Business Metrics**
+- Cloud Processing Adoption: >25% of power users
+- Premium Conversion: >10% of active users (post-freemium)
+- Premium Trial Conversion Rate: >20%
+- User Improvement: >40% report higher win rates after 1 month (surveys)
 
-## Technical Requirements
+**Extensibility Success**
+- Time to support Madden NFL 26: <4 weeks
+- Time to support EA Sports College Football: <8 weeks
+- Developer onboarding: New game integration guide completion <2 hours
 
-### Functional Requirements
-- Python 3.9+ environment
-- PyQt6 for responsive GUI
-- YOLO11 integration with PyTorch 1.10+
-- OpenCV 4.6.0+ for video processing
-- SQLite database for clip metadata
-- pytest for unit/integration testing
-- Custom ML model training pipeline
-- Video processing queue system
-- Clip export in multiple formats
-- ML Model Retraining Pipeline with local API
-- Video codec support: H.264, H.265, MPEG-4
-- Sphinx documentation generation
-- Custom Playbook Integration API
-- Interactive onboarding tutorial system
+**Accessibility & Compliance**
+- WCAG 2.1 AA Compliance: >90% by Enhanced Release
+- Screen Reader Compatibility: >95% by Phase 3
+- Legal Compliance Review: 100% completion by Phase 2
 
-### Non-Functional Requirements
-- Performance:
-  - Video processing: ≤2x real-time
-  - UI response: <100ms
-  - Situation detection accuracy: >90%
-  - Formation recognition accuracy: >85%
-  - False Positive Rate: <5% in situation detection
-  - Model retraining time: <4 hours on local GPU
+**UX Metrics**
+- Navigation Efficiency: >80% complete core tasks (e.g., upload, search by `player_name`) in <5 clicks
+- Onboarding Completion: >90% complete onboarding flow
+- Accessibility Usability: >85% satisfaction with accessibility features (surveys)
 
-- Quality:
-  - Test coverage: >90%
-  - Documentation: Full API/user docs via Sphinx
-  - Type hints: 100% coverage
+## 8. Release Strategy
+**Phase 1: Foundation**
+- **Objectives**: Establish core functionality, infrastructure, and legal compliance for Windows.
+- **Deliverables**:
+  - Collect 200+ hours of Madden NFL 25 footage (50% crowdsourced via Discord, 50% from [Huddle.gg](https://huddle.gg/playbooks/), [Madden School](https://www.madden-school.com/playbooks/)).
+  - Set up environment and CI/CD (GitHub Actions) for Windows.
+  - Complete extensibility guide and game plugin guide.
+  - Initiate legal compliance review (consult counsel early).
+  - Implement YOLO11 situation detection and mistake detection.
+  - Develop P1 features: Video Import, Situation Detection, Clip Organization, Smart Search, Game Selection, Interactive Tutorial, Error Recovery.
+  - Integrate PostgreSQL with SQLite fallback, supporting `player_name`.
+  - Prototype OBS screen capture and play tendency dashboard (pre-Task 7).
 
-- Scalability:
-  - Handle 4K video input
-  - Process 3+ hour games
-  - Support 1000+ stored clips
-  - AWS batch processing support (post-MVP)
-  - Distributed model training capability
+**Phase 2: Community Beta**
+- **Objectives**: Refine ML accuracy, integrate community features, complete legal compliance.
+- **Deliverables**:
+  - Refine detection accuracy with 50 beta testers (20 amateurs, 20 pros, 10 creators), targeting >50 bug reports resolved, >200 Discord members.
+  - Implement clip sharing, stream recording (OBS/`streamlink`), and feedback integration.
+  - Validate plugin system with mock Madden NFL 26 data.
+  - Complete legal review, implementing compliance features (e.g., stream recording modal).
+  - Develop P2 features: Formation Recognition, Export Tools, Performance Analytics, Clip Sharing, Playbook Selection, Game Data Update Management, Stream Recording, Stream Recording Compliance, Channel Management, Cloud Processing, Community Footage Submission, Accessibility Support.
 
-## Success Metrics
+**Phase 3: Enhanced Release**
+- **Objectives**: Deliver advanced analytics, full community integration, freemium model.
+- **Deliverables**:
+  - Implement formation recognition and play detection (top 20 plays).
+  - Deploy cloud processing and performance analytics.
+  - Launch freemium model with premium tier ($9.99/month).
+  - Develop full Discord integration with bot, leaderboards, challenges, incentives.
+  - Ensure WCAG 2.1 AA compliance (>90%) and screen reader support (>95%).
 
-1. Technical Performance:
-   - Situation detection accuracy >90%
-   - Video processing speed ≤2x real-time
-   - System resource usage <2GB RAM
-   - False Positive Rate <5% in situation detection
-   - Model retraining success rate >95%
+**Phase 4: Platform Expansion**
+- **Objectives**: Support new Madden releases, prepare for EA Sports College Football, iterate feedback.
+- **Deliverables**:
+  - Establish Madden update cycle: playbook curation, model retraining, testing, deployment.
+  - Monitor EA Sports College Football, collect 50+ hours of footage, prepare plugin.
+  - Implement P3 features: Play Detection, Pro Comparison, Batch Processing, Community Gamification, Community Contribution Incentives, Community Event Management, Model Retraining, Highlight Generation, Premium Tier Access.
+  - Plan console integration feasibility and mobile companion app.
 
-2. User Engagement:
-   - Average session duration >30 minutes
-   - Weekly active users >100
-   - Clip export rate >10/user/week
+**Team Structure**
+- Team Size: 5-8 developers (2 ML engineers, 2 backend, 1 frontend, 1 DevOps, 1 community manager)
+- Buffers: 25% time buffer built into all phases
 
-3. Quality Metrics:
-   - Test coverage >90%
-   - Bug report rate <1/day
-   - User satisfaction score >4.5/5
+## 9. Risks and Dependencies
+**Technical Risks**
+| Risk | Impact | Probability | Mitigation |
+|------|--------|-------------|------------|
+| ML Accuracy Below Target | High | Medium | Hybrid rule-based approach, user correction tools |
+| Hardware Performance Limitations | Medium | High | Cloud processing, optimized local processing, OBS hardware recommendations |
+| Game-specific Visual Differences | Medium | Medium | Transfer learning, early validation with footage |
+| PostgreSQL Performance Issues | Medium | Low | Thorough testing, SQLite fallback |
+| Legal Review Delay | High | Low | Engage counsel early in Phase 1 |
+| OBS Performance Overhead | Medium | Medium | Preprocessing (Task 4), ROI selection (Task 5), hardware specs |
 
-## Release Strategy
+**Legal & Compliance Risks**
+| Risk | Impact | Probability | Mitigation |
+|------|--------|-------------|------------|
+| Stream Recording Legal Issues | High | Low | Early legal review (Phase 2), compliance modal for OBS/`streamlink` |
+| Discord API Changes | Medium | Medium | Webhook-first approach, API partnerships |
+| GDPR Compliance Gaps | Medium | Low | Privacy by design, compliant data export |
+| API Quota Exhaustion | Medium | Low | Caching, OBS as alternative |
 
-### Phase 1 - MVP (8 weeks)
-- Basic video upload/processing
-- Down/distance detection
-- Simple clip organization
-- Basic PyQt interface
+**Business & Community Risks**
+| Risk | Impact | Probability | Mitigation |
+|------|--------|-------------|------------|
+| Insufficient Training Data | High | Medium | Community incentives, Discord engagement, crowdsource >50 hours |
+| Limited Community Adoption | Medium | Medium | Progressive onboarding, opponent clip support |
+| Extensibility Complexity | Medium | Medium | Game-agnostic architecture, documentation |
 
-### Phase 2 - Beta (12 weeks)
-- Formation detection
-- Advanced filtering
-- Pro comparison features
-- Discord community launch
-- Beta testing program (100 users: 50% amateur, 30% pro, 20% content creators)
-- Custom playbook beta
+**Dependencies**
+- PostgreSQL: Database performance.
+- YouTube/Twitch APIs: Stream recording (`streamlink`).
+- Discord API: Community integration.
+- OBS Studio: Optional stream recording, user-installed.
+- 200+ hours training footage: >50 hours crowdsourced, >150 hours from public sources.
+- Legal Review: Counsel engaged early in Phase 1.
+- Beta Community: >50 active contributors for testing and feedback.
 
-### Phase 3 - Full Release (16 weeks)
-- Play recognition
-- Performance analytics
-- Batch processing
-- Community features
+## 10. Freemium Model Structure
+**Free Tier**
+- Local processing and analysis
+- Basic situation detection and mistake identification
+- Discord community access
+- Standard export formats
+- Up to 10 clips per month (self/opponent), stored for 30 days
 
-## Risks and Dependencies
+**Premium Tier ($9.99/month)**
+- 14-day trial for cloud processing
+- Cloud processing for enhanced performance
+- Advanced analytics for self/opponent clips
+- Unlimited clip storage and exports with `player_name`
+- Priority community support
+- Early access to features
+- Batch processing capabilities
 
-### Technical Risks
-1. YOLO11 Detection Accuracy
-   - Mitigation: Custom training data
-   - Fallback: Manual correction tools
+## 11. Change History
+| Version | Date | Changes | Author | Task ID |
+|---------|------|---------|--------|---------|
+| 1.0 | May 15, 2025 | Initial PRD with SaaS UI, Discord integration, stream recording | Development Team | TM-1 |
+| 2.0 | June 1, 2025 | Realistic targets, risk mitigation, extended timeline | Senior Developer Review | TM-3 |
+| 2.1 | June 6, 2025 | Extensibility metrics, community enhancements, legal compliance, accessibility | Grok & Claude Review | TM-4 |
+| 2.2 | June 6, 2025 | Enhanced legal compliance, freemium refinements, extensibility details | Grok Review | TM-5 |
+| 2.3 | June 6, 2025 | Added feedback mechanisms, community event strategy, legal compliance monitoring, accessibility details, plugin validation | Grok Review | TM-6 |
+| 2.4 | June 6, 2025 | Removed timeline to reduce stress, retained rollout phases without duration estimates | Grok Review | TM-7 |
+| 2.5 | June 6, 2025 | Removed macOS support, focused on Windows-only platform | Grok Review | TM-8 |
+| 2.6 | June 6, 2025 | Added OBS Studio as optional stream recording method, enhanced UI specifications, added UX metrics, prioritized pre-Task 7 improvements (UI, data collection, testing) | Grok Review | TM-9 |
+| 2.7 | June 6, 2025 | Defined opponent clip support with `player_name` tagging across all features, added pro-focused features (play tendency dashboard, opponent profiles), enhanced UI for player filtering, integrated with OBS and Taskmaster | Grok Review | TM-10 |
 
-2. Video Processing Speed
-   - Mitigation: Optimization pipeline
-   - Fallback: Background processing
+## 12. Notes
+**Development Priorities**
+- **Data Collection**: 200+ hours of Madden NFL 25 footage required; crowdsource 50% (>50 hours) via Discord, 50% from [Huddle.gg](https://huddle.gg/playbooks/), [Madden School](https://www.madden-school.com/playbooks/). Start pre-Task 7 to support YOLO11 training (Task 7, Subtask 3).
+- **Hardware Considerations**: Local processing primary, cloud fallback. For OBS, recommend minimum specs (e.g., 8GB RAM, dedicated GPU) to mitigate performance overhead.
+- **Community Engagement**: Discord server setup critical; host weekly events (e.g., clip contests, pro AMAs) to drive >500 members; implement moderation with inclusive guidelines. Start pre-Task 7 to crowdsource opponent clips.
+- **Legal Compliance**: Complete review by Phase 2; engage counsel early in Phase 1 to assess OBS and `streamlink` methods for opponent stream recording.
+- **Extensibility Planning**: Document architecture for College Football 2026.
+- **Accessibility**: High-contrast mode, screen reader support by Phase 3. Implement pre-Task 7 to enhance Task 3’s UI (VideoTimeline).
+- **UI Development**: Use Cursor with PyQt6 for rapid UI coding, focusing on YouTube-like dashboard with `player_name` filtering. Prioritize accessibility with ARIA labels, keyboard navigation, high-contrast mode. Test on Windows 10/11 for performance (<2s load time) and WCAG compliance. Implement pre-Task 7 for Task 7’s visualization (Subtask 8).
+- **Stream Recording Options**: Prototype OBS screen capture pre-Task 7 as an alternative to `streamlink`/`ffmpeg`, validating feasibility for Task 14. Provide user choice in Community page, with compliance modal and `player_name` tagging.
+- **Testing**: Expand pytest tests for Tasks 1-6 (Task 3’s VideoTimeline, Task 4’s FrameExtractor, Task 5’s MotionDetector, Task 6’s ObjectTracker) to ensure ≥85% coverage pre-Task 7, supporting YOLO11 reliability.
+- **Opponent Clip Support**: Ensure all features (Tasks 2-15) support self and opponent clips with `player_name` tagging, stored in SQLite, and filterable in UI (Clips, Analytics, Community pages). Critical for pro scouting and analytics.
 
-3. Formation Recognition Complexity
-   - Mitigation: Transfer learning
-   - Fallback: Basic formation templates
+**Business Model**
+- Freemium Approach: Free tier drives adoption, premium tier provides sustainability.
+- Community-Driven Growth: Discord incentives (e.g., badges for opponent clip contributions) crucial for retention.
+- Platform Compliance: Twitch/YouTube terms compliance for stream recording, enforced via modal for OBS and `streamlink`.
 
-### Dependencies
-1. Python Environment:
-   - PyQt6
-   - PyTorch 1.10+
-   - OpenCV 4.6.0+
-   - YOLO11 weights
+**Accessibility Commitment**
+- WCAG 2.1 AA Compliance: >90% by Enhanced Release.
+- Progressive Enhancement: Accessible across proficiency levels.
+- Community Inclusivity: Discord moderation and inclusive guidelines.
 
-2. Development Tools:
-   - pytest
-   - black
-   - mypy
-   - SQLite
+**Future Considerations**
+- EA Sports College Football: Monitor 2025 release, prepare plugin architecture.
+- Console Integration: Feasibility study by Q4 2026.
+- Mobile Companion: Consider mobile app for clip viewing and community interaction.
 
-3. External Requirements:
-   - Training data collection
-   - Pro gameplay footage
-   - Community feedback
+## 13. Source Control & Infrastructure
+**Repository Structure**
+- Primary Repository: [github.com/spygate/spygate-core](https://github.com/spygate/spygate-core)
+- Documentation: [github.com/spygate/spygate-docs](https://github.com/spygate/spygate-docs)
+- Community: [github.com/spygate/spygate-community](https://github.com/spygate/spygate-community)
 
-## Timeline
+**CI/CD Pipeline**
+- Linting: Black formatting, flake8 style checking (PR triggers linting).
+- Testing: Pytest with 85% coverage (PR triggers testing).
+- Deployment: Automated staging deployment (PR merges trigger test server update).
+- Monitoring: Sentry for error tracking, Prometheus for performance (API latency, error rates, clip processing time).
 
-1. Data Collection & Preparation (4 weeks)
-   - Collect 100+ hours of diverse gameplay footage
-   - Label and annotate training data
-   - Validate data quality
-   - Set up data pipeline
-
-2. Setup & Infrastructure (2 weeks)
-   - Environment setup
-   - Basic UI implementation
-   - Database design
-   - Documentation framework setup
-
-3. Core ML Pipeline (4 weeks)
-   - YOLO11 integration
-   - Video processing
-   - Basic detection
-
-4. MVP Development (6 weeks)
-   - Situation detection
-   - Clip organization
-   - Testing & optimization
-
-5. Beta Features (8 weeks)
-   - Formation recognition
-   - Advanced filtering
-   - Community tools
-
-6. Full Release (12 weeks)
-   - Play detection
-   - Analytics
-   - Performance optimization
-
-## Change History
-
-| Date | Author | Description | Task ID |
-|------|--------|-------------|---------|
-| [Current Date] | Initial | First draft | TM-1 |
-
-## Notes
-- All ML models require significant training data
-- Performance metrics subject to hardware capabilities
-- Community feedback essential for feature prioritization
-- Regular model retraining based on user data
-- Consider cloud processing for batch operations
-- Store PRD and documentation in GitHub repository for team access
-- AWS integration planned for post-MVP scaling
-- Beta testing to focus on Discord community engagement
-- Consider implementing A/B testing for UI optimization
-
-## Source Control
-- GitHub repository: github.com/spygate/spygate
-- Documentation: github.com/spygate/docs
-- Issue tracking: github.com/spygate/spygate/issues
-- PRD version control: github.com/spygate/prd 
+**Infrastructure Management**
+- Infrastructure as Code: Terraform for cloud resources.
+- Container Orchestration: Docker for consistent Windows environments.
+- Database Management: PostgreSQL with daily backups to AWS S3, SQLite fallback.
+- Cloud Services: AWS (S3, EC2) for optional cloud processing, GCP as backup.

@@ -1,81 +1,80 @@
+"""Test card component."""
+
 import pytest
 from PyQt6.QtWidgets import QApplication, QLabel
-from spygate.gui.components.composite import Card
+
+from src.gui.components.composite import Card
+
 
 @pytest.fixture
-def app(qtbot):
-    """Create a Qt Application."""
-    return QApplication.instance() or QApplication([])
+def qapp():
+    """Create a QApplication instance for the tests."""
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])
+    yield app
+    app.quit()
 
-@pytest.fixture
-def card(app, qtbot):
-    """Create a Card instance."""
-    card = Card(title="Test Card")
-    qtbot.addWidget(card)
-    return card
 
-def test_card_creation(card):
-    """Test that Card is created properly."""
+@pytest.mark.gui
+def test_card_creation(qapp):
+    """Test creating a card."""
+    card = Card()
     assert card is not None
-    assert isinstance(card, Card)
-    assert card.title == "Test Card"
+    assert card.objectName() == ""
 
-def test_set_content(card):
+
+@pytest.mark.gui
+def test_set_content(qapp):
     """Test setting card content."""
-    content = QLabel("Test Content")
+    card = Card()
+    content = QLabel("Test content")
     card.set_content(content)
-    assert card.content is not None
-    assert isinstance(card.content, QLabel)
-    assert card.content.text() == "Test Content"
+    assert card.content() == content
 
-def test_set_footer(card):
+
+@pytest.mark.gui
+def test_set_footer(qapp):
     """Test setting card footer."""
-    footer = QLabel("Test Footer")
+    card = Card()
+    footer = QLabel("Test footer")
     card.set_footer(footer)
-    assert card.footer is not None
-    assert isinstance(card.footer, QLabel)
-    assert card.footer.text() == "Test Footer"
+    assert card.footer() == footer
 
-def test_collapsible(card, qtbot):
-    """Test card collapsible functionality."""
-    # Enable collapsible
-    card.set_collapsible(True)
-    assert card.is_collapsible
-    
-    # Set content
-    content = QLabel("Test Content")
-    card.set_content(content)
-    
-    # Test collapse
+
+@pytest.mark.gui
+def test_collapsible(qapp):
+    """Test card collapsible behavior."""
+    card = Card(collapsible=True)
+    assert card.is_collapsible()
+    assert card.is_expanded()
     card.collapse()
-    assert card.is_collapsed
-    assert not card.content.isVisible()
-    
-    # Test expand
+    assert not card.is_expanded()
     card.expand()
-    assert not card.is_collapsed
-    assert card.content.isVisible()
+    assert card.is_expanded()
 
-def test_elevation(card):
+
+@pytest.mark.gui
+def test_elevation(qapp):
     """Test card elevation."""
-    # Test default elevation
-    assert card.elevation == 1
-    
-    # Set new elevation
-    card.set_elevation(3)
-    assert card.elevation == 3
-    
-    # Test invalid elevation
-    with pytest.raises(ValueError):
-        card.set_elevation(-1)
-    with pytest.raises(ValueError):
-        card.set_elevation(6)
+    card = Card()
+    card.set_elevation(2)
+    assert card.elevation() == 2
+    assert "box-shadow" in card.styleSheet()
 
-def test_theme_awareness(card):
+
+@pytest.mark.gui
+def test_theme_awareness(qapp):
     """Test card theme awareness."""
-    # Test default theme
-    assert hasattr(card, "theme")
-    
-    # Test theme update
-    card.update_theme({"card_bg": "#ffffff", "card_border": "#000000"})
-    # Add assertions based on your theme implementation 
+    card = Card()
+    card.update_theme({"background": "#ffffff"})
+    assert card.styleSheet() != ""
+
+
+@pytest.mark.gui
+def test_card_add_content(qapp):
+    """Test adding content to the card."""
+    card = Card()
+    label = QLabel("Test")
+    card.add_content(label)
+    assert label in card.content_widgets

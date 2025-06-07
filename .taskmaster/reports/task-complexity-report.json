@@ -1,134 +1,14 @@
 {
   "meta": {
-    "generatedAt": "2025-06-06T06:15:11.844Z",
-    "tasksAnalyzed": 30,
-    "totalTasks": 30,
+    "generatedAt": "2025-06-06T15:37:44.670Z",
+    "tasksAnalyzed": 6,
+    "totalTasks": 15,
     "analysisCount": 30,
     "thresholdScore": 5,
     "projectName": "Taskmaster",
     "usedResearch": true
   },
   "complexityAnalysis": [
-    {
-      "taskId": 1,
-      "taskTitle": "Setup Project Repository and Environment",
-      "complexityScore": 4,
-      "recommendedSubtasks": 7,
-      "expansionPrompt": "Break down the setup process into detailed steps for repository creation, environment configuration, and initial project structure.",
-      "reasoning": "Moderate complexity due to multiple steps and configurations, but generally straightforward for experienced developers."
-    },
-    {
-      "taskId": 2,
-      "taskTitle": "Implement Basic PyQt6 GUI Framework",
-      "complexityScore": 6,
-      "recommendedSubtasks": 8,
-      "expansionPrompt": "Detail the steps for creating a modular, themeable GUI structure with PyQt6, including layout design and component creation.",
-      "reasoning": "Higher complexity due to custom theming, reusable components, and accessibility considerations."
-    },
-    {
-      "taskId": 3,
-      "taskTitle": "Implement Video Import and Codec Validation",
-      "complexityScore": 5,
-      "recommendedSubtasks": 7,
-      "expansionPrompt": "Outline the process for implementing drag-and-drop functionality, codec validation, and multithreaded import handling.",
-      "reasoning": "Moderate complexity due to codec handling and multithreading, but core functionalities are well-defined."
-    },
-    {
-      "taskId": 4,
-      "taskTitle": "Setup SQLite Database for Clip Metadata",
-      "complexityScore": 5,
-      "recommendedSubtasks": 7,
-      "expansionPrompt": "Detail the steps for designing and implementing the database schema, including ORM setup and migration system.",
-      "reasoning": "Moderate complexity due to schema design and ORM integration, but SQLite and SQLAlchemy are well-documented."
-    },
-    {
-      "taskId": 5,
-      "taskTitle": "Implement YOLO11 Integration",
-      "complexityScore": 7,
-      "recommendedSubtasks": 8,
-      "expansionPrompt": "Break down the process of integrating YOLO11, including model loading, inference optimization, and result processing.",
-      "reasoning": "Higher complexity due to machine learning integration, optimization requirements, and potential hardware considerations."
-    },
-    {
-      "taskId": 6,
-      "taskTitle": "Implement Basic Video Processing Pipeline",
-      "complexityScore": 8,
-      "recommendedSubtasks": 9,
-      "expansionPrompt": "Detail the steps for creating a robust, parallel video processing pipeline with frame extraction, object detection, and caching.",
-      "reasoning": "High complexity due to performance requirements, parallel processing, and integration of multiple components."
-    },
-    {
-      "taskId": 7,
-      "taskTitle": "Implement Situation Detection Algorithm",
-      "complexityScore": 9,
-      "recommendedSubtasks": 10,
-      "expansionPrompt": "Break down the process of developing algorithms for detecting game situations, including heuristics, OCR, and state tracking.",
-      "reasoning": "Very high complexity due to the need for accurate game state interpretation and real-time processing of complex visual data."
-    },
-    {
-      "taskId": 8,
-      "taskTitle": "Implement Clip Organization System",
-      "complexityScore": 6,
-      "recommendedSubtasks": 8,
-      "expansionPrompt": "Outline the steps for creating a system to categorize, tag, and organize detected game situations into clips.",
-      "reasoning": "Moderate to high complexity due to the need for accurate categorization and efficient data management."
-    },
-    {
-      "taskId": 9,
-      "taskTitle": "Implement Smart Search Functionality",
-      "complexityScore": 7,
-      "recommendedSubtasks": 8,
-      "expansionPrompt": "Detail the process of implementing a comprehensive search system with query language, efficient database operations, and result ranking.",
-      "reasoning": "High complexity due to the need for a flexible query system and optimized search performance."
-    },
-    {
-      "taskId": 10,
-      "taskTitle": "Implement Formation Recognition ML Model",
-      "complexityScore": 8,
-      "recommendedSubtasks": 9,
-      "expansionPrompt": "Break down the steps for developing and training a machine learning model for formation recognition, including data preparation and model optimization.",
-      "reasoning": "High complexity due to the machine learning aspects, data requirements, and integration with the existing system."
-    },
-    {
-      "taskId": 11,
-      "taskTitle": "Implement Play Detection Algorithm",
-      "complexityScore": 9,
-      "recommendedSubtasks": 10,
-      "expansionPrompt": "Outline the process of developing algorithms for play detection, including player tracking, pattern analysis, and machine learning integration.",
-      "reasoning": "Very high complexity due to the need for sophisticated pattern recognition and real-time analysis of complex game situations."
-    },
-    {
-      "taskId": 12,
-      "taskTitle": "Implement Pro Comparison Feature",
-      "complexityScore": 7,
-      "recommendedSubtasks": 8,
-      "expansionPrompt": "Detail the steps for implementing a system for comparing user clips with pro gameplay, including similarity matching and side-by-side analysis tools.",
-      "reasoning": "High complexity due to the need for accurate comparison algorithms and sophisticated video manipulation."
-    },
-    {
-      "taskId": 13,
-      "taskTitle": "Implement Batch Processing System",
-      "complexityScore": 6,
-      "recommendedSubtasks": 7,
-      "expansionPrompt": "Break down the process of creating a robust batch processing system with job queuing, progress tracking, and error handling.",
-      "reasoning": "Moderate to high complexity due to the need for reliable job management and potential scalability considerations."
-    },
-    {
-      "taskId": 14,
-      "taskTitle": "Implement Clip Export Tools",
-      "complexityScore": 5,
-      "recommendedSubtasks": 7,
-      "expansionPrompt": "Outline the steps for implementing comprehensive clip export functionality, including various formats and sharing options.",
-      "reasoning": "Moderate complexity due to the need to handle multiple export formats and integrate with external libraries."
-    },
-    {
-      "taskId": 15,
-      "taskTitle": "Implement Performance Analytics System",
-      "complexityScore": 7,
-      "recommendedSubtasks": 8,
-      "expansionPrompt": "Detail the process of developing a system for generating and visualizing performance analytics from analyzed gameplay data.",
-      "reasoning": "High complexity due to the need for sophisticated data analysis and visualization techniques."
-    },
     {
       "taskId": 16,
       "taskTitle": "Implement Discord Community Integration",
@@ -248,6 +128,126 @@
       "recommendedSubtasks": 9,
       "expansionPrompt": "Detail the steps for developing a plugin system for extending application functionality, including architecture design and sandbox implementation.",
       "reasoning": "High complexity due to the need for a flexible yet secure plugin system that integrates seamlessly with the core application."
+    },
+    {
+      "taskId": 1,
+      "taskTitle": "Setup Project Repository and Environment",
+      "complexityScore": 7,
+      "recommendedSubtasks": 10,
+      "expansionPrompt": "Break down the setup of the project repository and environment into detailed steps, including specific commands and configurations for each tool and service mentioned.",
+      "reasoning": "This task involves setting up multiple components, including repositories, project structure, development environment, CI/CD, monitoring, and cloud resources. It requires coordination of various tools and services, making it relatively complex."
+    },
+    {
+      "taskId": 5,
+      "taskTitle": "Develop Motion Detection System",
+      "complexityScore": 7,
+      "recommendedSubtasks": 8,
+      "expansionPrompt": "Break down the development of the motion detection system into detailed steps, including specific algorithms and techniques for each feature.",
+      "reasoning": "This task involves implementing various motion detection and analysis techniques, which require understanding of computer vision algorithms. The complexity is high due to the need for accurate detection and classification of different types of motion."
+    },
+    {
+      "taskId": 6,
+      "taskTitle": "Implement Object Tracking System",
+      "complexityScore": 8,
+      "recommendedSubtasks": 10,
+      "expansionPrompt": "Detail the steps to create the object tracking system, including specific tracking algorithms, player identification methods, and integration with other components.",
+      "reasoning": "Object tracking, especially in a dynamic environment like a sports game, is a complex task. It involves multiple advanced computer vision techniques and requires high accuracy, making it one of the more challenging tasks."
+    },
+    {
+      "taskId": 7,
+      "taskTitle": "Implement Situation Detection with YOLO11",
+      "complexityScore": 9,
+      "recommendedSubtasks": 12,
+      "expansionPrompt": "Break down the implementation of situation detection using YOLO11 into detailed steps, including data preparation, model training, and integration into the application.",
+      "reasoning": "This task involves machine learning model training and implementation, which is inherently complex. It requires extensive data preparation, model tuning, and integration, making it one of the most challenging tasks in the project."
+    },
+    {
+      "taskId": 8,
+      "taskTitle": "Implement Formation Recognition",
+      "complexityScore": 7,
+      "recommendedSubtasks": 8,
+      "expansionPrompt": "Detail the steps to create the formation recognition system, including data collection, template matching, and machine learning approaches.",
+      "reasoning": "Formation recognition combines template matching and machine learning, requiring a good understanding of both techniques. The complexity is high due to the need to recognize various formations accurately."
+    },
+    {
+      "taskId": 10,
+      "taskTitle": "Implement Clip Organization and Sharing System",
+      "complexityScore": 6,
+      "recommendedSubtasks": 8,
+      "expansionPrompt": "Detail the steps to create the clip organization and sharing system, including database design, UI components, and Discord integration.",
+      "reasoning": "This task involves database management, UI development, and third-party integration. While not as algorithmically complex as some other tasks, it requires careful design for user experience and data management."
+    },
+    {
+      "taskId": 11,
+      "taskTitle": "Implement Smart Search System",
+      "complexityScore": 7,
+      "recommendedSubtasks": 8,
+      "expansionPrompt": "Break down the implementation of the smart search system into detailed steps, including search algorithm design, database optimization, and UI integration.",
+      "reasoning": "Creating an efficient and flexible search system requires careful algorithm design and database optimization. The complexity is high due to the need for fast, accurate searches across multiple criteria."
+    },
+    {
+      "taskId": 12,
+      "taskTitle": "Implement Pro Comparison System",
+      "complexityScore": 6,
+      "recommendedSubtasks": 7,
+      "expansionPrompt": "Detail the steps to create the pro comparison system, including UI design for side-by-side comparison and integration with analysis components.",
+      "reasoning": "This task involves creating a specialized UI for comparison and integrating various analysis components. While it builds on existing systems, coordinating the comparisons and visualizations adds moderate complexity."
+    },
+    {
+      "taskId": 13,
+      "taskTitle": "Implement Batch Processing System",
+      "complexityScore": 7,
+      "recommendedSubtasks": 8,
+      "expansionPrompt": "Break down the implementation of the batch processing system into detailed steps, including local and cloud processing, job management, and error handling.",
+      "reasoning": "Batch processing involves managing multiple jobs, potentially in a distributed environment. The complexity is high due to the need for robust job management, progress tracking, and error handling across local and cloud environments."
+    },
+    {
+      "taskId": 2,
+      "taskTitle": "Implement Video Import System",
+      "complexityScore": 8,
+      "recommendedSubtasks": 10,
+      "expansionPrompt": "Break down the video import system into more detailed steps, including UI design, file handling, database integration, and error management.",
+      "reasoning": "High complexity due to multiple components, file handling, database integration, and UI considerations. Already has 8 subtasks, but could benefit from further breakdown."
+    },
+    {
+      "taskId": 3,
+      "taskTitle": "Develop VideoTimeline Component",
+      "complexityScore": 9,
+      "recommendedSubtasks": 12,
+      "expansionPrompt": "Divide the VideoTimeline component development into specific UI elements, playback controls, annotation features, and accessibility implementations.",
+      "reasoning": "Very complex due to custom widget creation, video manipulation, annotation system, and accessibility requirements. No existing subtasks, needs comprehensive breakdown."
+    },
+    {
+      "taskId": 4,
+      "taskTitle": "Implement Frame Extraction System",
+      "complexityScore": 7,
+      "recommendedSubtasks": 8,
+      "expansionPrompt": "Separate the frame extraction system into core functionality, optimization techniques, preprocessing steps, and integration with other components.",
+      "reasoning": "Moderately complex due to video processing, performance optimization, and integration requirements. No existing subtasks, needs clear division of responsibilities."
+    },
+    {
+      "taskId": 9,
+      "taskTitle": "Implement Play Detection System",
+      "complexityScore": 9,
+      "recommendedSubtasks": 10,
+      "expansionPrompt": "Break down the play detection system into data preparation, model development, detection logic, visualization, and user interaction components.",
+      "reasoning": "High complexity due to machine learning aspects, pattern recognition, and user interaction. No existing subtasks, requires detailed breakdown for effective implementation."
+    },
+    {
+      "taskId": 14,
+      "taskTitle": "Implement Export and Stream Recording System",
+      "complexityScore": 8,
+      "recommendedSubtasks": 10,
+      "expansionPrompt": "Divide the export and stream recording system into separate modules for clip export, stream recording, legal compliance, and error handling.",
+      "reasoning": "Complex due to various export formats, stream recording integration, and legal considerations. No existing subtasks, needs clear separation of concerns."
+    },
+    {
+      "taskId": 15,
+      "taskTitle": "Implement Interactive Tutorial and Onboarding System",
+      "complexityScore": 7,
+      "recommendedSubtasks": 8,
+      "expansionPrompt": "Break down the tutorial system into UI components, content creation, progress tracking, and accessibility features.",
+      "reasoning": "Moderately complex due to interactive elements, content management, and accessibility requirements. No existing subtasks, needs structured approach to development."
     }
   ]
 }

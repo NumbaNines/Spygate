@@ -1,0 +1,1 @@
+"""Spygate application package."""

@@ -2,94 +2,101 @@
 Spygate - Menu Bar Component
 """
 
-from PyQt6.QtWidgets import QMenuBar, QStyle
-from PyQt6.QtGui import QAction
+from PyQt6.QtGui import QAction, QIcon
+from PyQt6.QtWidgets import QMenu, QMenuBar
 
 
-def create_menu_bar(parent) -> QMenuBar:
-    """Create the application menu bar.
-    
+def create_menu_bar(parent):
+    """Create the main menu bar.
+
     Args:
-        parent: Parent window that will own the menu bar
-        
+        parent: Parent window
+
     Returns:
         QMenuBar: The configured menu bar
     """
-    menubar = QMenuBar()
-    
+    menu_bar = QMenuBar(parent)
+    menu_bar.setStyleSheet(
+        """
+        QMenuBar {
+            background: #2A2A2A;
+            color: #D1D5DB;
+            border: none;
+        }
+        QMenuBar::item {
+            padding: 8px 12px;
+            background: transparent;
+        }
+        QMenuBar::item:selected {
+            background: #3B82F6;
+            color: #FFFFFF;
+        }
+        QMenu {
+            background: #2A2A2A;
+            color: #D1D5DB;
+            border: 1px solid #3B3B3B;
+            padding: 5px;
+        }
+        QMenu::item {
+            padding: 8px 25px;
+            border-radius: 4px;
+        }
+        QMenu::item:selected {
+            background: #3B82F6;
+            color: #FFFFFF;
+        }
+        QMenu::separator {
+            height: 1px;
+            background: #3B3B3B;
+            margin: 5px 0;
+        }
+    """
+    )
+
     # File menu
-    file_menu = menubar.addMenu("&File")
-    
-    # Open video action
-    open_action = QAction(
-        parent.style().standardIcon(QStyle.StandardPixmap.SP_DialogOpenButton),
-        "&Open Video...",
-        parent
-    )
-    open_action.setShortcut("Ctrl+O")
-    file_menu.addAction(open_action)
-    
+    file_menu = menu_bar.addMenu("File")
+
+    import_action = QAction("Import Video...", parent)
+    import_action.setStatusTip("Import a new video clip")
+    import_action.triggered.connect(parent.show_video_import)
+    file_menu.addAction(import_action)
+
     file_menu.addSeparator()
-    
-    # Save analysis action
-    save_action = QAction(
-        parent.style().standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton),
-        "&Save Analysis...",
-        parent
-    )
-    save_action.setShortcut("Ctrl+S")
-    file_menu.addAction(save_action)
-    
-    # Export action
-    export_action = QAction(
-        parent.style().standardIcon(QStyle.StandardPixmap.SP_FileLinkIcon),
-        "&Export Data...",
-        parent
-    )
-    export_action.setShortcut("Ctrl+E")
-    file_menu.addAction(export_action)
-    
-    file_menu.addSeparator()
-    
-    # Exit action
-    exit_action = QAction(
-        parent.style().standardIcon(QStyle.StandardPixmap.SP_DialogCloseButton),
-        "E&xit",
-        parent
-    )
-    exit_action.setShortcut("Alt+F4")
+
+    exit_action = QAction("Exit", parent)
+    exit_action.setStatusTip("Exit the application")
+    exit_action.triggered.connect(parent.close)
     file_menu.addAction(exit_action)
-    
-    # Analysis menu
-    analysis_menu = menubar.addMenu("&Analysis")
-    
-    # Start analysis action
-    start_analysis_action = QAction("&Start Analysis", parent)
-    start_analysis_action.setShortcut("F5")
-    analysis_menu.addAction(start_analysis_action)
-    
-    # Stop analysis action
-    stop_analysis_action = QAction("St&op Analysis", parent)
-    stop_analysis_action.setShortcut("F6")
-    stop_analysis_action.setEnabled(False)
-    analysis_menu.addAction(stop_analysis_action)
-    
-    analysis_menu.addSeparator()
-    
-    # Settings action
-    settings_action = QAction(
-        parent.style().standardIcon(QStyle.StandardPixmap.SP_FileDialogDetailedView),
-        "&Settings...",
-        parent
+
+    # View menu
+    view_menu = menu_bar.addMenu("View")
+
+    analysis_action = QAction("Analysis Panel", parent)
+    analysis_action.setStatusTip("Toggle analysis panel visibility")
+    analysis_action.setCheckable(True)
+    analysis_action.triggered.connect(
+        lambda checked: parent.analysis_dock.setVisible(checked)
     )
-    settings_action.setShortcut("Ctrl+,")
-    analysis_menu.addAction(settings_action)
-    
+    view_menu.addAction(analysis_action)
+
+    # Theme menu
+    theme_menu = menu_bar.addMenu("Theme")
+
+    theme_action = QAction("Theme Settings...", parent)
+    theme_action.setStatusTip("Change application theme")
+    theme_action.triggered.connect(
+        lambda: ThemeDialog(parent.theme_manager, parent).exec()
+    )
+    theme_menu.addAction(theme_action)
+
     # Help menu
-    help_menu = menubar.addMenu("&Help")
-    
-    # About action
-    about_action = QAction("&About Spygate", parent)
+    help_menu = menu_bar.addMenu("Help")
+
+    about_action = QAction("About Spygate", parent)
+    about_action.setStatusTip("Show application information")
+    about_action.triggered.connect(
+        lambda: parent.status_bar.showMessage("Spygate - Football Analysis Tool", 5000)
+    )
     help_menu.addAction(about_action)
-    
-    return menubar 
+
+    return menu_bar

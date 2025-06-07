@@ -23,6 +23,9 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from spygate.services.analysis_service import AnalysisService
+from spygate.services.video_service import VideoService
+
 from ..components.composite.dashboard import Dashboard
 from ..themes.theme_manager import ThemeManager
 from ..video.video_import_widget import VideoImportWidget
@@ -76,9 +79,17 @@ class ThemeDialog(QDialog):
 class MainWindow(QMainWindow):
     """Main window of the Spygate application."""
 
-    def __init__(self):
+    def __init__(
+        self,
+        video_service: VideoService = None,
+        analysis_service: AnalysisService = None,
+    ):
         super().__init__()
         self.theme_manager = ThemeManager()
+
+        # Initialize services
+        self.video_service = video_service or VideoService()
+        self.analysis_service = analysis_service or AnalysisService(self.video_service)
 
         # Initialize UI components
         self.dashboard = None
@@ -148,17 +159,17 @@ class MainWindow(QMainWindow):
 
     def _create_dashboard(self):
         """Create the dashboard component."""
-        self.dashboard = Dashboard()
+        self.dashboard = Dashboard(video_service=self.video_service)
         self.central_widget.addWidget(self.dashboard)
 
     def _create_video_player(self):
         """Create the video player component."""
-        self.video_player = VideoPlayer()
+        self.video_player = VideoPlayer(video_service=self.video_service)
         self.central_widget.addWidget(self.video_player)
 
     def _create_analysis_panel(self):
         """Create the analysis panel component."""
-        self.analysis_panel = AnalysisPanel()
+        self.analysis_panel = AnalysisPanel(analysis_service=self.analysis_service)
         self.analysis_dock = QDockWidget("Analysis", self)
         self.analysis_dock.setWidget(self.analysis_panel)
         self.analysis_dock.setAllowedAreas(Qt.DockWidgetArea.RightDockWidgetArea)
@@ -167,7 +178,7 @@ class MainWindow(QMainWindow):
 
     def _create_video_import(self):
         """Create the video import component."""
-        self.video_import = VideoImportWidget()
+        self.video_import = VideoImportWidget(video_service=self.video_service)
         self.central_widget.addWidget(self.video_import)
 
         # Connect signals
@@ -195,46 +206,42 @@ class MainWindow(QMainWindow):
         self.central_widget.setCurrentWidget(self.video_player)
         self.status_bar.showMessage("Video Player")
         self.sidebar.set_active("clips")
+        # Show analysis panel when video player is active
+        self.analysis_dock.show()
 
     def show_video_import(self):
         """Switch to video import view."""
         self.central_widget.setCurrentWidget(self.video_import)
-        self.status_bar.showMessage("Import Videos")
+        self.status_bar.showMessage("Video Import")
         self.sidebar.set_active("upload")
+        # Hide analysis panel during import
+        self.analysis_dock.hide()
 
     def show_analytics(self):
         """Switch to analytics view."""
-        # TODO: Implement analytics view
-        self.status_bar.showMessage("Analytics (Coming Soon)")
+        self.status_bar.showMessage("Analytics")
         self.sidebar.set_active("analytics")
 
     def show_playbooks(self):
         """Switch to playbooks view."""
-        # TODO: Implement playbooks view
-        self.status_bar.showMessage("Playbooks (Coming Soon)")
+        self.status_bar.showMessage("Playbooks")
         self.sidebar.set_active("playbooks")
 
     def show_community(self):
         """Switch to community view."""
-        # TODO: Implement community view
-        self.status_bar.showMessage("Community (Coming Soon)")
+        self.status_bar.showMessage("Community")
         self.sidebar.set_active("community")
 
     def show_theme_dialog(self):
         """Show the theme selection dialog."""
         dialog = ThemeDialog(self.theme_manager, self)
         dialog.exec()
-        self.sidebar.set_active("settings")
 
     def closeEvent(self, event):
         """Handle application close event."""
-        # Clean up video player
-        if self.video_player:
-            self.video_player.cleanup()
-
-        # Clean up video import
-        if self.video_import:
-            self.video_import.cleanup_import_thread()
-
-        # Accept the close event
+        # Clean up resources
+        if self.video_service:
+            self.video_service.cleanup()
+        if self.analysis_service:
+            self.analysis_service.cleanup()
         event.accept()

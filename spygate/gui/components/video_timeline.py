@@ -1,6 +1,4 @@
-"""
-Spygate - Video Timeline Component
-"""
+"""Implement video timeline component with markers and interactive controls."""
 
 import logging
 from dataclasses import dataclass

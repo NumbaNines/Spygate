@@ -1,6 +1,4 @@
-"""
-OpenCV-based video player component for Spygate.
-"""
+"""Implement OpenCV-based video player component for enhanced playback and analysis."""
 
 import logging
 import threading

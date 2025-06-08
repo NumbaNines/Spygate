@@ -4,10 +4,13 @@ This module provides functionality to validate video files and extract metadata,
 ensuring videos meet the required specifications for the application.
 """
 
+import json
 import logging
 import os
+import subprocess
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from pathlib import Path
+from typing import Dict, Optional, Set, Tuple
 
 import cv2
 import numpy as np
@@ -73,50 +76,169 @@ class VideoMetadata:
 
 
 class CodecValidator:
-    """Validates video codecs and extracts metadata.
+    """Validates video codecs using FFmpeg."""
 
-    This class provides functionality to validate video files against specified
-    requirements and extract metadata. It supports multiple codecs and performs
-    various integrity checks.
-
-    Supported codecs (per PRD): H.264, H.265, MPEG-4 (configurable).
-    Provides detailed error messages and suggests transcoding for unsupported codecs.
-    Checks for file corruption by reading sample frames.
-
-    Class Attributes:
-        SUPPORTED_CODECS (dict): Mapping of codec identifiers to their standard names
-        MIN_FILE_SIZE (int): Minimum allowed file size in bytes
-        MAX_FILE_SIZE (int): Maximum allowed file size in bytes
-        MIN_RESOLUTION (tuple): Minimum allowed resolution (width, height)
-        MAX_RESOLUTION (tuple): Maximum allowed resolution (width, height)
-        MIN_FPS (float): Minimum allowed frames per second
-        MAX_FPS (float): Maximum allowed frames per second
-        MIN_DURATION (float): Minimum allowed duration in seconds
-        MAX_DURATION (float): Maximum allowed duration in seconds
-    """
-
-    # Supported codecs and their common names
+    # Supported video codecs
     SUPPORTED_CODECS = {
-        "avc1": "H.264",
-        "h264": "H.264",
-        "x264": "H.264",
-        "H.264": "H.264",
-        "hevc": "H.265",
-        "hev1": "H.265",
-        "H.265": "H.265",
-        "mp4v": "MPEG-4",
-        "MPEG-4": "MPEG-4",
+        "h264",  # AVC/H.264
+        "hevc",  # H.265/HEVC
+        "vp8",  # VP8
+        "vp9",  # VP9
     }
 
-    # Validation constants
-    MIN_FILE_SIZE = 1024  # 1 KB
-    MAX_FILE_SIZE = 1024 * 1024 * 1024  # 1 GB
-    MIN_RESOLUTION = (320, 240)  # Minimum width, height
-    MAX_RESOLUTION = (3840, 2160)  # 4K
-    MIN_FPS = 15.0
-    MAX_FPS = 120.0
-    MIN_DURATION = 1.0  # seconds
-    MAX_DURATION = 3600.0  # 1 hour
+    def __init__(self):
+        """Initialize the codec validator."""
+        self._verify_ffmpeg()
+
+    def _verify_ffmpeg(self):
+        """Verify that FFmpeg is installed and accessible."""
+        try:
+            subprocess.run(
+                ["ffmpeg", "-version"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+        except (subprocess.SubprocessError, FileNotFoundError) as e:
+            logger.error("FFmpeg not found. Please install FFmpeg.", exc_info=True)
+            raise RuntimeError("FFmpeg is required but not found on the system.") from e
+
+    def is_valid(self, file_path: str) -> bool:
+        """
+        Check if the video file uses a supported codec.
+
+        Args:
+            file_path: Path to the video file to check
+
+        Returns:
+            bool: True if the video uses a supported codec
+
+        Raises:
+            FileNotFoundError: If the video file doesn't exist
+            RuntimeError: If FFmpeg fails to analyze the file
+        """
+        if not Path(file_path).exists():
+            raise FileNotFoundError(f"Video file not found: {file_path}")
+
+        try:
+            # Get video stream info using FFmpeg
+            result = subprocess.run(
+                [
+                    "ffprobe",
+                    "-v",
+                    "quiet",
+                    "-print_format",
+                    "json",
+                    "-show_streams",
+                    "-select_streams",
+                    "v:0",  # First video stream only
+                    file_path,
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+
+            # Parse FFmpeg output
+            info = json.loads(result.stdout)
+
+            # Get codec name from first video stream
+            if "streams" in info and len(info["streams"]) > 0:
+                codec_name = info["streams"][0].get("codec_name", "").lower()
+                return codec_name in self.SUPPORTED_CODECS
+
+            return False
+
+        except subprocess.SubprocessError as e:
+            logger.error(f"FFmpeg failed to analyze file: {e}", exc_info=True)
+            raise RuntimeError(f"Failed to analyze video codec: {str(e)}") from e
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse FFmpeg output: {e}", exc_info=True)
+            raise RuntimeError(f"Failed to parse video information: {str(e)}") from e
+
+    def get_video_info(self, file_path: str) -> Dict:
+        """
+        Get detailed information about a video file.
+
+        Args:
+            file_path: Path to the video file
+
+        Returns:
+            dict: Video information including codec, duration, resolution, etc.
+
+        Raises:
+            FileNotFoundError: If the video file doesn't exist
+            RuntimeError: If FFmpeg fails to analyze the file
+        """
+        if not Path(file_path).exists():
+            raise FileNotFoundError(f"Video file not found: {file_path}")
+
+        try:
+            # Get detailed video information
+            result = subprocess.run(
+                [
+                    "ffprobe",
+                    "-v",
+                    "quiet",
+                    "-print_format",
+                    "json",
+                    "-show_format",
+                    "-show_streams",
+                    "-select_streams",
+                    "v:0",
+                    file_path,
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+
+            # Parse FFmpeg output
+            info = json.loads(result.stdout)
+
+            # Extract relevant information
+            if "streams" in info and len(info["streams"]) > 0:
+                stream = info["streams"][0]
+                format_info = info.get("format", {})
+
+                return {
+                    "codec": stream.get("codec_name", "").lower(),
+                    "width": int(stream.get("width", 0)),
+                    "height": int(stream.get("height", 0)),
+                    "duration": float(format_info.get("duration", 0)),
+                    "size": int(format_info.get("size", 0)),
+                    "bit_rate": int(format_info.get("bit_rate", 0)),
+                    "frame_rate": self._parse_frame_rate(
+                        stream.get("r_frame_rate", "")
+                    ),
+                }
+
+            raise RuntimeError("No video stream found in file")
+
+        except subprocess.SubprocessError as e:
+            logger.error(f"FFmpeg failed to analyze file: {e}", exc_info=True)
+            raise RuntimeError(f"Failed to get video information: {str(e)}") from e
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse FFmpeg output: {e}", exc_info=True)
+            raise RuntimeError(f"Failed to parse video information: {str(e)}") from e
+
+    def _parse_frame_rate(self, frame_rate_str: str) -> float:
+        """
+        Parse frame rate string from FFmpeg (e.g., '30000/1001' -> 29.97).
+
+        Args:
+            frame_rate_str: Frame rate string from FFmpeg
+
+        Returns:
+            float: Frame rate in frames per second
+        """
+        try:
+            if "/" in frame_rate_str:
+                num, den = map(int, frame_rate_str.split("/"))
+                return num / den if den != 0 else 0
+            return float(frame_rate_str)
+        except (ValueError, ZeroDivisionError):
+            return 0.0
 
     @classmethod
     def validate_video(
@@ -260,13 +382,11 @@ class CodecValidator:
                 fourcc = "".join([chr((fourcc_int >> 8 * i) & 0xFF) for i in range(4)])
 
                 # Check if codec is supported
-                if fourcc.lower() not in [
-                    k.lower() for k in cls.SUPPORTED_CODECS.keys()
-                ]:
+                if fourcc.lower() not in [k.lower() for k in cls.SUPPORTED_CODECS]:
                     logger.error(
                         f"Video validation failed: Codec {fourcc} is not supported"
                     )
-                    supported_list = ", ".join(set(cls.SUPPORTED_CODECS.values()))
+                    supported_list = ", ".join(set(cls.SUPPORTED_CODECS))
                     return (
                         False,
                         f"Unsupported codec. Please use one of: {supported_list}.",
@@ -295,7 +415,7 @@ class CodecValidator:
 
                 # Create metadata
                 metadata = VideoMetadata(
-                    codec=cls.SUPPORTED_CODECS[fourcc.lower()],
+                    codec=fourcc.lower(),
                     width=width,
                     height=height,
                     fps=fps,

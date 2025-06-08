@@ -1,175 +1,330 @@
 """
-Video Import Component for Spygate
+Video import widget with drag-and-drop support and file selection dialog.
 """
 
+import logging
+import os
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
+import cv2
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QDragEnterEvent, QDropEvent
 from PyQt6.QtWidgets import (
     QFileDialog,
-    QFrame,
+    QHBoxLayout,
     QLabel,
+    QListWidget,
+    QListWidgetItem,
     QMessageBox,
+    QProgressDialog,
     QPushButton,
     QVBoxLayout,
     QWidget,
 )
 
-from ...video.codec_validator import CodecValidator
-from ..dialogs.player_identification import PlayerIdentificationDialog
-from ..dialogs.upload_progress import UploadProgressDialog
+from ...database.models import Player
+from ...database.video_manager import VideoManager
+from ...utils.error_handler import (
+    DatabaseError,
+    PlayerError,
+    StorageError,
+    ValidationError,
+    cleanup_failed_import,
+    handle_import_error,
+)
+from ...video.metadata import extract_metadata
+from ..workers.video_import_worker import ImportProgress, VideoImportWorker
+from .dialogs.player_identification_dialog import PlayerIdentificationDialog
+from .dialogs.video_metadata_dialog import VideoMetadataDialog
+
+logger = logging.getLogger(__name__)
+
+# Maximum file size (500MB in bytes)
+MAX_FILE_SIZE = 500 * 1024 * 1024
 
 
-class VideoImport(QWidget):
-    """Widget for importing video files with drag-and-drop support."""
+class VideoImportWidget(QWidget):
+    """Widget for importing video files."""
 
-    video_imported = pyqtSignal(str, str)  # Signals: (file_path, player_name)
+    # Signals
+    video_imported = pyqtSignal(str, list, dict)  # file_path, players, metadata
 
-    def __init__(self, parent: Optional[QWidget] = None):
-        """Initialize the VideoImport widget.
+    def __init__(self, video_manager: Optional[VideoManager] = None):
+        """Initialize the widget."""
+        super().__init__()
+        self.video_manager = video_manager or VideoManager()
+        self.import_worker = None
+        self.progress_dialog = None
+        self.setup_ui()
 
-        Args:
-            parent: Optional parent widget
+    def setup_ui(self):
+        """Set up the user interface."""
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        # Create drop frame
+        self.drop_frame = QWidget()
+        self.drop_frame.setStyleSheet(
+            """
+            QWidget {
+                border: 2px dashed #666;
+                border-radius: 8px;
+                background: #2a2a2a;
+            }
         """
-        super().__init__(parent)
-        self.codec_validator = CodecValidator()
-        self._init_ui()
-
-    def _init_ui(self):
-        """Initialize the user interface."""
-        layout = QVBoxLayout(self)
-
-        # Create drop zone frame
-        self.drop_zone = QFrame(self)
-        self.drop_zone.setFrameStyle(QFrame.Shape.StyledPanel | QFrame.Shadow.Sunken)
-        self.drop_zone.setMinimumSize(400, 200)
-        self.drop_zone.setStyleSheet(
-            "QFrame {"
-            "   background-color: #1E1E1E;"
-            "   border: 2px dashed #3B82F6;"
-            "   border-radius: 8px;"
-            "}"
         )
+        drop_layout = QVBoxLayout()
+        self.drop_frame.setLayout(drop_layout)
 
-        # Drop zone layout
-        drop_layout = QVBoxLayout(self.drop_zone)
+        # Add label
+        self.label = QLabel("Drop video files here\nor click to select")
+        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.label.setStyleSheet("color: #666;")
+        drop_layout.addWidget(self.label)
 
-        # Drop zone label
-        drop_label = QLabel("Drag and drop video files here\nor")
-        drop_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        drop_label.setStyleSheet("color: #D1D5DB;")
-
-        # Browse button
-        self.browse_button = QPushButton("Browse Files")
-        self.browse_button.setStyleSheet(
-            "QPushButton {"
-            "   background-color: #3B82F6;"
-            "   color: white;"
-            "   border: none;"
-            "   padding: 8px 16px;"
-            "   border-radius: 4px;"
-            "}"
-            "QPushButton:hover {"
-            "   background-color: #2563EB;"
-            "}"
+        # Add button
+        self.select_button = QPushButton("Select Files")
+        self.select_button.setStyleSheet(
+            """
+            QPushButton {
+                background: #3B82F6;
+                border: none;
+                border-radius: 4px;
+                padding: 8px 16px;
+                color: white;
+            }
+            QPushButton:hover {
+                background: #2563EB;
+            }
+        """
         )
-        self.browse_button.clicked.connect(self._browse_files)
-
-        # Add widgets to drop zone
-        drop_layout.addWidget(drop_label)
+        self.select_button.clicked.connect(self._show_file_dialog)
         drop_layout.addWidget(
-            self.browse_button, alignment=Qt.AlignmentFlag.AlignCenter
+            self.select_button, alignment=Qt.AlignmentFlag.AlignCenter
         )
 
-        # Add drop zone to main layout
-        layout.addWidget(self.drop_zone)
+        layout.addWidget(self.drop_frame)
+
+        # Add video list
+        self.video_list = QListWidget()
+        self.video_list.setStyleSheet(
+            """
+            QListWidget {
+                background: #2a2a2a;
+                border: 1px solid #666;
+                border-radius: 4px;
+            }
+            QListWidget::item {
+                padding: 8px;
+                border-bottom: 1px solid #666;
+            }
+            QListWidget::item:last {
+                border-bottom: none;
+            }
+        """
+        )
+        layout.addWidget(self.video_list)
 
         # Enable drag and drop
         self.setAcceptDrops(True)
 
     def dragEnterEvent(self, event: QDragEnterEvent):
-        """Handle drag enter events for file drops."""
+        """Handle drag enter event."""
         if event.mimeData().hasUrls():
             event.acceptProposedAction()
-            self.drop_zone.setStyleSheet(
-                "QFrame {"
-                "   background-color: #1E1E1E;"
-                "   border: 2px dashed #2563EB;"
-                "   border-radius: 8px;"
-                "}"
+            self.drop_frame.setStyleSheet(
+                """
+                QWidget {
+                    border: 2px dashed #3B82F6;
+                    border-radius: 8px;
+                    background: #2d2d2d;
+                }
+            """
             )
+            self.label.setStyleSheet("color: #3B82F6;")
 
     def dragLeaveEvent(self, event):
-        """Handle drag leave events."""
-        self.drop_zone.setStyleSheet(
-            "QFrame {"
-            "   background-color: #1E1E1E;"
-            "   border: 2px dashed #3B82F6;"
-            "   border-radius: 8px;"
-            "}"
+        """Handle drag leave event."""
+        self.drop_frame.setStyleSheet(
+            """
+            QWidget {
+                border: 2px dashed #666;
+                border-radius: 8px;
+                background: #2a2a2a;
+            }
+        """
         )
+        self.label.setStyleSheet("color: #666;")
 
     def dropEvent(self, event: QDropEvent):
-        """Handle file drop events."""
-        self.drop_zone.setStyleSheet(
-            "QFrame {"
-            "   background-color: #1E1E1E;"
-            "   border: 2px dashed #3B82F6;"
-            "   border-radius: 8px;"
-            "}"
+        """Handle drop event."""
+        video_files = [
+            url.toLocalFile()
+            for url in event.mimeData().urls()
+            if url.toLocalFile().lower().endswith((".mp4", ".avi", ".mov", ".mkv"))
+        ]
+
+        if video_files:
+            self._handle_video_files(video_files)
+
+        self.drop_frame.setStyleSheet(
+            """
+            QWidget {
+                border: 2px dashed #666;
+                border-radius: 8px;
+                background: #2a2a2a;
+            }
+        """
         )
+        self.label.setStyleSheet("color: #666;")
 
-        files = [url.toLocalFile() for url in event.mimeData().urls()]
-        self._process_files(files)
-
-    def _browse_files(self):
-        """Open file dialog for video selection."""
+    def _show_file_dialog(self):
+        """Show file selection dialog."""
         files, _ = QFileDialog.getOpenFileNames(
             self,
             "Select Video Files",
             "",
-            "Video Files (*.mp4 *.avi *.mov);;All Files (*.*)",
+            "Video Files (*.mp4 *.avi *.mov *.mkv);;All Files (*.*)",
         )
+
         if files:
-            self._process_files(files)
+            self._handle_video_files(files)
 
-    def _process_files(self, files: List[str]):
-        """Process the selected video files.
-
-        Args:
-            files: List of file paths to process
-        """
-        for file_path in files:
-            # Validate file exists
-            if not Path(file_path).exists():
-                QMessageBox.warning(
-                    self, "File Not Found", f"The file {file_path} does not exist."
-                )
+    def _handle_video_files(self, file_paths: List[str]):
+        """Handle video file import process."""
+        # Extract metadata first
+        files_with_metadata = []
+        for file_path in file_paths:
+            try:
+                metadata = extract_metadata(file_path)
+                files_with_metadata.append((file_path, metadata))
+            except Exception as e:
+                title, message = handle_import_error(e, file_path)
+                QMessageBox.warning(self, title, message)
                 continue
 
-            # Validate codec
-            if not self.codec_validator.is_valid(file_path):
+        if not files_with_metadata:
+            return
+
+        # Show player identification dialog
+        dialog = PlayerIdentificationDialog(self.video_manager, self)
+        if dialog.exec():
+            selected_players = dialog.get_selected_players()
+            if not selected_players:
                 QMessageBox.warning(
                     self,
-                    "Invalid Codec",
-                    f"The file {file_path} uses an unsupported codec. "
-                    "Supported codecs: H.264, H.265, VP8, VP9",
+                    "Player Selection Error",
+                    "At least one player must be selected.",
                 )
-                continue
+                return
 
-            # Get player identification
-            dialog = PlayerIdentificationDialog(self)
-            if dialog.exec():
-                player_name = dialog.get_player_name()
+            # Create and start worker thread
+            self.import_worker = VideoImportWorker(
+                files_with_metadata, selected_players, self.video_manager
+            )
 
-                # Show upload progress
-                progress = UploadProgressDialog(self)
-                progress.show()
+            # Connect signals
+            self.import_worker.progress.connect(self._update_progress)
+            self.import_worker.error.connect(self._handle_error)
+            self.import_worker.warning.connect(self._handle_warning)
+            self.import_worker.file_started.connect(self._handle_file_started)
+            self.import_worker.file_finished.connect(self._handle_file_finished)
+            self.import_worker.all_finished.connect(self._handle_all_finished)
 
-                # Emit signal for video processing
-                self.video_imported.emit(file_path, player_name)
+            # Create progress dialog
+            self.progress_dialog = QProgressDialog(self)
+            self.progress_dialog.setWindowTitle("Importing Videos")
+            self.progress_dialog.setRange(0, 100)
+            self.progress_dialog.setMinimumWidth(400)
+            self.progress_dialog.setAutoClose(False)
+            self.progress_dialog.setAutoReset(False)
+            self.progress_dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
 
-                # Close progress dialog
-                progress.accept()
+            # Style the progress dialog
+            self.progress_dialog.setStyleSheet(
+                """
+                QProgressDialog {
+                    background-color: #2d2d2d;
+                }
+                QProgressBar {
+                    border: 1px solid #666;
+                    border-radius: 4px;
+                    background-color: #1a1a1a;
+                    text-align: center;
+                    color: white;
+                }
+                QProgressBar::chunk {
+                    background-color: #3B82F6;
+                    border-radius: 2px;
+                }
+            """
+            )
+
+            # Connect cancel button
+            self.progress_dialog.canceled.connect(self._cancel_import)
+
+            # Start import
+            self.progress_dialog.show()
+            self.import_worker.start()
+
+    def _update_progress(self, progress: ImportProgress):
+        """Update progress dialog."""
+        if self.progress_dialog:
+            self.progress_dialog.setValue(progress.progress)
+            self.progress_dialog.setLabelText(progress.message)
+
+    def _handle_error(self, title: str, message: str):
+        """Handle import error."""
+        QMessageBox.critical(self, title, message)
+
+    def _handle_warning(self, title: str, message: str):
+        """Handle import warning."""
+        QMessageBox.warning(self, title, message)
+
+    def _handle_file_started(self, file_name: str):
+        """Handle file import start."""
+        logger.info(f"Starting import of {file_name}")
+
+    def _handle_file_finished(self, file_name: str, success: bool, message: str):
+        """Handle file import completion."""
+        if success:
+            logger.info(f"Successfully imported {file_name}")
+            # Add to list widget
+            item = QListWidgetItem(self.video_list)
+            item.setText(f"{file_name} - {message}")
+            item.setIcon(
+                self.style().standardIcon(
+                    self.style().StandardPixmap.SP_DialogApplyButton
+                )
+            )
+            self.video_list.addItem(item)
+        else:
+            logger.error(f"Failed to import {file_name}: {message}")
+            # Add to list widget with error indicator
+            item = QListWidgetItem(self.video_list)
+            item.setText(f"{file_name} - {message}")
+            item.setIcon(
+                self.style().standardIcon(
+                    self.style().StandardPixmap.SP_DialogCancelButton
+                )
+            )
+            self.video_list.addItem(item)
+
+    def _handle_all_finished(self):
+        """Handle completion of all imports."""
+        if self.progress_dialog:
+            self.progress_dialog.close()
+            self.progress_dialog = None
+
+        self.import_worker = None
+
+    def _cancel_import(self):
+        """Cancel the current import process."""
+        if self.import_worker:
+            self.import_worker.stop()
+            self.import_worker = None
+
+        if self.progress_dialog:
+            self.progress_dialog.close()
+            self.progress_dialog = None

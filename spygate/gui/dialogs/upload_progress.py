@@ -1,116 +1,95 @@
 """
-Dialog for showing video upload and processing progress.
+Dialog for showing video import progress.
 """
 
+import logging
+from typing import Optional
+
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import (
-    QDialog,
-    QFrame,
-    QLabel,
-    QProgressBar,
-    QPushButton,
-    QVBoxLayout,
-)
+from PyQt6.QtWidgets import QDialog, QLabel, QProgressBar, QPushButton, QVBoxLayout
+
+logger = logging.getLogger(__name__)
 
 
 class UploadProgressDialog(QDialog):
-    """Dialog showing progress of video upload and processing."""
+    """Dialog showing progress of video import operations."""
 
-    progress_updated = pyqtSignal(int)  # Signal for progress updates (0-100)
+    # Signal emitted when cancel is requested
+    cancelled = pyqtSignal()
 
     def __init__(self, parent=None):
-        """Initialize the dialog.
-
-        Args:
-            parent: Optional parent widget
-        """
+        """Initialize the upload progress dialog."""
         super().__init__(parent)
-        self._init_ui()
-
-    def _init_ui(self):
-        """Initialize the user interface."""
-        self.setWindowTitle("Uploading Video")
+        self.setWindowTitle("Importing Video")
+        self.setModal(True)
         self.setMinimumWidth(400)
+        self._setup_ui()
 
-        layout = QVBoxLayout(self)
-
-        # Progress frame
-        progress_frame = QFrame()
-        progress_frame.setStyleSheet(
-            "QFrame {"
-            "   background-color: #2A2A2A;"
-            "   border-radius: 8px;"
-            "   padding: 16px;"
-            "}"
-        )
-        progress_layout = QVBoxLayout(progress_frame)
+    def _setup_ui(self):
+        """Set up the user interface."""
+        layout = QVBoxLayout()
 
         # Status label
-        self.status_label = QLabel("Processing video...")
-        self.status_label.setStyleSheet("color: #D1D5DB;")
-        progress_layout.addWidget(self.status_label)
+        self.status_label = QLabel("Processing video file...")
+        layout.addWidget(self.status_label)
 
         # Progress bar
         self.progress_bar = QProgressBar()
-        self.progress_bar.setStyleSheet(
-            "QProgressBar {"
-            "   background-color: #1E1E1E;"
-            "   border: none;"
-            "   border-radius: 4px;"
-            "   text-align: center;"
-            "}"
-            "QProgressBar::chunk {"
-            "   background-color: #3B82F6;"
-            "   border-radius: 4px;"
-            "}"
-        )
         self.progress_bar.setMinimum(0)
         self.progress_bar.setMaximum(100)
-        progress_layout.addWidget(self.progress_bar)
-
-        layout.addWidget(progress_frame)
+        self.progress_bar.setTextVisible(True)
+        self.progress_bar.setStyleSheet(
+            """
+            QProgressBar {
+                border: 1px solid #3B82F6;
+                border-radius: 4px;
+                text-align: center;
+                height: 24px;
+            }
+            QProgressBar::chunk {
+                background-color: #3B82F6;
+            }
+        """
+        )
+        layout.addWidget(self.progress_bar)
 
         # Cancel button
         self.cancel_button = QPushButton("Cancel")
+        self.cancel_button.clicked.connect(self._handle_cancel)
         self.cancel_button.setStyleSheet(
-            "QPushButton {"
-            "   background-color: #374151;"
-            "   color: white;"
-            "   border: none;"
-            "   padding: 8px 16px;"
-            "   border-radius: 4px;"
-            "}"
-            "QPushButton:hover {"
-            "   background-color: #4B5563;"
-            "}"
+            """
+            QPushButton {
+                background-color: #EF4444;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 8px 16px;
+            }
+            QPushButton:hover {
+                background-color: #DC2626;
+            }
+            QPushButton:pressed {
+                background-color: #B91C1C;
+            }
+        """
         )
-        self.cancel_button.clicked.connect(self.reject)
         layout.addWidget(self.cancel_button)
 
-        # Connect progress signal
-        self.progress_updated.connect(self._update_progress)
+        self.setLayout(layout)
 
-        # Set window properties
-        self.setWindowFlags(
-            Qt.WindowType.Dialog | Qt.WindowType.MSWindowsFixedSizeDialogHint
-        )
-        self.setStyleSheet("background-color: #1E1E1E;")
-
-    def _update_progress(self, value: int):
-        """Update the progress bar value.
+    def set_progress(self, value: int, status: Optional[str] = None):
+        """
+        Update the progress bar and optionally the status text.
 
         Args:
             value: Progress value (0-100)
+            status: Optional status text to display
         """
         self.progress_bar.setValue(value)
-        if value >= 100:
-            self.status_label.setText("Processing complete!")
-            self.cancel_button.setText("Close")
+        if status:
+            self.status_label.setText(status)
 
-    def set_status(self, status: str):
-        """Set the status message.
-
-        Args:
-            status: Status message to display
-        """
-        self.status_label.setText(status)
+    def _handle_cancel(self):
+        """Handle cancel button click."""
+        self.cancelled.emit()
+        self.reject()

@@ -10,6 +10,15 @@ darkdetect>=0.8.0  # For automatic dark/light mode detection
 # API and Integration
 discord.py==2.3.0  # For Discord integration
 
+# Optional GPU support
+# Uncomment if CUDA is available
+# torch-cuda>=2.0.0
+# torchvision-cuda>=0.15.0
+
+# New dependencies
+easyocr>=1.7.1
+face-recognition>=1.3.0
+
 # Video processing
 ffmpeg-python>=0.2.0
 flake8>=6.1.0
@@ -24,7 +33,7 @@ moviepy>=1.0.3  # For video manipulation
 mypy>=1.5.0
 numpy>=1.24.0
 # Core ML and Computer Vision
-opencv-python>=4.6.0
+opencv-python>=4.8.0
 
 # Data Management and Analysis
 pandas>=2.0.0
@@ -72,15 +81,10 @@ SQLAlchemy==2.0.15
 SQLite3>=3.35.0
 streamlink>=5.3.0
 structlog>=23.1.0
-torch>=2.0.0
-torchvision>=0.15.0
+torch>=2.1.0
+torchvision>=0.16.0
 tqdm>=4.65.0
 # If you need contrib modules, uncomment the next line:
 # opencv-contrib-python>=4.6.0
 ultralytics>=8.0.0  # For YOLO11
 watchtower>=3.0.1  # For CloudWatch logging support
-
-# Optional GPU support
-# Uncomment if CUDA is available
-# torch-cuda>=2.0.0
-# torchvision-cuda>=0.15.0

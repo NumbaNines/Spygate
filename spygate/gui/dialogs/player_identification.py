@@ -1,14 +1,14 @@
 """
-Dialog for identifying players in video clips.
+Dialog for identifying players in imported videos.
 """
 
+import logging
 from typing import Optional
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
-    QButtonGroup,
+    QComboBox,
     QDialog,
-    QFrame,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -17,173 +17,137 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class PlayerIdentificationDialog(QDialog):
-    """Dialog for identifying whether a clip is from self or an opponent."""
+    """Dialog for identifying players in imported videos."""
 
     def __init__(self, parent=None):
-        """Initialize the dialog.
-
-        Args:
-            parent: Optional parent widget
-        """
+        """Initialize the player identification dialog."""
         super().__init__(parent)
-        self.player_name: Optional[str] = None
-        self._init_ui()
-
-    def _init_ui(self):
-        """Initialize the user interface."""
         self.setWindowTitle("Player Identification")
-        self.setMinimumWidth(400)
+        self.setModal(True)
+        self._setup_ui()
 
-        layout = QVBoxLayout(self)
+    def _setup_ui(self):
+        """Set up the user interface."""
+        layout = QVBoxLayout()
 
-        # Title
-        title = QLabel("Who's in this clip?")
-        title.setStyleSheet("font-size: 16px; color: white;")
-        layout.addWidget(title)
+        # Player type selection
+        type_layout = QHBoxLayout()
+        self.self_radio = QRadioButton("Self")
+        self.self_radio.setChecked(True)
+        self.self_radio.toggled.connect(self._on_player_type_changed)
+        self.opponent_radio = QRadioButton("Opponent")
+        self.opponent_radio.toggled.connect(self._on_player_type_changed)
 
-        # Radio buttons frame
-        radio_frame = QFrame()
-        radio_frame.setStyleSheet(
-            "QFrame {"
-            "   background-color: #2A2A2A;"
-            "   border-radius: 8px;"
-            "   padding: 16px;"
-            "}"
-        )
-        radio_layout = QVBoxLayout(radio_frame)
+        type_layout.addWidget(self.self_radio)
+        type_layout.addWidget(self.opponent_radio)
+        type_layout.addStretch()
+        layout.addLayout(type_layout)
 
-        # Radio button group
-        self.button_group = QButtonGroup(self)
+        # Opponent name input (hidden by default)
+        self.name_label = QLabel("Opponent Name:")
+        self.name_label.setVisible(False)
+        layout.addWidget(self.name_label)
 
-        # Self radio button
-        self.self_radio = QRadioButton("My gameplay")
-        self.self_radio.setStyleSheet("color: #D1D5DB;")
-        self.button_group.addButton(self.self_radio)
-        radio_layout.addWidget(self.self_radio)
+        self.name_input = QLineEdit()
+        self.name_input.setPlaceholderText("Enter opponent name")
+        self.name_input.setVisible(False)
+        layout.addWidget(self.name_input)
 
-        # Opponent radio button
-        self.opponent_radio = QRadioButton("Opponent's gameplay")
-        self.opponent_radio.setStyleSheet("color: #D1D5DB;")
-        self.button_group.addButton(self.opponent_radio)
-        radio_layout.addWidget(self.opponent_radio)
+        # Recent opponents dropdown (hidden by default)
+        self.recent_label = QLabel("Recent Opponents:")
+        self.recent_label.setVisible(False)
+        layout.addWidget(self.recent_label)
 
-        layout.addWidget(radio_frame)
-
-        # Opponent name input (hidden initially)
-        self.opponent_frame = QFrame()
-        self.opponent_frame.setVisible(False)
-        self.opponent_frame.setStyleSheet(
-            "QFrame {"
-            "   background-color: #2A2A2A;"
-            "   border-radius: 8px;"
-            "   padding: 16px;"
-            "   margin-top: 8px;"
-            "}"
-        )
-        opponent_layout = QVBoxLayout(self.opponent_frame)
-
-        opponent_label = QLabel("Opponent's Name:")
-        opponent_label.setStyleSheet("color: #D1D5DB;")
-        opponent_layout.addWidget(opponent_label)
-
-        self.opponent_input = QLineEdit()
-        self.opponent_input.setStyleSheet(
-            "QLineEdit {"
-            "   background-color: #1E1E1E;"
-            "   color: white;"
-            "   border: 1px solid #3B82F6;"
-            "   border-radius: 4px;"
-            "   padding: 8px;"
-            "}"
-        )
-        opponent_layout.addWidget(self.opponent_input)
-
-        layout.addWidget(self.opponent_frame)
+        self.recent_combo = QComboBox()
+        self.recent_combo.setVisible(False)
+        self.recent_combo.currentTextChanged.connect(self._on_recent_selected)
+        layout.addWidget(self.recent_combo)
 
         # Buttons
         button_layout = QHBoxLayout()
 
-        cancel_button = QPushButton("Cancel")
-        cancel_button.setStyleSheet(
-            "QPushButton {"
-            "   background-color: #374151;"
-            "   color: white;"
-            "   border: none;"
-            "   padding: 8px 16px;"
-            "   border-radius: 4px;"
-            "}"
-            "QPushButton:hover {"
-            "   background-color: #4B5563;"
-            "}"
+        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button.clicked.connect(self.reject)
+        self.cancel_button.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #EF4444;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 8px 16px;
+            }
+            QPushButton:hover {
+                background-color: #DC2626;
+            }
+            QPushButton:pressed {
+                background-color: #B91C1C;
+            }
+        """
         )
-        cancel_button.clicked.connect(self.reject)
 
-        confirm_button = QPushButton("Confirm")
-        confirm_button.setStyleSheet(
-            "QPushButton {"
-            "   background-color: #3B82F6;"
-            "   color: white;"
-            "   border: none;"
-            "   padding: 8px 16px;"
-            "   border-radius: 4px;"
-            "}"
-            "QPushButton:hover {"
-            "   background-color: #2563EB;"
-            "}"
+        self.ok_button = QPushButton("OK")
+        self.ok_button.clicked.connect(self.accept)
+        self.ok_button.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #3B82F6;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 8px 16px;
+            }
+            QPushButton:hover {
+                background-color: #2563EB;
+            }
+            QPushButton:pressed {
+                background-color: #1D4ED8;
+            }
+        """
         )
-        confirm_button.clicked.connect(self._handle_confirm)
 
-        button_layout.addWidget(cancel_button)
-        button_layout.addWidget(confirm_button)
+        button_layout.addWidget(self.cancel_button)
+        button_layout.addWidget(self.ok_button)
 
         layout.addLayout(button_layout)
 
-        # Connect radio button signals
-        self.self_radio.toggled.connect(self._handle_radio_toggle)
-        self.opponent_radio.toggled.connect(self._handle_radio_toggle)
+        self.setLayout(layout)
 
-        # Set window properties
-        self.setWindowFlags(
-            Qt.WindowType.Dialog | Qt.WindowType.MSWindowsFixedSizeDialogHint
-        )
-        self.setStyleSheet("background-color: #1E1E1E;")
+        # Load recent opponents
+        self._load_recent_opponents()
 
-    def _handle_radio_toggle(self, checked: bool):
-        """Handle radio button toggle events.
+    def _on_player_type_changed(self):
+        """Handle player type radio button changes."""
+        is_opponent = self.opponent_radio.isChecked()
+        self.name_label.setVisible(is_opponent)
+        self.name_input.setVisible(is_opponent)
+        self.recent_label.setVisible(is_opponent)
+        self.recent_combo.setVisible(is_opponent)
 
-        Args:
-            checked: Whether the radio button was checked
+    def _on_recent_selected(self, name: str):
+        """Handle selection from recent opponents dropdown."""
+        if name:
+            self.name_input.setText(name)
+
+    def _load_recent_opponents(self):
+        """Load recent opponents into the dropdown."""
+        # TODO: Load from database
+        recent_opponents = ["John Doe", "Jane Smith", "Bob Wilson"]
+        self.recent_combo.addItems(recent_opponents)
+
+    def get_player_name(self) -> str:
         """
-        self.opponent_frame.setVisible(self.opponent_radio.isChecked())
-
-    def _handle_confirm(self):
-        """Handle confirm button click."""
-        if self.self_radio.isChecked():
-            self.player_name = "Self"
-            self.accept()
-        elif self.opponent_radio.isChecked():
-            opponent_name = self.opponent_input.text().strip()
-            if opponent_name:
-                self.player_name = f"Opponent: {opponent_name}"
-                self.accept()
-            else:
-                self.opponent_input.setStyleSheet(
-                    "QLineEdit {"
-                    "   background-color: #1E1E1E;"
-                    "   color: white;"
-                    "   border: 1px solid #EF4444;"
-                    "   border-radius: 4px;"
-                    "   padding: 8px;"
-                    "}"
-                )
-                self.opponent_input.setPlaceholderText("Please enter opponent's name")
-
-    def get_player_name(self) -> Optional[str]:
-        """Get the selected player name.
+        Get the selected player name.
 
         Returns:
-            The player name if confirmed, None if cancelled
+            str: "Self" or "Opponent: {name}"
         """
-        return self.player_name
+        if self.self_radio.isChecked():
+            return "Self"
+        else:
+            name = self.name_input.text().strip()
+            return f"Opponent: {name}" if name else "Unknown Opponent"

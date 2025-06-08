@@ -13,6 +13,7 @@ from spygate.database.config import init_db
 from spygate.gui.components.main_window import MainWindow
 from spygate.services.analysis_service import AnalysisService
 from spygate.services.video_service import VideoService
+from spygate.utils.error_tracking import init_error_tracking
 from spygate.utils.logging import setup_logging
 
 
@@ -33,6 +34,10 @@ def main():
     logger.info("Starting Spygate application")
 
     try:
+        # Initialize error tracking
+        init_error_tracking()
+        logger.info("Error tracking initialized")
+
         # Initialize the database
         init_db()
         logger.info("Database initialized successfully")

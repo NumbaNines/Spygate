@@ -3,7 +3,7 @@ Spygate - Video Player Component
 """
 
 import vlc
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QFrame,
@@ -15,9 +15,15 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from .video_timeline import VideoTimeline
+
 
 class VideoPlayer(QWidget):
     """Video player component using VLC backend."""
+
+    # Custom signals
+    frameChanged = pyqtSignal(int)  # Emits current frame number
+    videoLoaded = pyqtSignal(str, int, int)  # Emits path, total frames, fps
 
     def __init__(self):
         """Initialize the video player."""
@@ -26,6 +32,13 @@ class VideoPlayer(QWidget):
         # Create VLC instance and media player
         self.instance = vlc.Instance()
         self.player = self.instance.media_player_new()
+
+        # Initialize variables
+        self.total_frames = 0
+        self.current_frame = 0
+        self.fps = 30
+        self.playback_speed = 1.0
+        self.current_path = None
 
         # Create main layout
         layout = QVBoxLayout(self)
@@ -43,6 +56,13 @@ class VideoPlayer(QWidget):
         )
         layout.addWidget(self.video_frame)
 
+        # Create timeline
+        self.timeline = VideoTimeline()
+        self.timeline.positionChanged.connect(self.on_timeline_position_changed)
+        self.timeline.frameRateChanged.connect(self.on_frame_rate_changed)
+        self.timeline.playbackSpeedChanged.connect(self.on_playback_speed_changed)
+        layout.addWidget(self.timeline)
+
         # Create controls layout
         controls_layout = QHBoxLayout()
         controls_layout.setContentsMargins(10, 5, 10, 5)
@@ -56,25 +76,16 @@ class VideoPlayer(QWidget):
         self.stop_button.setIcon(QIcon.fromTheme("media-playback-stop"))
         self.stop_button.clicked.connect(self.stop)
 
-        # Create time slider
-        self.time_slider = QSlider(Qt.Orientation.Horizontal)
-        self.time_slider.setRange(0, 1000)
-        self.time_slider.sliderMoved.connect(self.set_position)
-
-        # Create time label
-        self.time_label = QLabel("00:00 / 00:00")
-
         # Add controls to layout
         controls_layout.addWidget(self.play_button)
         controls_layout.addWidget(self.stop_button)
-        controls_layout.addWidget(self.time_slider)
-        controls_layout.addWidget(self.time_label)
+        controls_layout.addStretch()
 
         layout.addLayout(controls_layout)
 
         # Create update timer
         self.timer = QTimer(self)
-        self.timer.setInterval(100)
+        self.timer.setInterval(33)  # ~30 fps update rate
         self.timer.timeout.connect(self.update_ui)
 
         # Set up video frame
@@ -83,8 +94,25 @@ class VideoPlayer(QWidget):
 
     def load_video(self, path):
         """Load a video file."""
+        self.current_path = path
         media = self.instance.media_new(path)
         self.player.set_media(media)
+
+        # Get video information
+        media.parse()
+        self.fps = media.get_fps() or 30
+        duration = media.get_duration()
+        if duration > 0:
+            self.total_frames = int(self.fps * (duration / 1000.0))
+        else:
+            self.total_frames = 0
+
+        # Update timeline
+        self.timeline.setVideoInfo(self.total_frames, self.fps, path)
+
+        # Emit video loaded signal
+        self.videoLoaded.emit(path, self.total_frames, self.fps)
+
         self.update_ui()
 
     def play(self):
@@ -104,8 +132,8 @@ class VideoPlayer(QWidget):
         self.player.stop()
         self.play_button.setIcon(QIcon.fromTheme("media-playback-start"))
         self.timer.stop()
-        self.time_slider.setValue(0)
-        self.time_label.setText("00:00 / 00:00")
+        self.current_frame = 0
+        self.timeline.setCurrentFrame(0)
 
     def toggle_playback(self):
         """Toggle between play and pause."""
@@ -114,28 +142,42 @@ class VideoPlayer(QWidget):
         else:
             self.play()
 
-    def set_position(self, position):
-        """Set the video position."""
-        self.player.set_position(position / 1000.0)
+    def on_timeline_position_changed(self, position):
+        """Handle timeline position changes."""
+        self.player.set_position(position)
+        self.current_frame = int(position * self.total_frames)
+        self.frameChanged.emit(self.current_frame)
+
+    def on_frame_rate_changed(self, fps):
+        """Handle frame rate changes."""
+        self.fps = fps
+        if self.timer.isActive():
+            self.timer.setInterval(int(1000 / fps))
+
+    def on_playback_speed_changed(self, speed):
+        """Handle playback speed changes."""
+        self.playback_speed = speed
+        self.player.set_rate(speed)
 
     def update_ui(self):
         """Update the UI with current playback status."""
-        media = self.player.get_media()
-        if not media:
+        if not self.player.get_media():
             return
 
-        # Update time slider
-        length = self.player.get_length()
-        if length > 0:
-            position = int(self.player.get_position() * 1000)
-            self.time_slider.setValue(position)
+        # Get current position and update frame count
+        position = self.player.get_position()
+        if position >= 0:
+            self.current_frame = int(position * self.total_frames)
+            self.timeline.setCurrentFrame(self.current_frame)
+            self.frameChanged.emit(self.current_frame)
 
-            # Update time label
-            current = self.player.get_time() // 1000
-            total = length // 1000
-            self.time_label.setText(
-                f"{current//60:02d}:{current%60:02d} / {total//60:02d}:{total%60:02d}"
-            )
+    def add_annotation(self, annotation):
+        """Add an annotation to the timeline."""
+        self.timeline.addAnnotation(annotation)
+
+    def add_marker(self, frame, marker_type):
+        """Add a marker to the timeline."""
+        self.timeline.addMarker(frame, marker_type)
 
     def resizeEvent(self, event):
         """Handle resize events to maintain video aspect ratio."""
@@ -152,3 +194,4 @@ class VideoPlayer(QWidget):
             self.player.release()
         if self.instance:
             self.instance.release()
+        self.timeline.cleanup()

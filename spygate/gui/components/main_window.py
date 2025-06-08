@@ -2,6 +2,10 @@
 Spygate - Main Window Component
 """
 
+import logging
+import os
+from typing import Optional
+
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtWidgets import (
@@ -23,6 +27,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from spygate.database.video_manager import VideoManager
 from spygate.services.analysis_service import AnalysisService
 from spygate.services.video_service import VideoService
 
@@ -34,6 +39,8 @@ from .menu_bar import create_menu_bar
 from .sidebar import Sidebar
 from .toolbar import create_main_toolbar
 from .video_player import VideoPlayer
+
+logger = logging.getLogger(__name__)
 
 
 class ThemeDialog(QDialog):
@@ -90,6 +97,7 @@ class MainWindow(QMainWindow):
         # Initialize services
         self.video_service = video_service or VideoService()
         self.analysis_service = analysis_service or AnalysisService(self.video_service)
+        self.video_manager = VideoManager()
 
         # Initialize UI components
         self.dashboard = None
@@ -178,22 +186,11 @@ class MainWindow(QMainWindow):
 
     def _create_video_import(self):
         """Create the video import component."""
-        self.video_import = VideoImportWidget(video_service=self.video_service)
+        self.video_import = VideoImportWidget(video_manager=self.video_manager)
         self.central_widget.addWidget(self.video_import)
 
         # Connect signals
-        self.video_import.import_started.connect(
-            lambda: self.status_bar.showMessage("Importing videos...", 0)
-        )
-        self.video_import.import_progress.connect(
-            lambda p: self.status_bar.showMessage(f"Import progress: {p}%", 0)
-        )
-        self.video_import.import_finished.connect(
-            lambda: self.status_bar.showMessage("Import completed", 5000)
-        )
-        self.video_import.import_error.connect(
-            lambda msg: self.status_bar.showMessage(f"Import error: {msg}", 5000)
-        )
+        self.video_import.video_imported.connect(self._handle_video_imported)
 
     def show_dashboard(self):
         """Switch to dashboard view."""
@@ -245,3 +242,28 @@ class MainWindow(QMainWindow):
         if self.analysis_service:
             self.analysis_service.cleanup()
         event.accept()
+
+    def _handle_video_imported(self, file_path: str, players: list, metadata: dict):
+        """
+        Handle successful video import.
+
+        Args:
+            file_path: Path to the imported video file
+            players: List of player information dictionaries
+            metadata: Video metadata dictionary
+        """
+        try:
+            # Switch to video player and load the imported video
+            self.show_video_player()
+            self.video_player.load_video(file_path)
+
+            # Update status
+            self.status_bar.showMessage(
+                f"Video imported successfully: {os.path.basename(file_path)}"
+            )
+
+        except Exception as e:
+            logger.error(f"Error handling imported video: {e}", exc_info=True)
+            QMessageBox.critical(
+                self, "Error", f"Failed to load imported video: {str(e)}"
+            )

@@ -1,8 +1,8 @@
 {
   "meta": {
-    "generatedAt": "2025-06-06T15:37:44.670Z",
-    "tasksAnalyzed": 6,
-    "totalTasks": 15,
+    "generatedAt": "2025-06-07T13:02:41.637Z",
+    "tasksAnalyzed": 1,
+    "totalTasks": 19,
     "analysisCount": 30,
     "thresholdScore": 5,
     "projectName": "Taskmaster",
@@ -130,22 +130,6 @@
       "reasoning": "High complexity due to the need for a flexible yet secure plugin system that integrates seamlessly with the core application."
     },
     {
-      "taskId": 1,
-      "taskTitle": "Setup Project Repository and Environment",
-      "complexityScore": 7,
-      "recommendedSubtasks": 10,
-      "expansionPrompt": "Break down the setup of the project repository and environment into detailed steps, including specific commands and configurations for each tool and service mentioned.",
-      "reasoning": "This task involves setting up multiple components, including repositories, project structure, development environment, CI/CD, monitoring, and cloud resources. It requires coordination of various tools and services, making it relatively complex."
-    },
-    {
-      "taskId": 5,
-      "taskTitle": "Develop Motion Detection System",
-      "complexityScore": 7,
-      "recommendedSubtasks": 8,
-      "expansionPrompt": "Break down the development of the motion detection system into detailed steps, including specific algorithms and techniques for each feature.",
-      "reasoning": "This task involves implementing various motion detection and analysis techniques, which require understanding of computer vision algorithms. The complexity is high due to the need for accurate detection and classification of different types of motion."
-    },
-    {
       "taskId": 6,
       "taskTitle": "Implement Object Tracking System",
       "complexityScore": 8,
@@ -210,14 +194,6 @@
       "reasoning": "High complexity due to multiple components, file handling, database integration, and UI considerations. Already has 8 subtasks, but could benefit from further breakdown."
     },
     {
-      "taskId": 3,
-      "taskTitle": "Develop VideoTimeline Component",
-      "complexityScore": 9,
-      "recommendedSubtasks": 12,
-      "expansionPrompt": "Divide the VideoTimeline component development into specific UI elements, playback controls, annotation features, and accessibility implementations.",
-      "reasoning": "Very complex due to custom widget creation, video manipulation, annotation system, and accessibility requirements. No existing subtasks, needs comprehensive breakdown."
-    },
-    {
       "taskId": 4,
       "taskTitle": "Implement Frame Extraction System",
       "complexityScore": 7,
@@ -248,6 +224,30 @@
       "recommendedSubtasks": 8,
       "expansionPrompt": "Break down the tutorial system into UI components, content creation, progress tracking, and accessibility features.",
       "reasoning": "Moderately complex due to interactive elements, content management, and accessibility requirements. No existing subtasks, needs structured approach to development."
+    },
+    {
+      "taskId": 1,
+      "taskTitle": "Setup Project Repository and Environment",
+      "complexityScore": 8,
+      "recommendedSubtasks": 9,
+      "expansionPrompt": "Break down the setup of the project repository and environment into detailed subtasks, including repository creation, project structure setup, dependency management, CI/CD configuration, Docker setup, database initialization, error tracking integration, and documentation repository creation.",
+      "reasoning": "This task involves multiple complex steps across various technologies and platforms, including version control, project structure, dependency management, CI/CD, containerization, database setup, and error tracking. It requires a broad range of technical skills and careful coordination to ensure all components work together seamlessly."
+    },
+    {
+      "taskId": 3,
+      "taskTitle": "Develop VideoTimeline Component",
+      "complexityScore": 8,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the VideoTimeline Component development into 5 focused subtasks, each with clear deliverables. Consider separating the UI development, video playback engine, timeline navigation features, annotation system, and performance optimization into distinct subtasks with their own test criteria.",
+      "reasoning": "This task involves complex UI development with PyQt6, video processing with OpenCV, multiple codec support, interactive timeline features, annotation systems, and accessibility requirements. The component is central to the application's functionality with many interconnected parts requiring specialized knowledge in both UI design and video processing. The detailed test strategy indicates significant complexity and critical importance."
+    },
+    {
+      "taskId": 5,
+      "taskTitle": "Develop Motion Detection System",
+      "complexityScore": 8,
+      "recommendedSubtasks": 7,
+      "expansionPrompt": "Break down the implementation of the MotionDetector class, including frame differencing, background subtraction, and optical flow techniques.",
+      "reasoning": "This task involves complex computer vision algorithms, performance optimization, and integration with various system components. It requires expertise in image processing, data visualization, and database management. The multiple interconnected features and optimization requirements contribute to its high complexity."
     }
   ]
 }

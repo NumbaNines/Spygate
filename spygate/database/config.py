@@ -1,36 +1,51 @@
-"""Database configuration for Spygate."""
+"""
+Database configuration and initialization for Spygate application.
+"""
 
+import logging
 import os
 from pathlib import Path
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
-from .models import Base
+from .schema import Base
 
-# Get the project root directory
-PROJECT_ROOT = Path(__file__).parent.parent.parent
+logger = logging.getLogger(__name__)
 
-# Create data directory if it doesn't exist
-DATA_DIR = PROJECT_ROOT / "data"
-DATA_DIR.mkdir(exist_ok=True)
+# Database configuration
+DB_PATH = Path("data/spygate.db")
+DB_URL = f"sqlite:///{DB_PATH}"
 
-# Database file path
-DB_PATH = PROJECT_ROOT / "spygate.db"
 
-# Create database engine
-engine = create_engine(f"sqlite:///{DB_PATH}", echo=True)
+def get_engine():
+    """Create and return SQLAlchemy engine instance."""
+    # Ensure data directory exists
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-# Create session factory
-session_factory = sessionmaker(bind=engine)
-Session = scoped_session(session_factory)
+    # Create engine with SQLite optimizations
+    engine = create_engine(
+        DB_URL,
+        connect_args={"check_same_thread": False},  # Allow multi-threading
+        echo=False,  # Set to True for SQL query logging
+    )
+    return engine
 
 
 def init_db():
-    """Initialize the database."""
-    Base.metadata.create_all(engine)
+    """Initialize the database, creating tables if they don't exist."""
+    try:
+        engine = get_engine()
+        Base.metadata.create_all(engine)
+        logger.info("Database initialized successfully")
+        return engine
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}", exc_info=True)
+        raise
 
 
-def get_db():
-    """Get a database session."""
+def get_session():
+    """Create and return a new database session."""
+    engine = get_engine()
+    Session = sessionmaker(bind=engine)
     return Session()

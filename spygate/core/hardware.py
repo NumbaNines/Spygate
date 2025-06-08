@@ -1,13 +1,12 @@
 """
-Hardware detection and classification for SpygateAI.
-Handles detection of CPU, RAM, and GPU capabilities for tier-based feature adaptation.
+Hardware detection module for determining system capabilities.
 """
 
 import logging
 import os
+import platform
 from dataclasses import dataclass
-from enum import Enum, auto
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional
 
 import cv2
 import psutil
@@ -16,195 +15,232 @@ import torch
 logger = logging.getLogger(__name__)
 
 
-class HardwareTier(Enum):
-    """Hardware performance tiers for feature adaptation."""
+@dataclass
+class GPUInfo:
+    """Information about a GPU device."""
 
-    MINIMUM = auto()  # 8GB RAM, 4-core CPU, no GPU (0.3-0.5 FPS)
-    STANDARD = auto()  # 12GB+ RAM, 4-6 core CPU, GTX 1650+ (1.0+ FPS)
-    PREMIUM = auto()  # 16GB+ RAM, 6+ core CPU, RTX 3060+ (1.5-2.0+ FPS)
-    PROFESSIONAL = auto()  # 32GB+ RAM, 8+ core CPU, RTX 4080+ (2.0++ FPS)
+    name: str
+    vram_total: int  # in MB
+    vram_free: int  # in MB
+    cuda_capability: Optional[float] = None
+    is_integrated: bool = False
 
 
 @dataclass
-class HardwareSpecs:
-    """Container for detected hardware specifications."""
+class SystemInfo:
+    """Information about the system hardware."""
 
-    cpu_cores: int
-    ram_gb: float
-    gpu_name: Optional[str] = None
-    gpu_vram_gb: Optional[float] = None
-    cuda_available: bool = False
-    cudnn_available: bool = False
+    cpu_count: int
+    cpu_threads: int
+    ram_total: int  # in MB
+    ram_free: int  # in MB
+    gpus: List[GPUInfo]
+    platform: str
+    cuda_available: bool
+    opencv_gpu: bool
 
 
 class HardwareDetector:
-    """Detects and classifies system hardware capabilities."""
-
-    # Tier classification thresholds
-    TIER_THRESHOLDS = {
-        HardwareTier.MINIMUM: {"ram_gb": 8, "cpu_cores": 4, "gpu_required": False},
-        HardwareTier.STANDARD: {
-            "ram_gb": 12,
-            "cpu_cores": 4,
-            "gpu_required": True,
-            "min_vram_gb": 4,
-            "min_gpu": "GTX 1650",
-        },
-        HardwareTier.PREMIUM: {
-            "ram_gb": 16,
-            "cpu_cores": 6,
-            "gpu_required": True,
-            "min_vram_gb": 8,
-            "min_gpu": "RTX 3060",
-        },
-        HardwareTier.PROFESSIONAL: {
-            "ram_gb": 32,
-            "cpu_cores": 8,
-            "gpu_required": True,
-            "min_vram_gb": 12,
-            "min_gpu": "RTX 4080",
-        },
-    }
-
-    # GPU performance rankings (higher is better)
-    GPU_RANKINGS = {
-        "GTX 1650": 1,
-        "GTX 1660": 2,
-        "RTX 2060": 3,
-        "RTX 3060": 4,
-        "RTX 3070": 5,
-        "RTX 3080": 6,
-        "RTX 4060": 7,
-        "RTX 4070": 8,
-        "RTX 4080": 9,
-        "RTX 4090": 10,
-    }
+    """
+    Detects and monitors system hardware capabilities.
+    Provides information about CPU, RAM, and GPU resources.
+    """
 
     def __init__(self):
         """Initialize the hardware detector."""
-        self.specs = self._detect_hardware()
-        self.tier = self._classify_tier()
-        logger.info(f"Hardware detected: {self.specs}")
-        logger.info(f"Classified as {self.tier.name} tier")
+        self._system_info: Optional[SystemInfo] = None
+        self._performance_tier: Optional[str] = None
+        self.refresh()
 
-    def _detect_hardware(self) -> HardwareSpecs:
-        """Detect system hardware specifications."""
+    def refresh(self):
+        """Refresh hardware information."""
         try:
-            # CPU detection
-            cpu_cores = psutil.cpu_count(logical=False)
+            # Get CPU info
+            cpu_count = psutil.cpu_count(logical=False)
+            cpu_threads = psutil.cpu_count(logical=True)
 
-            # RAM detection
-            ram_gb = psutil.virtual_memory().total / (1024**3)
+            # Get RAM info
+            ram = psutil.virtual_memory()
+            ram_total = ram.total // (1024 * 1024)  # Convert to MB
+            ram_free = ram.available // (1024 * 1024)
 
-            # GPU detection using PyTorch
+            # Get platform info
+            platform_name = platform.system()
+
+            # Check CUDA availability
             cuda_available = torch.cuda.is_available()
-            gpu_name = None
-            gpu_vram_gb = None
 
-            if cuda_available:
-                gpu_name = torch.cuda.get_device_name(0)
-                gpu_vram_gb = torch.cuda.get_device_properties(0).total_memory / (
-                    1024**3
-                )
+            # Check OpenCV GPU support
+            opencv_gpu = cv2.cuda.getCudaEnabledDeviceCount() > 0
 
-            # Check for cuDNN
-            cudnn_available = cuda_available and torch.backends.cudnn.is_available()
+            # Get GPU info
+            gpus = self._get_gpu_info()
 
-            return HardwareSpecs(
-                cpu_cores=cpu_cores,
-                ram_gb=ram_gb,
-                gpu_name=gpu_name,
-                gpu_vram_gb=gpu_vram_gb,
+            # Create system info
+            self._system_info = SystemInfo(
+                cpu_count=cpu_count,
+                cpu_threads=cpu_threads,
+                ram_total=ram_total,
+                ram_free=ram_free,
+                gpus=gpus,
+                platform=platform_name,
                 cuda_available=cuda_available,
-                cudnn_available=cudnn_available,
+                opencv_gpu=opencv_gpu,
             )
 
+            # Determine performance tier
+            self._performance_tier = self._calculate_performance_tier()
+
         except Exception as e:
-            logger.error(f"Error detecting hardware: {e}")
-            # Return minimum specs as fallback
-            return HardwareSpecs(cpu_cores=2, ram_gb=4)
+            logger.error(f"Hardware detection error: {e}", exc_info=True)
+            # Set fallback values
+            self._system_info = SystemInfo(
+                cpu_count=1,
+                cpu_threads=2,
+                ram_total=4096,  # Assume 4GB
+                ram_free=1024,  # Assume 1GB free
+                gpus=[],
+                platform=platform.system(),
+                cuda_available=False,
+                opencv_gpu=False,
+            )
+            self._performance_tier = "minimum"
 
-    def _get_gpu_rank(self, gpu_name: str) -> int:
-        """Get the performance rank of a GPU."""
-        if not gpu_name:
-            return 0
+    def _get_gpu_info(self) -> List[GPUInfo]:
+        """Get information about available GPUs."""
+        gpus = []
 
-        # Find the best matching GPU model
-        for model, rank in self.GPU_RANKINGS.items():
-            if model.lower() in gpu_name.lower():
-                return rank
-        return 0
+        # Try CUDA GPUs first
+        if torch.cuda.is_available():
+            for i in range(torch.cuda.device_count()):
+                props = torch.cuda.get_device_properties(i)
+                vram_total = props.total_memory // (1024 * 1024)  # Convert to MB
+                # Get free VRAM - this is approximate
+                torch.cuda.set_device(i)
+                torch.cuda.empty_cache()
+                vram_free = vram_total - (
+                    torch.cuda.memory_allocated() // (1024 * 1024)
+                )
 
-    def _classify_tier(self) -> HardwareTier:
-        """Classify hardware into a performance tier."""
-        if not self.specs:
-            return HardwareTier.MINIMUM
+                gpus.append(
+                    GPUInfo(
+                        name=props.name,
+                        vram_total=vram_total,
+                        vram_free=vram_free,
+                        cuda_capability=props.major + props.minor / 10,
+                        is_integrated="integrated" in props.name.lower(),
+                    )
+                )
 
-        # Check tiers from highest to lowest
-        for tier in reversed(HardwareTier):
-            requirements = self.TIER_THRESHOLDS[tier]
+        return gpus
 
-            # Check basic requirements
-            if (
-                self.specs.ram_gb >= requirements["ram_gb"]
-                and self.specs.cpu_cores >= requirements["cpu_cores"]
-            ):
+    def _calculate_performance_tier(self) -> str:
+        """
+        Calculate the system's performance tier based on hardware capabilities.
+        Returns: "minimum", "standard", "premium", or "professional"
+        """
+        if not self._system_info:
+            return "minimum"
 
-                # Check GPU requirements if needed
-                if requirements["gpu_required"]:
-                    if not (self.specs.cuda_available and self.specs.gpu_name):
-                        continue
+        # Get the best GPU (most VRAM)
+        best_gpu = None
+        if self._system_info.gpus:
+            best_gpu = max(self._system_info.gpus, key=lambda g: g.vram_total)
 
-                    if self.specs.gpu_vram_gb < requirements[
-                        "min_vram_gb"
-                    ] or self._get_gpu_rank(self.specs.gpu_name) < self._get_gpu_rank(
-                        requirements["min_gpu"]
-                    ):
-                        continue
+        # Professional Tier Requirements
+        if (
+            best_gpu
+            and best_gpu.vram_total >= 12288  # 12GB VRAM
+            and self._system_info.ram_total >= 32768  # 32GB RAM
+            and self._system_info.cpu_threads >= 16
+        ):  # 16 threads
+            return "professional"
 
-                return tier
+        # Premium Tier Requirements
+        if (
+            best_gpu
+            and best_gpu.vram_total >= 8192  # 8GB VRAM
+            and self._system_info.ram_total >= 16384  # 16GB RAM
+            and self._system_info.cpu_threads >= 8
+        ):  # 8 threads
+            return "premium"
 
-        return HardwareTier.MINIMUM
+        # Standard Tier Requirements
+        if (
+            best_gpu
+            and best_gpu.vram_total >= 4096  # 4GB VRAM
+            and self._system_info.ram_total >= 8192  # 8GB RAM
+            and self._system_info.cpu_threads >= 4
+        ):  # 4 threads
+            return "standard"
 
-    def get_tier_capabilities(self) -> Dict[str, float]:
-        """Get performance capabilities for the current tier."""
-        capabilities = {
-            HardwareTier.MINIMUM: {
-                "target_fps": 0.3,
-                "max_fps": 0.5,
-                "resolution_scale": 0.75,
-                "frame_skip": 3,
-            },
-            HardwareTier.STANDARD: {
-                "target_fps": 1.0,
-                "max_fps": 1.2,
-                "resolution_scale": 0.9,
-                "frame_skip": 2,
-            },
-            HardwareTier.PREMIUM: {
-                "target_fps": 1.5,
-                "max_fps": 2.0,
-                "resolution_scale": 1.0,
-                "frame_skip": 1,
-            },
-            HardwareTier.PROFESSIONAL: {
-                "target_fps": 2.0,
-                "max_fps": 3.0,
-                "resolution_scale": 1.0,
-                "frame_skip": 1,
-            },
+        # Minimum Tier (anything below standard)
+        return "minimum"
+
+    @property
+    def system_info(self) -> SystemInfo:
+        """Get current system information."""
+        if not self._system_info:
+            self.refresh()
+        return self._system_info
+
+    @property
+    def performance_tier(self) -> str:
+        """Get the system's performance tier."""
+        if not self._performance_tier:
+            self.refresh()
+        return self._performance_tier
+
+    @property
+    def has_cuda(self) -> bool:
+        """Check if CUDA is available."""
+        return self.system_info.cuda_available
+
+    @property
+    def has_opencv_gpu(self) -> bool:
+        """Check if OpenCV GPU acceleration is available."""
+        return self.system_info.opencv_gpu
+
+    def get_optimal_thread_count(self) -> int:
+        """Get the optimal number of threads for parallel processing."""
+        if not self._system_info:
+            return 2
+
+        # Use 75% of available threads by default
+        return max(2, int(self._system_info.cpu_threads * 0.75))
+
+    def get_optimal_batch_size(self) -> int:
+        """Get the optimal batch size based on available memory."""
+        if not self._system_info:
+            return 4
+
+        # Calculate based on available RAM and performance tier
+        if self.performance_tier == "professional":
+            return 32
+        elif self.performance_tier == "premium":
+            return 16
+        elif self.performance_tier == "standard":
+            return 8
+        else:
+            return 4
+
+    def get_vram_info(self) -> Dict[str, int]:
+        """Get information about VRAM usage."""
+        if not self.has_cuda:
+            return {"total": 0, "free": 0, "used": 0}
+
+        best_gpu = max(self._system_info.gpus, key=lambda g: g.vram_total)
+        used = best_gpu.vram_total - best_gpu.vram_free
+        return {"total": best_gpu.vram_total, "free": best_gpu.vram_free, "used": used}
+
+    def get_ram_info(self) -> Dict[str, int]:
+        """Get information about RAM usage."""
+        if not self._system_info:
+            return {"total": 0, "free": 0, "used": 0}
+
+        used = self._system_info.ram_total - self._system_info.ram_free
+        return {
+            "total": self._system_info.ram_total,
+            "free": self._system_info.ram_free,
+            "used": used,
         }
-        return capabilities[self.tier]
-
-    def get_tier_features(self) -> Dict[str, bool]:
-        """Get available features for the current tier."""
-        features = {
-            "enhanced_cv": True,  # Available on all tiers
-            "yolo_detection": self.tier != HardwareTier.MINIMUM,
-            "real_time_analysis": self.tier
-            in [HardwareTier.PREMIUM, HardwareTier.PROFESSIONAL],
-            "advanced_formations": self.tier
-            in [HardwareTier.PREMIUM, HardwareTier.PROFESSIONAL],
-            "experimental": self.tier == HardwareTier.PROFESSIONAL,
-        }
-        return features

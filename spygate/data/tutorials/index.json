@@ -1,0 +1,9 @@
+{
+    "tutorials": [
+        "getting_started",
+        "video_import",
+        "clip_analysis",
+        "formation_recognition"
+    ],
+    "version": "1.0"
+}

@@ -1,25 +1,66 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "spygate"
-version = "1.0.0"
-authors = [
-  { name="Spygate Team" },
-]
-description = "A tool for analyzing Madden NFL 25 gameplay"
+description = "ML-Powered Football Gameplay Analysis Tool"
 readme = "README.md"
-requires-python = ">=3.8"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "Operating System :: OS Independent",
-]
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+dynamic = ["version"]
 dependencies = [
-    "PyQt6>=6.9.0",
+    "ultralytics==8.0.0",
+    "opencv-python==4.8.0",
+    "torch==2.0.0",
+    "numpy==1.24.0",
+    "PyQt6==6.4.0",
+    "ffmpeg-python==0.2.0",
+    "pandas==2.1.3",
+    "matplotlib==3.8.1",
 ]
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["spygate*"]
-namespaces = false 
+[project.optional-dependencies]
+dev = [
+    "black==23.11.0",
+    "flake8==6.1.0",
+    "mypy==1.7.0",
+    "pylint==3.0.2",
+    "pre-commit==3.5.0",
+]
+test = [
+    "pytest==7.4.3",
+    "pytest-cov==4.1.0",
+    "pytest-benchmark==4.0.0",
+    "pytest-mock==3.12.0",
+]
+docs = [
+    "sphinx==7.2.6",
+    "sphinx-rtd-theme==1.3.0",
+    "sphinx-autodoc-typehints==1.24.0",
+]
+
+[tool.setuptools]
+packages = ["spygate"]
+package-dir = {"" = "src"}
+
+[tool.black]
+line-length = 100
+target-version = ["py39"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --cov=spygate"
+testpaths = ["tests"]

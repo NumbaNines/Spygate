@@ -1,102 +1,93 @@
-name: CI/CD
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 jobs:
   test:
-    runs-on: windows-latest
-
-    services:
-      postgres:
-        image: postgres:13
-        env:
-          POSTGRES_DB: spygate_test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.9", "3.10", "3.11"]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
-          architecture: "x64"
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-cov black flake8 mypy
+          pip install -e ".[dev]"
 
       - name: Run linting
         run: |
-          black --check .
+          black . --check
           flake8 .
-          mypy src tests
+          mypy spygate
+          isort . --check-only
 
-      - name: Run tests with coverage
-        env:
-          DB_TYPE: postgresql
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_NAME: spygate_test
-          DB_USER: postgres
-          DB_PASSWORD: postgres
+      - name: Run tests
         run: |
-          pytest --cov=src --cov-report=xml
+          pytest tests/ --cov=spygate --cov-report=xml -v
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
         with:
           file: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: true
 
-  deploy-staging:
+  build:
     needs: test
     runs-on: windows-latest
     if: github.ref == 'refs/heads/main'
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.9"
-          architecture: "x64"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install pyinstaller
+          pip install -e .
 
-      - name: Build and push Docker image
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build executable
         run: |
-          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker build -t spygate:staging .
-          docker tag spygate:staging $DOCKER_USERNAME/spygate:staging
-          docker push $DOCKER_USERNAME/spygate:staging
+          pyinstaller spygate/main.py --name spygate --onefile --windowed
 
-      - name: Deploy to staging
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spygate-windows
+          path: dist/spygate.exe
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: spygate-windows
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: spygate.exe
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          # Add deployment steps here (e.g., using AWS CLI or other deployment tools)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

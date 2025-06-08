@@ -6,7 +6,8 @@ Create Date: 2025-06-07 03:25:59.185347
 
 """
 
-from typing import Sequence, Union
+from typing import Union
+from collections.abc import Sequence
 
 import sqlalchemy as sa
 from alembic import op
@@ -59,9 +60,7 @@ def upgrade() -> None:
     op.create_table(
         "transcoded_clips",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column(
-            "original_clip_id", sa.Integer(), sa.ForeignKey("clips.id"), nullable=False
-        ),
+        sa.Column("original_clip_id", sa.Integer(), sa.ForeignKey("clips.id"), nullable=False),
         sa.Column("file_path", sa.String(), nullable=False),
         sa.Column("width", sa.Integer(), nullable=False),
         sa.Column("height", sa.Integer(), nullable=False),

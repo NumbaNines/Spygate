@@ -231,9 +231,7 @@ class MotionAnalysisView(QWidget):
         # Convert to QPixmap
         height, width = frame_rgb.shape[:2]
         bytes_per_line = 3 * width
-        q_img = QImage(
-            frame_rgb.data, width, height, bytes_per_line, QImage.Format.Format_RGB888
-        )
+        q_img = QImage(frame_rgb.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
         pixmap = QPixmap.fromImage(q_img)
 
         # Scale to fit label while maintaining aspect ratio
@@ -252,9 +250,7 @@ class MotionAnalysisView(QWidget):
             self.events_layout.itemAt(i).widget().setParent(None)
 
         # Get events
-        events = self.motion_service.get_motion_events(
-            self.current_video_id, start_time, end_time
-        )
+        events = self.motion_service.get_motion_events(self.current_video_id, start_time, end_time)
 
         # Add event widgets
         for event in events:
@@ -289,7 +285,7 @@ class MotionAnalysisView(QWidget):
         # Add stretch to bottom
         self.patterns_layout.addStretch()
 
-    def _create_event_widget(self, event: Dict[str, Any]) -> QFrame:
+    def _create_event_widget(self, event: dict[str, Any]) -> QFrame:
         """Create a widget to display a motion event."""
         frame = QFrame()
         frame.setFrameStyle(QFrame.Shape.StyledPanel)
@@ -319,7 +315,7 @@ class MotionAnalysisView(QWidget):
 
         return frame
 
-    def _create_pattern_widget(self, pattern: Dict[str, Any]) -> QFrame:
+    def _create_pattern_widget(self, pattern: dict[str, Any]) -> QFrame:
         """Create a widget to display a motion pattern."""
         frame = QFrame()
         frame.setFrameStyle(QFrame.Shape.StyledPanel)

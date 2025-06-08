@@ -70,16 +70,13 @@ def test_clip_management(dashboard, qtbot):
     assert clip.player_name == "Self"
 
     # Check tags were added
-    tag_texts = [
-        dashboard.tag_list.item(i).text() for i in range(dashboard.tag_list.count())
-    ]
+    tag_texts = [dashboard.tag_list.item(i).text() for i in range(dashboard.tag_list.count())]
     assert "Test" in tag_texts
     assert "Demo" in tag_texts
 
     # Check player was added to combo
     assert "Self" in [
-        dashboard.player_combo.itemText(i)
-        for i in range(dashboard.player_combo.count())
+        dashboard.player_combo.itemText(i) for i in range(dashboard.player_combo.count())
     ]
 
 
@@ -124,14 +121,10 @@ def test_search_and_filtering(dashboard, qtbot):
     # Test "All Players" filter
     dashboard.player_combo.setCurrentText("All Players")
     qtbot.wait(100)
-    assert all(
-        clip.isVisible() for clip in dashboard.clips
-    )  # All clips should be visible
+    assert all(clip.isVisible() for clip in dashboard.clips)  # All clips should be visible
 
     # Test tag filter
-    strategy_tag = dashboard.tag_list.findItems("Strategy", Qt.MatchFlag.MatchExactly)[
-        0
-    ]
+    strategy_tag = dashboard.tag_list.findItems("Strategy", Qt.MatchFlag.MatchExactly)[0]
     strategy_tag.setSelected(True)
     qtbot.wait(100)  # Wait for filter to apply
     assert dashboard.clips[0].isVisible()  # Has "Strategy" tag
@@ -158,9 +151,7 @@ def test_search_and_filtering(dashboard, qtbot):
     # Clear gameplan filter
     dashboard.clear_gameplan_filter()
     qtbot.wait(100)  # Wait for filter to apply
-    assert all(
-        clip.isVisible() for clip in dashboard.clips
-    )  # All clips should be visible
+    assert all(clip.isVisible() for clip in dashboard.clips)  # All clips should be visible
 
 
 def test_gameplan_management(dashboard, qtbot):
@@ -203,10 +194,7 @@ def test_player_name_handling(dashboard, qtbot):
     qtbot.wait(100)  # Wait for UI to update
 
     # Check all players are in combo box
-    players = {
-        dashboard.player_combo.itemText(i)
-        for i in range(dashboard.player_combo.count())
-    }
+    players = {dashboard.player_combo.itemText(i) for i in range(dashboard.player_combo.count())}
     assert "Self" in players
     assert "Opponent: Jane" in players
     assert "Opponent: Bob" in players

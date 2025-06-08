@@ -4,8 +4,9 @@ Video processing with hardware-aware optimizations for SpygateAI.
 
 import logging
 import time
+from collections.abc import Generator
 from pathlib import Path
-from typing import Dict, Generator, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -36,9 +37,7 @@ class VideoProcessor:
         logger.info(f"Initialized VideoProcessor with {self.hardware.tier.name} tier")
         logger.info(f"Processing parameters: {self.optimizer.get_current_params()}")
 
-    def frame_generator(
-        self, video_path: str
-    ) -> Generator[Tuple[np.ndarray, Dict], None, None]:
+    def frame_generator(self, video_path: str) -> Generator[tuple[np.ndarray, dict], None, None]:
         """Generate processed frames from a video file with hardware-aware optimization.
 
         Args:
@@ -125,10 +124,10 @@ class VideoProcessor:
         """Get the current hardware tier name."""
         return self.hardware.tier.name
 
-    def get_performance_metrics(self) -> Dict[str, float]:
+    def get_performance_metrics(self) -> dict[str, float]:
         """Get current performance metrics."""
         return self.optimizer.get_performance_metrics()
 
-    def get_available_features(self) -> Dict[str, bool]:
+    def get_available_features(self) -> dict[str, bool]:
         """Get available features for current hardware tier."""
         return self.hardware.get_tier_features()

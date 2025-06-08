@@ -1,3 +1,3 @@
 """
 SpygateAI Django apps package.
-""" 
+"""

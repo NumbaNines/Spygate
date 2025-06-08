@@ -136,9 +136,7 @@ class AnalysisJob(Base):
     clip = relationship("Clip", back_populates="analysis_jobs")
 
 
-def create_clip(
-    db, user_id, title, description, file_path, duration, source_clip_id=None
-):
+def create_clip(db, user_id, title, description, file_path, duration, source_clip_id=None):
     """Create a new clip.
 
     Args:
@@ -206,9 +204,7 @@ def update_transcode_status(db, clip_id, status, error_message=None):
     Returns:
         TranscodedClip: The updated transcoded clip
     """
-    transcoded = (
-        db.query(TranscodedClip).filter(TranscodedClip.clip_id == clip_id).first()
-    )
+    transcoded = db.query(TranscodedClip).filter(TranscodedClip.clip_id == clip_id).first()
     if transcoded:
         transcoded.status = status
         transcoded.error_message = error_message

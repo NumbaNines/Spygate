@@ -120,7 +120,7 @@ class VideoImportWidget(QWidget):
         if files:
             self.import_videos(files)
 
-    def import_videos(self, file_paths: List[str]) -> None:
+    def import_videos(self, file_paths: list[str]) -> None:
         """Import selected video files."""
         # Clean up any existing import thread
         self.cleanup_import_thread()
@@ -128,9 +128,7 @@ class VideoImportWidget(QWidget):
         # Validate files first
         valid_files = []
         for file_path in file_paths:
-            is_valid, error_msg, metadata = self.codec_validator.validate_video(
-                file_path
-            )
+            is_valid, error_msg, metadata = self.codec_validator.validate_video(file_path)
             if not is_valid:
                 self.import_error.emit(
                     f"Error validating {os.path.basename(file_path)}: {error_msg}"
@@ -148,9 +146,7 @@ class VideoImportWidget(QWidget):
 
             # Start import in background thread
             self.import_thread = QThread()
-            self.import_worker = VideoImportWorker(
-                valid_files, player_name, self.video_service
-            )
+            self.import_worker = VideoImportWorker(valid_files, player_name, self.video_service)
             self.import_worker.moveToThread(self.import_thread)
 
             # Connect signals

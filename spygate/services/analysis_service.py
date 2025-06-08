@@ -29,14 +29,12 @@ class AnalysisService:
     def __init__(self):
         """Initialize the analysis service."""
         self._executor = ThreadPoolExecutor(max_workers=2)
-        self._active_jobs: Dict[str, bool] = {}
+        self._active_jobs: dict[str, bool] = {}
         self._detector = SituationDetector()
         self._detector.initialize()
         self._lock = threading.Lock()
 
-    def start_analysis(
-        self, clip_id: str, video_path: str, metadata: Dict[str, Any] = None
-    ) -> str:
+    def start_analysis(self, clip_id: str, video_path: str, metadata: dict[str, Any] = None) -> str:
         """Start a new analysis job.
 
         Args:
@@ -63,7 +61,7 @@ class AnalysisService:
 
             return job.id
 
-    def cancel_analysis(self, job_id: str) -> Tuple[bool, str]:
+    def cancel_analysis(self, job_id: str) -> tuple[bool, str]:
         """Cancel an analysis job.
 
         Args:
@@ -91,7 +89,7 @@ class AnalysisService:
             logger.error(f"Failed to cancel analysis: {str(e)}")
             return False, f"Failed to cancel analysis: {str(e)}"
 
-    def get_analysis_status(self, job_id: str) -> Optional[Dict[str, Any]]:
+    def get_analysis_status(self, job_id: str) -> Optional[dict[str, Any]]:
         """Get the status of an analysis job.
 
         Args:
@@ -157,9 +155,7 @@ class AnalysisService:
                         frames, job_id, frame_number - batch_size, fps
                     )
                     if situations:
-                        self._create_situation_clips(
-                            job_id, situations, video_path, fps
-                        )
+                        self._create_situation_clips(job_id, situations, video_path, fps)
                     frames = []
 
             # Process remaining frames
@@ -186,8 +182,8 @@ class AnalysisService:
                 cap.release()
 
     def _process_frame_batch(
-        self, frames: List[np.ndarray], job_id: str, start_frame: int, fps: float
-    ) -> List[Dict[str, Any]]:
+        self, frames: list[np.ndarray], job_id: str, start_frame: int, fps: float
+    ) -> list[dict[str, Any]]:
         """Process a batch of frames.
 
         Args:
@@ -212,8 +208,8 @@ class AnalysisService:
         return situations
 
     def _create_situation_clips(
-        self, job_id: str, situations: List[Dict[str, Any]], video_path: str, fps: float
-    ) -> List[str]:
+        self, job_id: str, situations: list[dict[str, Any]], video_path: str, fps: float
+    ) -> list[str]:
         """Create clips for detected situations.
 
         Args:

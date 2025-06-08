@@ -45,9 +45,7 @@ def db_session():
 @pytest.fixture
 def sample_player(db_session):
     """Create a sample player."""
-    return create_player(
-        name="John Doe", team="Red Team", position="Forward", session=db_session
-    )
+    return create_player(name="John Doe", team="Red Team", position="Forward", session=db_session)
 
 
 @pytest.fixture
@@ -64,9 +62,7 @@ def sample_clip(db_session, sample_player):
 
 def test_create_and_get_player(db_session):
     """Test creating and retrieving a player."""
-    player = create_player(
-        name="John Doe", team="Red Team", position="Forward", session=db_session
-    )
+    player = create_player(name="John Doe", team="Red Team", position="Forward", session=db_session)
 
     retrieved = get_player(player.id, db_session)
     assert retrieved.name == "John Doe"
@@ -115,9 +111,7 @@ def test_create_and_get_motion_event(db_session, sample_clip):
 
 def test_create_and_get_tag(db_session):
     """Test creating and retrieving a tag."""
-    tag = create_tag(
-        name="goal", description="Goal scoring moments", session=db_session
-    )
+    tag = create_tag(name="goal", description="Goal scoring moments", session=db_session)
 
     retrieved = get_tag(tag.id, db_session)
     assert retrieved.name == "goal"
@@ -155,9 +149,7 @@ def test_get_clips_by_tags(db_session, sample_clip):
     assert clips[0].id == sample_clip.id
 
     # Match all tags (should return no results)
-    clips = get_clips_by_tags(
-        ["goal", "nonexistent"], session=db_session, match_all=True
-    )
+    clips = get_clips_by_tags(["goal", "nonexistent"], session=db_session, match_all=True)
     assert len(clips) == 0
 
 
@@ -207,9 +199,7 @@ def test_db_session_context_manager():
     # Test transaction rollback
     with pytest.raises(ValueError):
         with get_db_session() as session:
-            player = Player(
-                name="Another Player", team="Another Team", position="Another Position"
-            )
+            player = Player(name="Another Player", team="Another Team", position="Another Position")
             session.add(player)
             raise ValueError("Test error")
 

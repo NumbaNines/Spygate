@@ -1,0 +1,147 @@
+# Task ID: 16
+# Title: Implement HardwareDetector Class
+# Status: pending
+# Dependencies: 2, 3, 4
+# Priority: medium
+# Description: Create a HardwareDetector class to detect and classify hardware specifications using psutil and OpenCV, integrating with the existing video processing pipeline, with support for multiple games and their specific requirements.
+# Details:
+1. Set up the HardwareDetector class:
+   - Import necessary libraries: psutil, cv2, and any other required modules
+   - Create a HardwareDetector class with methods for CPU, RAM, and GPU detection
+
+2. Implement CPU detection:
+   - Use psutil.cpu_freq() to get CPU frequency
+   - Use psutil.cpu_count() to get the number of cores
+   - Implement a method to classify CPU tier (e.g., low, medium, high) based on specs
+
+3. Implement RAM detection:
+   - Use psutil.virtual_memory() to get total and available RAM
+   - Implement a method to classify RAM tier based on total RAM
+
+4. Implement GPU detection:
+   - Use OpenCV's cv2.cuda.getCudaEnabledDeviceCount() to check for CUDA-enabled GPUs
+   - If CUDA is available, use cv2.cuda.DeviceInfo() to get GPU information
+   - Implement fallback methods for non-CUDA GPUs (e.g., using subprocess to call 'nvidia-smi' or 'lspci')
+   - Classify GPU tier based on detected specifications
+
+5. Implement overall tier classification:
+   - Create a method that combines CPU, RAM, and GPU tiers to determine an overall system tier
+   - Define clear criteria for each tier (e.g., minimum specs for low, medium, high tiers)
+
+6. Implement game version detection:
+   - Create methods to detect installed game versions
+   - Support multiple games with different version formats
+   - Implement version parsing and comparison functionality
+   - Store detected game versions for reference
+
+7. Implement version-specific hardware requirements:
+   - Create a database or configuration system for storing hardware requirements per game version
+   - Implement methods to retrieve minimum and recommended specs for specific game versions
+   - Add functionality to compare current hardware against game-specific requirements
+   - Generate compatibility reports for each detected game
+
+8. Create adaptive resource management:
+   - Implement dynamic resource allocation based on detected hardware and game requirements
+   - Create methods to adjust processing parameters (resolution, effects, etc.) based on game-specific needs
+   - Add functionality to prioritize resources for the currently active game
+   - Implement performance monitoring to adjust settings in real-time
+
+9. Add cross-version compatibility checks:
+   - Create methods to verify hardware compatibility across different game versions
+   - Implement warning system for potential compatibility issues
+   - Add functionality to suggest hardware upgrades for specific game versions
+   - Generate compatibility matrices for multiple installed games
+
+10. Implement hardware profile management:
+    - Create a profile system to store hardware configurations for different games
+    - Implement methods to save, load, and switch between hardware profiles
+    - Add functionality to automatically select optimal profiles based on detected game
+    - Include user override options for custom hardware profiles
+
+11. Integrate with video processing pipeline:
+    - Modify the existing video import or processing classes to use HardwareDetector
+    - Adjust video processing parameters based on detected hardware tier and game requirements
+
+12. Implement caching mechanism:
+    - Store hardware detection results to avoid repeated detection on the same system
+    - Cache game-specific hardware profiles and requirements
+    - Implement a method to clear cache or force re-detection if needed
+
+13. Error handling and logging:
+    - Implement try-except blocks for each hardware detection method
+    - Log any errors or unexpected results during hardware detection
+    - Provide fallback values or estimations if specific hardware information can't be retrieved
+
+14. Create a user-friendly hardware report:
+    - Implement a method to generate a readable summary of detected hardware
+    - Include game-specific recommendations and compatibility information
+    - Add visual indicators for hardware that meets or fails to meet game requirements
+
+15. Optimize performance:
+    - Ensure hardware detection doesn't significantly impact application startup time
+    - Consider running hardware detection in a separate thread if it takes too long
+    - Implement lazy loading for game-specific requirements
+
+# Test Strategy:
+1. Unit tests:
+   - Create test cases for each hardware detection method (CPU, RAM, GPU)
+   - Test tier classification logic with various hardware configurations
+   - Test game version detection with different version formats
+   - Verify version-specific hardware requirement checks
+   - Use mock objects to simulate different hardware scenarios
+
+2. Integration tests:
+   - Verify that HardwareDetector integrates correctly with the video processing pipeline
+   - Test that video processing parameters are adjusted based on detected hardware tier
+   - Verify integration with multiple game detection and requirement systems
+   - Test profile switching and resource allocation between different games
+
+3. Performance testing:
+   - Measure the time taken for hardware detection on various systems
+   - Test performance impact when switching between different game profiles
+   - Ensure hardware detection doesn't introduce significant delays in application startup
+   - Benchmark resource management effectiveness for different games
+
+4. Cross-platform testing:
+   - Test on different operating systems (Windows, macOS, Linux) to ensure compatibility
+   - Verify GPU detection works correctly with both NVIDIA and AMD GPUs
+   - Test game detection across different platform-specific installations
+
+5. Edge case testing:
+   - Test with virtual machines or containers with limited resources
+   - Verify behavior when certain hardware information is unavailable
+   - Test with unusual game version formats or non-standard installations
+   - Verify handling of games with missing or incomplete requirement specifications
+
+6. User interface testing:
+   - Check that the hardware report is displayed correctly in the UI
+   - Verify that game-specific hardware recommendations are shown appropriately
+   - Test profile management UI components and interactions
+   - Verify that compatibility warnings are clearly presented
+
+7. Regression testing:
+   - Ensure that adding HardwareDetector doesn't break existing functionality
+   - Verify that video processing still works correctly for all supported formats
+   - Test backward compatibility with previously supported games
+
+8. Stress testing:
+   - Test hardware detection while other resource-intensive tasks are running
+   - Verify that repeated hardware detections don't cause memory leaks
+   - Test with multiple games running simultaneously
+   - Verify resource management under high system load
+
+9. Compatibility testing:
+   - Test with different versions of psutil and OpenCV to ensure compatibility
+   - Verify that the HardwareDetector works with all supported Python versions
+   - Test with various game versions and their specific requirements
+
+10. Security testing:
+    - Ensure that hardware detection doesn't require elevated privileges
+    - Verify that any logged hardware information doesn't contain sensitive data
+    - Test for potential vulnerabilities in game version detection
+    - Verify secure storage of hardware profiles and game requirements
+
+11. Multi-game scenario testing:
+    - Test detection and resource allocation with multiple games installed
+    - Verify correct prioritization when switching between games
+    - Test compatibility reporting across different game combinations

@@ -6,7 +6,9 @@ Create Date: 2024-03-19 10:30:00.000000
 
 """
 
-from typing import Sequence, Union
+from typing import Union
+
+from collections.abc import Sequence
 
 import sqlalchemy as sa
 from alembic import op
@@ -28,12 +30,8 @@ def upgrade() -> None:
         sa.Column("team", sa.String(100)),
         sa.Column("is_self", sa.Boolean(), default=False),
         sa.Column("gamertag", sa.String(100)),
-        sa.Column(
-            "created_at", sa.DateTime(), server_default=sa.text("CURRENT_TIMESTAMP")
-        ),
-        sa.Column(
-            "updated_at", sa.DateTime(), server_default=sa.text("CURRENT_TIMESTAMP")
-        ),
+        sa.Column("created_at", sa.DateTime(), server_default=sa.text("CURRENT_TIMESTAMP")),
+        sa.Column("updated_at", sa.DateTime(), server_default=sa.text("CURRENT_TIMESTAMP")),
         sa.PrimaryKeyConstraint("id"),
     )
 

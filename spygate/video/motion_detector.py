@@ -29,10 +29,8 @@ class MotionDetectionResult:
 
     motion_detected: bool
     motion_mask: np.ndarray  # Binary mask showing motion areas
-    bounding_boxes: list[
-        Tuple[int, int, int, int]
-    ]  # List of (x, y, w, h) for motion regions
-    metadata: Dict[str, Any]  # Additional detection metadata
+    bounding_boxes: list[tuple[int, int, int, int]]  # List of (x, y, w, h) for motion regions
+    metadata: dict[str, Any]  # Additional detection metadata
 
 
 class MotionDetector:
@@ -149,9 +147,7 @@ class MotionDetector:
             gpu_gray = cv2.cuda.cvtColor(gpu_frame, cv2.COLOR_BGR2GRAY)
 
             # Apply Gaussian blur on GPU
-            gpu_blurred = cv2.cuda.GaussianBlur(
-                gpu_gray, (self.blur_size, self.blur_size), 0
-            )
+            gpu_blurred = cv2.cuda.GaussianBlur(gpu_gray, (self.blur_size, self.blur_size), 0)
 
             # Download result back to CPU
             return gpu_blurred.download()
@@ -160,9 +156,7 @@ class MotionDetector:
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             return cv2.GaussianBlur(gray, (self.blur_size, self.blur_size), 0)
 
-    def _process_region(
-        self, region: Tuple[slice, slice], frame: np.ndarray
-    ) -> np.ndarray:
+    def _process_region(self, region: tuple[slice, slice], frame: np.ndarray) -> np.ndarray:
         """Process a region of the frame for parallel processing."""
         y_slice, x_slice = region
         region_frame = frame[y_slice, x_slice]
@@ -200,17 +194,13 @@ class MotionDetector:
         frame_diff = cv2.absdiff(current_gray, self.prev_gray)
 
         # Apply threshold to get binary motion mask
-        _, motion_mask = cv2.threshold(
-            frame_diff, self.threshold, 255, cv2.THRESH_BINARY
-        )
+        _, motion_mask = cv2.threshold(frame_diff, self.threshold, 255, cv2.THRESH_BINARY)
 
         # Apply dilation to connect nearby motion regions
         motion_mask = cv2.dilate(motion_mask, self.dilate_kernel, iterations=1)
 
         # Find contours in the motion mask
-        contours, _ = cv2.findContours(
-            motion_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
+        contours, _ = cv2.findContours(motion_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         # Filter contours by area and get bounding boxes
         bounding_boxes = []
@@ -257,9 +247,7 @@ class MotionDetector:
         motion_mask = cv2.dilate(motion_mask, self.dilate_kernel, iterations=1)
 
         # Find contours in the motion mask
-        contours, _ = cv2.findContours(
-            motion_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
+        contours, _ = cv2.findContours(motion_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         # Filter contours by area and get bounding boxes
         bounding_boxes = []
@@ -345,9 +333,7 @@ class MotionDetector:
                         cv2.circle(motion_mask, (pt[0], pt[1]), 5, 255, -1)
 
                     # Apply dilation to connect nearby motion regions
-                    motion_mask = cv2.dilate(
-                        motion_mask, self.dilate_kernel, iterations=2
-                    )
+                    motion_mask = cv2.dilate(motion_mask, self.dilate_kernel, iterations=2)
 
                     # Find contours in the motion mask
                     contours, _ = cv2.findContours(

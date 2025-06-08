@@ -114,9 +114,7 @@ class PlaybookCard(QFrame):
 
     def _edit_playbook(self):
         """Edit playbook."""
-        QMessageBox.information(
-            self, "Edit Playbook", f"Edit '{self.title}' (Coming soon)"
-        )
+        QMessageBox.information(self, "Edit Playbook", f"Edit '{self.title}' (Coming soon)")
 
     def mousePressEvent(self, event):
         """Handle mouse press events to emit clicked signal."""
@@ -336,10 +334,7 @@ class PlaybooksView(QWidget):
         filtered_playbooks = [
             pb
             for pb in self.playbooks
-            if (
-                search_text in pb["title"].lower()
-                or search_text in pb["description"].lower()
-            )
+            if (search_text in pb["title"].lower() or search_text in pb["description"].lower())
             and (player_filter == "All Players" or pb["player"] == player_filter)
         ]
 

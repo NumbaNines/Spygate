@@ -41,9 +41,7 @@ class VideoTimeline(QWidget):
         "2x": 2.0,
     }
 
-    def __init__(
-        self, video_path: str, player_name: str, parent: Optional[QWidget] = None
-    ):
+    def __init__(self, video_path: str, player_name: str, parent: Optional[QWidget] = None):
         """Initialize the VideoTimeline component.
 
         Args:
@@ -54,7 +52,7 @@ class VideoTimeline(QWidget):
         super().__init__(parent)
         self.video_path = video_path
         self.player_name = player_name
-        self.annotations: Dict[str, Annotation] = {}
+        self.annotations: dict[str, Annotation] = {}
         self.current_annotation: Optional[Annotation] = None
         self.setup_ui()
         self.setup_shortcuts()
@@ -121,8 +119,7 @@ class VideoTimeline(QWidget):
         self.speed_combo.currentTextChanged.connect(self.set_playback_speed)
         self.speed_combo.setAccessibleName("Playback speed")
         self.speed_combo.setAccessibleDescription(
-            "Change video playback speed. "
-            "Use Ctrl+[ to decrease or Ctrl+] to increase speed."
+            "Change video playback speed. " "Use Ctrl+[ to decrease or Ctrl+] to increase speed."
         )
         self.speed_combo.setToolTip(
             "Change playback speed (Ctrl+[ to decrease, Ctrl+] to increase)"
@@ -132,9 +129,7 @@ class VideoTimeline(QWidget):
         # Time display
         self.time_label = QLabel("0:00 / 0:00")
         self.time_label.setAccessibleName("Time display")
-        self.time_label.setAccessibleDescription(
-            "Current video position and total duration"
-        )
+        self.time_label.setAccessibleDescription("Current video position and total duration")
         controls_layout.addWidget(self.time_label)
 
         # Add annotation button
@@ -282,9 +277,7 @@ class VideoTimeline(QWidget):
         total_seconds = duration // 1000
         minutes = total_seconds // 60
         seconds = total_seconds % 60
-        self.setAccessibleDescription(
-            f"Video duration: {minutes} minutes and {seconds} seconds"
-        )
+        self.setAccessibleDescription(f"Video duration: {minutes} minutes and {seconds} seconds")
 
     def on_state_changed(self, state: QMediaPlayer.PlaybackState):
         """Handle video playback state changes.
@@ -392,10 +385,7 @@ class VideoTimeline(QWidget):
             self.seek_relative(-5)
         elif key == Qt.Key.Key_Right:
             self.seek_relative(5)
-        elif (
-            key == Qt.Key.Key_A
-            and event.modifiers() & Qt.KeyboardModifier.ControlModifier
-        ):
+        elif key == Qt.Key.Key_A and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             self.show_annotation_tool()
         else:
             super().keyPressEvent(event)

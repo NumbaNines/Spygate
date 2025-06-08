@@ -18,7 +18,7 @@ class ThemeManager:
         self.app = app
         self._current_theme = "dark_teal"
         self._available_themes = list_themes()
-        self._custom_themes: Dict[str, Dict[str, Any]] = {}
+        self._custom_themes: dict[str, dict[str, Any]] = {}
 
     @property
     def current_theme(self) -> str:
@@ -30,7 +30,7 @@ class ThemeManager:
         """Get list of available themes."""
         return self._available_themes + list(self._custom_themes.keys())
 
-    def register_theme(self, name: str, theme: Dict[str, Any]) -> None:
+    def register_theme(self, name: str, theme: dict[str, Any]) -> None:
         """Register a custom theme.
 
         Args:

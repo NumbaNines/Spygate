@@ -49,7 +49,7 @@ class TranscodeOptions:
     """
 
     target_codec: str = "H.264"
-    target_resolution: Tuple[int, int] = (1920, 1080)
+    target_resolution: tuple[int, int] = (1920, 1080)
     target_fps: float = 30.0
     target_bitrate: int = 5000000  # 5 Mbps
     target_audio_codec: str = "AAC"
@@ -89,8 +89,7 @@ class Transcoder:
         try:
             subprocess.run(
                 ["ffmpeg", "-version"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
                 check=True,
             )
             return True
@@ -242,9 +241,7 @@ class Transcoder:
         if options.preserve_audio:
             audio_codec = self.AUDIO_CODEC_MAP.get(options.target_audio_codec)
             if not audio_codec:
-                raise TranscodeError(
-                    f"Unsupported audio codec: {options.target_audio_codec}"
-                )
+                raise TranscodeError(f"Unsupported audio codec: {options.target_audio_codec}")
             cmd.extend(["-c:a", audio_codec, "-b:a", str(options.target_audio_bitrate)])
         else:
             cmd.extend(["-an"])  # No audio

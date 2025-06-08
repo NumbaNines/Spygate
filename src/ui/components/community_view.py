@@ -67,9 +67,7 @@ class StreamSetupDialog(QDialog):
         quality_layout = QHBoxLayout()
         quality_label = QLabel("Quality:")
         self.quality_combo = QComboBox()
-        self.quality_combo.addItems(
-            ["Source", "1080p60", "1080p", "720p60", "720p", "480p"]
-        )
+        self.quality_combo.addItems(["Source", "1080p60", "1080p", "720p60", "720p", "480p"])
         quality_layout.addWidget(quality_label)
         quality_layout.addWidget(self.quality_combo)
         layout.addLayout(quality_layout)
@@ -185,23 +183,17 @@ class SharedPlaybookItem(QFrame):
     def _preview_playbook(self):
         """Show playbook preview."""
         # TODO: Implement playbook preview
-        QMessageBox.information(
-            self, "Preview", f"Preview of '{self.title}' (Coming soon)"
-        )
+        QMessageBox.information(self, "Preview", f"Preview of '{self.title}' (Coming soon)")
 
     def _download_playbook(self):
         """Download the playbook."""
         # TODO: Implement actual download
-        QMessageBox.information(
-            self, "Download", f"Downloading '{self.title}' (Coming soon)"
-        )
+        QMessageBox.information(self, "Download", f"Downloading '{self.title}' (Coming soon)")
 
     def _rate_playbook(self):
         """Rate the playbook."""
         # TODO: Implement rating system
-        QMessageBox.information(
-            self, "Rate", f"Rating system for '{self.title}' (Coming soon)"
-        )
+        QMessageBox.information(self, "Rate", f"Rating system for '{self.title}' (Coming soon)")
 
 
 class CommunityView(QWidget):
@@ -251,9 +243,7 @@ class CommunityView(QWidget):
 
         # Sort dropdown
         self.sort_combo = QComboBox()
-        self.sort_combo.addItems(
-            ["Most Popular", "Highest Rated", "Most Recent", "Most Downloads"]
-        )
+        self.sort_combo.addItems(["Most Popular", "Highest Rated", "Most Recent", "Most Downloads"])
         self.sort_combo.setStyleSheet(
             """
             QComboBox {
@@ -333,9 +323,7 @@ class CommunityView(QWidget):
         # Channel table
         self.channel_table = QTableWidget()
         self.channel_table.setColumnCount(4)
-        self.channel_table.setHorizontalHeaderLabels(
-            ["Channel", "Game", "Status", "Actions"]
-        )
+        self.channel_table.setHorizontalHeaderLabels(["Channel", "Game", "Status", "Actions"])
         self.channel_table.horizontalHeader().setSectionResizeMode(
             0, QHeaderView.ResizeMode.Stretch
         )
@@ -436,17 +424,14 @@ class CommunityView(QWidget):
             if item and isinstance(item.widget(), SharedPlaybookItem):
                 playbook = item.widget()
                 matches = (
-                    search_text in playbook.title.lower()
-                    or search_text in playbook.author.lower()
+                    search_text in playbook.title.lower() or search_text in playbook.author.lower()
                 )
                 playbook.setVisible(matches)
 
     def _sort_playbooks(self, sort_by):
         """Sort playbooks based on selected criteria."""
         # TODO: Implement actual sorting
-        QMessageBox.information(
-            self, "Sort Playbooks", f"Sorting by {sort_by} (Coming soon)"
-        )
+        QMessageBox.information(self, "Sort Playbooks", f"Sorting by {sort_by} (Coming soon)")
 
     def _show_stream_setup(self):
         """Show the stream setup dialog."""

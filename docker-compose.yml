@@ -1,37 +1,41 @@
 version: "3.8"
 
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
+  web:
+    build: .
+    command: python spygate_site/manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
-      - ./data:/app/data
-      - ./logs:/app/logs
-      - ./models:/app/models
+    ports:
+      - "8000:8000"
     environment:
-      - DB_TYPE=postgresql
-      - DB_HOST=db
-      - DB_PORT=5432
+      - DJANGO_SETTINGS_MODULE=spygate_site.settings.development
+      - DJANGO_SECRET_KEY=your-secret-key-for-development
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000
+      - REDIS_HOST=redis
       - DB_NAME=spygate
       - DB_USER=postgres
       - DB_PASSWORD=postgres
+      - DB_HOST=db
     depends_on:
       - db
+      - redis
 
   db:
-    image: postgres:13-alpine
-    ports:
-      - "5432:5432"
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=spygate
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:6
+    ports:
+      - "6379:6379"
 
 volumes:
   postgres_data:

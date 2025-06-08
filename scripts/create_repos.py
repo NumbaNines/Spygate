@@ -30,7 +30,7 @@ REPOS = [
 ]
 
 
-def create_repository(github: Github, config: Dict) -> None:
+def create_repository(github: Github, config: dict) -> None:
     """Create a GitHub repository with the given configuration."""
     try:
         repo = github.get_user().create_repo(

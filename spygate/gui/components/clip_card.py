@@ -5,14 +5,7 @@ Displays a video clip with thumbnail, title, player name, and tags
 
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QIcon, QPixmap
-from PyQt6.QtWidgets import (
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
-)
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 
 class ClipCard(QFrame):
@@ -55,9 +48,7 @@ class ClipCard(QFrame):
         thumbnail = QLabel()
         if "thumbnail_path" in self.clip_data:
             pixmap = QPixmap(self.clip_data["thumbnail_path"])
-            thumbnail.setPixmap(
-                pixmap.scaled(320, 180, Qt.AspectRatioMode.KeepAspectRatio)
-            )
+            thumbnail.setPixmap(pixmap.scaled(320, 180, Qt.AspectRatioMode.KeepAspectRatio))
         else:
             # Use placeholder image
             thumbnail.setText("No Thumbnail")

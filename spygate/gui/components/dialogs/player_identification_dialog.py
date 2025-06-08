@@ -58,7 +58,7 @@ class PlayerProfile:
         if self.gamertag:
             self.gamertag = self.gamertag.strip()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert profile to dictionary format."""
         return {
             "name": self.name,
@@ -70,7 +70,7 @@ class PlayerProfile:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "PlayerProfile":
+    def from_dict(cls, data: dict[str, Any]) -> "PlayerProfile":
         """Create profile from dictionary data."""
         return cls(
             name=data["name"],
@@ -114,7 +114,7 @@ class PlayerIdentificationDialog(QDialog):
         self.video_manager = video_manager
         self.setWindowTitle("Player Identification")
         self.setModal(True)
-        self.selected_players: List[PlayerProfile] = []
+        self.selected_players: list[PlayerProfile] = []
         self._setup_ui()
 
     def _setup_ui(self):
@@ -203,9 +203,7 @@ class PlayerIdentificationDialog(QDialog):
         add_layout = QHBoxLayout()
         self.add_player_combo = QComboBox()
         self.add_player_combo.setEditable(True)
-        self.add_player_combo.setInsertPolicy(
-            QComboBox.InsertPolicy.InsertAlphabetically
-        )
+        self.add_player_combo.setInsertPolicy(QComboBox.InsertPolicy.InsertAlphabetically)
 
         add_button = QPushButton("Add")
         add_button.clicked.connect(self._on_add_player)
@@ -263,15 +261,11 @@ class PlayerIdentificationDialog(QDialog):
         """Load existing players from the database."""
         try:
             # Get all non-self players from database
-            players = (
-                self.video_manager.session.query(Player).filter_by(is_self=False).all()
-            )
+            players = self.video_manager.session.query(Player).filter_by(is_self=False).all()
 
             # Add to combo boxes
             for player in players:
-                display_text = (
-                    f"{player.name} ({player.team})" if player.team else player.name
-                )
+                display_text = f"{player.name} ({player.team})" if player.team else player.name
                 self.opponent_combo.addItem(display_text, player)
                 self.add_player_combo.addItem(display_text, player)
 
@@ -280,7 +274,7 @@ class PlayerIdentificationDialog(QDialog):
                 self, "Database Error", f"Failed to load existing players: {str(e)}"
             )
 
-    def get_selected_players(self) -> List[Dict[str, Any]]:
+    def get_selected_players(self) -> list[dict[str, Any]]:
         """Get the selected players in database-compatible format."""
         players = []
 
@@ -317,9 +311,7 @@ class PlayerIdentificationDialog(QDialog):
             name = item.text().split(" (")[0].strip()
 
             # Try to get player from database
-            player = (
-                self.video_manager.session.query(Player).filter_by(name=name).first()
-            )
+            player = self.video_manager.session.query(Player).filter_by(name=name).first()
 
             players.append(
                 {

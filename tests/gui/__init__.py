@@ -1,3 +1,3 @@
 """
 GUI test package initialization.
-""" 
+"""

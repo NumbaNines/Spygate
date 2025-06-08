@@ -53,7 +53,7 @@ class MotionService:
 
     def process_frame(
         self, frame: np.ndarray, video_id: int, frame_number: int, fps: float
-    ) -> Tuple[np.ndarray, Dict[str, Any]]:
+    ) -> tuple[np.ndarray, dict[str, Any]]:
         """
         Process a video frame for motion detection and analysis.
 
@@ -96,9 +96,7 @@ class MotionService:
             )
 
         # Create visualization
-        vis_frame = self.visualizer.update(
-            frame, motion_result, situations["situations"]
-        )
+        vis_frame = self.visualizer.update(frame, motion_result, situations["situations"])
 
         return vis_frame, {
             "motion": motion_result,
@@ -106,7 +104,7 @@ class MotionService:
             "event_id": event.id if event else None,
         }
 
-    def _handle_video_change(self, video_id: int, frame_shape: Tuple[int, int, int]):
+    def _handle_video_change(self, video_id: int, frame_shape: tuple[int, int, int]):
         """Handle state reset when processing a new video."""
         self.current_video_id = video_id
         self.frame_count = 0
@@ -126,8 +124,8 @@ class MotionService:
         video_id: int,
         frame_number: int,
         timestamp: float,
-        motion_result: Dict[str, Any],
-        situations: List[Dict[str, Any]],
+        motion_result: dict[str, Any],
+        situations: list[dict[str, Any]],
     ) -> Optional[MotionEvent]:
         """Store motion event and situations in database."""
         if not motion_result["motion_detected"]:
@@ -166,7 +164,7 @@ class MotionService:
     def _update_heatmap(
         self,
         frame: np.ndarray,
-        motion_result: Dict[str, Any],
+        motion_result: dict[str, Any],
         video_id: int,
         frame_number: int,
         fps: float,
@@ -175,9 +173,7 @@ class MotionService:
         # Add current motion to accumulated heatmap
         if motion_result["motion_detected"]:
             mask = np.zeros_like(self.accumulated_heatmap)
-            cv2.drawContours(
-                mask, motion_result["contours"], -1, motion_result["score"], -1
-            )
+            cv2.drawContours(mask, motion_result["contours"], -1, motion_result["score"], -1)
             self.accumulated_heatmap = cv2.add(self.accumulated_heatmap, mask)
 
         # Store heatmap at intervals
@@ -196,9 +192,7 @@ class MotionService:
                 start_time=self.last_heatmap_frame / fps,
                 end_time=frame_number / fps,
                 heatmap_data=json.dumps(norm_heatmap.tolist()),
-                resolution=json.dumps(
-                    {"height": frame.shape[0], "width": frame.shape[1]}
-                ),
+                resolution=json.dumps({"height": frame.shape[0], "width": frame.shape[1]}),
                 metadata=json.dumps(
                     {
                         "max_intensity": float(np.max(self.accumulated_heatmap)),
@@ -218,8 +212,8 @@ class MotionService:
         video_id: int,
         frame_number: int,
         fps: float,
-        motion_result: Dict[str, Any],
-        situations: List[Dict[str, Any]],
+        motion_result: dict[str, Any],
+        situations: list[dict[str, Any]],
     ):
         """Update and store motion patterns."""
         if not motion_result["motion_detected"]:
@@ -263,7 +257,7 @@ class MotionService:
             if patterns:
                 self.db.commit()
 
-    def _analyze_pattern_buffer(self, video_id: int) -> List[Dict[str, Any]]:
+    def _analyze_pattern_buffer(self, video_id: int) -> list[dict[str, Any]]:
         """Analyze motion pattern buffer for patterns."""
         patterns = []
 
@@ -352,7 +346,7 @@ class MotionService:
         start_time: Optional[float] = None,
         end_time: Optional[float] = None,
         min_confidence: float = 0.6,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Retrieve motion events for a video within a time range.
 
@@ -397,9 +391,7 @@ class MotionService:
                         "motion_score": event.motion_score,
                         "regions": json.loads(event.regions) if event.regions else [],
                         "situations": situations,
-                        "metadata": (
-                            json.loads(event.metadata) if event.metadata else {}
-                        ),
+                        "metadata": (json.loads(event.metadata) if event.metadata else {}),
                     }
                 )
 
@@ -445,18 +437,16 @@ class MotionService:
             accumulated = cv2.add(accumulated, heatmap_data)
 
         # Normalize final heatmap
-        return cv2.normalize(accumulated, None, 0, 255, cv2.NORM_MINMAX).astype(
-            np.uint8
-        )
+        return cv2.normalize(accumulated, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
 
     def get_motion_patterns(
         self,
         video_id: int,
         start_time: Optional[float] = None,
         end_time: Optional[float] = None,
-        pattern_types: Optional[List[str]] = None,
+        pattern_types: Optional[list[str]] = None,
         min_confidence: float = 0.6,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Retrieve motion patterns for a video within a time range.
 
@@ -495,12 +485,8 @@ class MotionService:
                     "direction": pattern.direction,
                     "speed": pattern.speed,
                     "duration": pattern.duration,
-                    "trajectory": (
-                        json.loads(pattern.trajectory) if pattern.trajectory else []
-                    ),
-                    "metadata": (
-                        json.loads(pattern.metadata) if pattern.metadata else {}
-                    ),
+                    "trajectory": (json.loads(pattern.trajectory) if pattern.trajectory else []),
+                    "metadata": (json.loads(pattern.metadata) if pattern.metadata else {}),
                 }
             )
 

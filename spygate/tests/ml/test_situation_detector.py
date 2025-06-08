@@ -98,8 +98,7 @@ def test_analyze_sequence(detector, sample_frames):
         # Mock increasing motion
         mock_cv2.cvtColor.return_value = np.zeros((720, 1280), dtype=np.uint8)
         mock_cv2.absdiff.side_effect = [
-            np.ones((720, 1280), dtype=np.uint8) * (i * 20)
-            for i in range(len(sample_frames))
+            np.ones((720, 1280), dtype=np.uint8) * (i * 20) for i in range(len(sample_frames))
         ]
         mock_cv2.GaussianBlur.return_value = np.zeros((720, 1280), dtype=np.uint8)
 
@@ -275,9 +274,7 @@ def test_extract_hud_info_with_noise(detector):
 
         result = detector.extract_hud_info(frame)
         assert isinstance(result, dict)
-        assert all(
-            k in result for k in ["down", "distance", "score", "time", "quarter"]
-        )
+        assert all(k in result for k in ["down", "distance", "score", "time", "quarter"])
 
 
 def test_detect_mistakes_with_confidence(detector):

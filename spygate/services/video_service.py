@@ -47,10 +47,10 @@ class VideoService:
     def import_video(
         self,
         file_path: str,
-        players: List[Dict[str, Any]],
+        players: list[dict[str, Any]],
         progress_callback: Optional[Callable[[int], None]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """
         Import a video file into the system.
 
@@ -103,9 +103,7 @@ class VideoService:
                 progress_callback(50)
 
             # Import file to storage
-            storage_path, file_hash, file_size = self.file_manager.import_file(
-                Path(file_path)
-            )
+            storage_path, file_hash, file_size = self.file_manager.import_file(Path(file_path))
 
             if cancel_check and cancel_check():
                 # Clean up imported file
@@ -148,7 +146,7 @@ class VideoService:
             logger.error(f"Error importing video: {e}", exc_info=True)
             return False, str(e)
 
-    def get_recent_videos(self, limit: int = 10) -> List[Dict[str, Any]]:
+    def get_recent_videos(self, limit: int = 10) -> list[dict[str, Any]]:
         """
         Get the most recently imported videos.
 
@@ -161,7 +159,7 @@ class VideoService:
         videos = self.video_manager.get_recent_videos(limit)
         return [self._format_video_info(video) for video in videos]
 
-    def get_player_videos(self, player_name: str) -> List[Dict[str, Any]]:
+    def get_player_videos(self, player_name: str) -> list[dict[str, Any]]:
         """
         Get all videos for a specific player.
 
@@ -194,7 +192,7 @@ class VideoService:
         """
         self.video_manager.remove_video_tag(video_id, tag_name)
 
-    def get_video_tags(self, video_id: int) -> List[str]:
+    def get_video_tags(self, video_id: int) -> list[str]:
         """
         Get all tags for a video.
 
@@ -233,7 +231,7 @@ class VideoService:
         # Mark as deleted in database
         self.video_manager.mark_video_deleted(video_id)
 
-    def _format_video_info(self, video) -> Dict[str, Any]:
+    def _format_video_info(self, video) -> dict[str, Any]:
         """Format video information for API responses."""
         return {
             "id": video.id,

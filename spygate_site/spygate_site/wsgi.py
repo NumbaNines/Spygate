@@ -12,6 +12,6 @@ import os
 from django.core.wsgi import get_wsgi_application
 
 # Use production settings by default for WSGI
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'spygate_site.settings.production')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "spygate_site.settings.production")
 
 application = get_wsgi_application()

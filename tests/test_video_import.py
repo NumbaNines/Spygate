@@ -26,7 +26,7 @@ from .utils.test_utils import (
 
 # Fixtures
 @pytest.fixture
-def test_files(tmp_path) -> Dict[str, str]:
+def test_files(tmp_path) -> dict[str, str]:
     """Create test files for import testing."""
     files = create_test_files(tmp_path)
     yield files
@@ -101,9 +101,7 @@ def test_drop_valid_video(video_import_widget, test_files, qtbot, monkeypatch):
 
     # Track signals
     import_started = False
-    video_import_widget.import_started.connect(
-        lambda: setattr(locals(), "import_started", True)
-    )
+    video_import_widget.import_started.connect(lambda: setattr(locals(), "import_started", True))
 
     # Create and process drop event
     event = create_drag_event(video_import_widget, [test_files["valid_video"]], "drop")
@@ -122,9 +120,7 @@ def test_drop_invalid_video(video_import_widget, test_files, qtbot, monkeypatch)
     monkeypatch.setattr(QMessageBox, "warning", mock_warning)
 
     # Create and process drop event
-    event = create_drag_event(
-        video_import_widget, [test_files["invalid_video"]], "drop"
-    )
+    event = create_drag_event(video_import_widget, [test_files["invalid_video"]], "drop")
     video_import_widget.dropEvent(event)
 
     # Wait for worker
@@ -140,9 +136,7 @@ def test_drop_multiple_files(video_import_widget, test_files, qtbot, monkeypatch
 
     # Track signals
     imported_files = []
-    video_import_widget.import_finished.connect(
-        lambda files: imported_files.extend(files)
-    )
+    video_import_widget.import_finished.connect(lambda files: imported_files.extend(files))
 
     # Create and process drop event
     event = create_drag_event(
@@ -207,9 +201,7 @@ def test_full_import_flow(video_import_widget, test_files, qtbot, monkeypatch):
 
     # Track signals
     imported_files = []
-    video_import_widget.import_finished.connect(
-        lambda files: imported_files.extend(files)
-    )
+    video_import_widget.import_finished.connect(lambda files: imported_files.extend(files))
 
     # Start import
     event = create_drag_event(video_import_widget, [test_files["valid_video"]], "drop")

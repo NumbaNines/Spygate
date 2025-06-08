@@ -79,7 +79,7 @@ class VideoImportWidget(QWidget):
         if files:
             self.process_files(files)
 
-    def process_files(self, file_paths: List[str]):
+    def process_files(self, file_paths: list[str]):
         """Process the selected video files.
 
         Args:
@@ -100,14 +100,10 @@ class VideoImportWidget(QWidget):
                     if metadata:
                         valid_files.append((file_path, metadata))
             except Exception as e:
-                self.import_error.emit(
-                    f"Error validating {os.path.basename(file_path)}: {str(e)}"
-                )
+                self.import_error.emit(f"Error validating {os.path.basename(file_path)}: {str(e)}")
 
         if not valid_files:
-            QMessageBox.warning(
-                self, "Import Error", "No valid video files were found to import."
-            )
+            QMessageBox.warning(self, "Import Error", "No valid video files were found to import.")
             return
 
         # For each valid file, get player identification
@@ -121,9 +117,7 @@ class VideoImportWidget(QWidget):
             if self.current_dialog.exec():
                 player_name = self.current_dialog.get_player_name()
                 if not player_name:
-                    QMessageBox.warning(
-                        self, "Import Error", "Player name is required."
-                    )
+                    QMessageBox.warning(self, "Import Error", "Player name is required.")
                     continue
 
                 try:

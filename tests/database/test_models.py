@@ -8,14 +8,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 
 from spygate.database.config import Base, DatabaseSession, engine
-from spygate.database.models import (
-    Clip,
-    MotionEvent,
-    Player,
-    Tag,
-    TranscodedClip,
-    TranscodeStatus,
-)
+from spygate.database.models import Clip, MotionEvent, Player, Tag, TranscodedClip, TranscodeStatus
 from spygate.database.utils import (
     cleanup_stale_transcodes,
     create_clip,
@@ -340,17 +333,13 @@ def test_find_transcoded_version(db_session):
     )
 
     # Find version
-    result = find_transcoded_version(
-        clip.id, 1280, 720, 30.0, "h264", session=db_session
-    )
+    result = find_transcoded_version(clip.id, 1280, 720, 30.0, "h264", session=db_session)
 
     # Verify result
     assert result == transcoded
 
     # Try finding non-existent version
-    result = find_transcoded_version(
-        clip.id, 3840, 2160, 60.0, "h265", session=db_session
-    )
+    result = find_transcoded_version(clip.id, 3840, 2160, 60.0, "h265", session=db_session)
     assert result is None
 
 
@@ -388,20 +377,14 @@ def test_cleanup_stale_transcodes(db_session):
     versions[0].created_at = old_time
 
     # In progress for too long
-    update_transcode_status(
-        versions[1].id, TranscodeStatus.IN_PROGRESS, session=db_session
-    )
+    update_transcode_status(versions[1].id, TranscodeStatus.IN_PROGRESS, session=db_session)
     versions[1].start_time = old_time
 
     # Recently started
-    update_transcode_status(
-        versions[2].id, TranscodeStatus.IN_PROGRESS, session=db_session
-    )
+    update_transcode_status(versions[2].id, TranscodeStatus.IN_PROGRESS, session=db_session)
 
     # Completed
-    update_transcode_status(
-        versions[3].id, TranscodeStatus.COMPLETED, session=db_session
-    )
+    update_transcode_status(versions[3].id, TranscodeStatus.COMPLETED, session=db_session)
 
     # Clean up stale transcodes
     cleanup_stale_transcodes(max_age_hours=1, session=db_session)

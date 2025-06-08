@@ -12,11 +12,7 @@ from PyQt6.QtCore import QPoint, QSize, Qt
 from PyQt6.QtGui import QColor
 from PyQt6.QtTest import QTest
 
-from spygate.gui.components.video_timeline import (
-    Annotation,
-    AnnotationType,
-    VideoTimeline,
-)
+from spygate.gui.components.video_timeline import Annotation, AnnotationType, VideoTimeline
 
 
 @pytest.fixture

@@ -61,9 +61,7 @@ class MotionSystem:
 
         # Initialize motion detector with hardware-aware settings
         detector_params = self._get_detector_params()
-        self.motion_detector = MotionDetector(
-            method=detection_method, **detector_params
-        )
+        self.motion_detector = MotionDetector(method=detection_method, **detector_params)
 
         # Initialize motion service
         self.motion_service = MotionService(
@@ -82,9 +80,7 @@ class MotionSystem:
         # Initialize visualizer if enabled
         self.visualizer = None
         if enable_visualization:
-            self.visualizer = MotionVisualizer(
-                frame_width=frame_width, frame_height=frame_height
-            )
+            self.visualizer = MotionVisualizer(frame_width=frame_width, frame_height=frame_height)
 
         # Initialize state
         self.frame_count = 0
@@ -95,7 +91,7 @@ class MotionSystem:
 
         logger.info("Motion system initialized successfully")
 
-    def _get_detector_params(self) -> Dict[str, Any]:
+    def _get_detector_params(self) -> dict[str, Any]:
         """Get motion detector parameters based on hardware tier."""
         params = {"use_gpu": False, "num_threads": 1, "frame_skip": 0}
 
@@ -115,7 +111,7 @@ class MotionSystem:
         frame_number: int,
         fps: float,
         return_visualization: bool = True,
-    ) -> Tuple[Optional[np.ndarray], Dict[str, Any]]:
+    ) -> tuple[Optional[np.ndarray], dict[str, Any]]:
         """
         Process a video frame through the motion detection pipeline.
 
@@ -148,9 +144,7 @@ class MotionSystem:
         # Detect situations if enabled
         situations = None
         if self.situation_detector:
-            situations = self.situation_detector.detect_situations(
-                frame, frame_number, fps
-            )
+            situations = self.situation_detector.detect_situations(frame, frame_number, fps)
 
         # Process results through motion service
         vis_frame, results = self.motion_service.process_frame(
@@ -230,7 +224,7 @@ class MotionSystem:
         start_time: Optional[float] = None,
         end_time: Optional[float] = None,
         min_confidence: float = 0.6,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Retrieve motion events for a video within a time range.
 
@@ -255,7 +249,7 @@ class MotionSystem:
         video_id: int,
         pattern_type: Optional[str] = None,
         min_confidence: float = 0.6,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Retrieve motion patterns for a video.
 
@@ -292,7 +286,7 @@ class MotionSystem:
             video_id=video_id, start_time=start_time, end_time=end_time
         )
 
-    def get_system_info(self) -> Dict[str, Any]:
+    def get_system_info(self) -> dict[str, Any]:
         """Get current system information and status."""
         return {
             "hardware_tier": self.performance_tier,

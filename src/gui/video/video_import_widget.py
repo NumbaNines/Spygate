@@ -10,7 +10,7 @@ from ..workers.video_import_worker import VideoImportWorker
 
 
 class VideoImportWidget:
-    def process_files(self, file_paths: List[str]):
+    def process_files(self, file_paths: list[str]):
         """Process the selected video files.
 
         Args:
@@ -24,14 +24,10 @@ class VideoImportWidget:
                 if metadata:
                     valid_files.append((file_path, metadata))
             except Exception as e:
-                self.import_error.emit(
-                    f"Error validating {os.path.basename(file_path)}: {str(e)}"
-                )
+                self.import_error.emit(f"Error validating {os.path.basename(file_path)}: {str(e)}")
 
         if not valid_files:
-            QMessageBox.warning(
-                self, "Import Error", "No valid video files were found to import."
-            )
+            QMessageBox.warning(self, "Import Error", "No valid video files were found to import.")
             return
 
         # Show player name dialog
@@ -49,9 +45,7 @@ class VideoImportWidget:
                 return
 
             # Add player name to valid files
-            files_with_player = [
-                (path, meta, player_name) for path, meta in valid_files
-            ]
+            files_with_player = [(path, meta, player_name) for path, meta in valid_files]
 
             # Start import process
             self.start_import(files_with_player)

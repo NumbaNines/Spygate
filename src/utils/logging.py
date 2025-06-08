@@ -69,13 +69,11 @@ except Exception as e:
 class CustomLogger:
     """Custom logger with context support."""
 
-    def __init__(self, context: Optional[Dict[str, Any]] = None):
+    def __init__(self, context: Optional[dict[str, Any]] = None):
         """Initialize the logger with custom configuration."""
         self.context = context or {}
 
-    def log(
-        self, level: str, message: str, extra: Optional[Dict[str, Any]] = None
-    ) -> None:
+    def log(self, level: str, message: str, extra: Optional[dict[str, Any]] = None) -> None:
         """Log a message with context."""
         log_data = {**self.context}
         if extra:

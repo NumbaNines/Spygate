@@ -17,7 +17,7 @@ def create_video_import(
     metadata: VideoMetadata,
     player_name: str,
     title: str,
-    tags: Optional[List[str]] = None,
+    tags: Optional[list[str]] = None,
     session: Optional[Session] = None,
 ) -> Clip:
     """Create a new video import entry in the database.
@@ -80,9 +80,7 @@ def create_video_import(
             session.close()
 
 
-def get_video_import(
-    clip_id: UUID, session: Optional[Session] = None
-) -> Optional[Clip]:
+def get_video_import(clip_id: UUID, session: Optional[Session] = None) -> Optional[Clip]:
     """Get a video import by its ID.
 
     Args:

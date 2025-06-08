@@ -3,24 +3,8 @@
 from typing import Dict, List, Optional
 
 from PyQt6.QtCore import QPoint, Qt, pyqtSignal
-from PyQt6.QtGui import (
-    QColor,
-    QCursor,
-    QKeySequence,
-    QMouseEvent,
-    QPainter,
-    QPen,
-    QShortcut,
-)
-from PyQt6.QtWidgets import (
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QMenu,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
-)
+from PyQt6.QtGui import QColor, QCursor, QKeySequence, QMouseEvent, QPainter, QPen, QShortcut
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QMenu, QPushButton, QVBoxLayout, QWidget
 
 from ..models.annotation import Annotation
 
@@ -82,8 +66,8 @@ class AnnotationDisplay(QWidget):
         """
         super().__init__(parent)
         self.video_duration = video_duration
-        self.annotations: Dict[str, Annotation] = {}
-        self.markers: Dict[str, AnnotationMarker] = {}
+        self.annotations: dict[str, Annotation] = {}
+        self.markers: dict[str, AnnotationMarker] = {}
         self.setup_ui()
         self.setup_shortcuts()
 
@@ -113,17 +97,13 @@ class AnnotationDisplay(QWidget):
         if not current or not isinstance(current, AnnotationMarker):
             # Focus first marker if none focused
             if self.markers:
-                next_marker = min(
-                    self.markers.values(), key=lambda m: m.annotation.timestamp
-                )
+                next_marker = min(self.markers.values(), key=lambda m: m.annotation.timestamp)
                 next_marker.setFocus()
             return
 
         # Find next marker by timestamp
         current_time = current.annotation.timestamp
-        next_markers = [
-            m for m in self.markers.values() if m.annotation.timestamp > current_time
-        ]
+        next_markers = [m for m in self.markers.values() if m.annotation.timestamp > current_time]
         if next_markers:
             next_marker = min(next_markers, key=lambda m: m.annotation.timestamp)
             next_marker.setFocus()
@@ -134,17 +114,13 @@ class AnnotationDisplay(QWidget):
         if not current or not isinstance(current, AnnotationMarker):
             # Focus last marker if none focused
             if self.markers:
-                prev_marker = max(
-                    self.markers.values(), key=lambda m: m.annotation.timestamp
-                )
+                prev_marker = max(self.markers.values(), key=lambda m: m.annotation.timestamp)
                 prev_marker.setFocus()
             return
 
         # Find previous marker by timestamp
         current_time = current.annotation.timestamp
-        prev_markers = [
-            m for m in self.markers.values() if m.annotation.timestamp < current_time
-        ]
+        prev_markers = [m for m in self.markers.values() if m.annotation.timestamp < current_time]
         if prev_markers:
             prev_marker = max(prev_markers, key=lambda m: m.annotation.timestamp)
             prev_marker.setFocus()

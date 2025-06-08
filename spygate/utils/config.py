@@ -21,10 +21,10 @@ DEFAULT_CONFIG = {
     "logging": {"level": "INFO", "file": "logs/spygate.log"},
 }
 
-_config: Optional[Dict[str, Any]] = None
+_config: Optional[dict[str, Any]] = None
 
 
-def get_config() -> Dict[str, Any]:
+def get_config() -> dict[str, Any]:
     """
     Get the application configuration. Loads from file if not already loaded.
 
@@ -40,7 +40,7 @@ def get_config() -> Dict[str, Any]:
 
     try:
         if os.path.exists(config_path):
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 loaded_config = json.load(f)
                 _config = _merge_configs(DEFAULT_CONFIG, loaded_config)
                 logger.info(f"Loaded configuration from {config_path}")
@@ -61,7 +61,7 @@ def get_config() -> Dict[str, Any]:
     return _config
 
 
-def _merge_configs(default: Dict, override: Dict) -> Dict:
+def _merge_configs(default: dict, override: dict) -> dict:
     """
     Recursively merge two configuration dictionaries.
 
@@ -83,7 +83,7 @@ def _merge_configs(default: Dict, override: Dict) -> Dict:
     return result
 
 
-def update_config(updates: Dict[str, Any], save: bool = True) -> None:
+def update_config(updates: dict[str, Any], save: bool = True) -> None:
     """
     Update the application configuration.
 

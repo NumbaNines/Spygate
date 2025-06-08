@@ -8,14 +8,7 @@ import pytest
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 
-from spygate.database.config import (
-    Base,
-    DatabaseSession,
-    engine,
-    get_database_url,
-    get_db,
-    init_db,
-)
+from spygate.database.config import Base, DatabaseSession, engine, get_database_url, get_db, init_db
 
 
 @pytest.fixture(autouse=True)

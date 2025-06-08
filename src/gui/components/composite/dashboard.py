@@ -590,9 +590,7 @@ class Dashboard(QMainWindow):
 
         # Then find and scroll to the clip in the main view
         for clip in self.clips:
-            if clip.title == clip_title and clip in self.gameplan_clips.get(
-                gameplan_name, []
-            ):
+            if clip.title == clip_title and clip in self.gameplan_clips.get(gameplan_name, []):
                 # Find the clip's position in the grid
                 for i in range(self.grid_layout.count()):
                     widget = self.grid_layout.itemAt(i).widget()
@@ -633,9 +631,7 @@ class Dashboard(QMainWindow):
             )
 
             # Check if clip matches player filter
-            player_match = (
-                selected_player == "All Players" or selected_player == clip.player_name
-            )
+            player_match = selected_player == "All Players" or selected_player == clip.player_name
 
             # Check if clip matches selected tags
             tags_match = not self.selected_tags or any(
@@ -649,12 +645,7 @@ class Dashboard(QMainWindow):
                 else clip in self.gameplan_clips.get(self.current_gameplan, [])
             )
 
-            if (
-                (title_match or gameplan_match)
-                and player_match
-                and tags_match
-                and gameplan_match
-            ):
+            if (title_match or gameplan_match) and player_match and tags_match and gameplan_match:
                 clips_to_show.append(clip)
 
         # Add clips to grid in order
@@ -679,9 +670,7 @@ class Dashboard(QMainWindow):
             # Find the gameplan item and add the clip
             gameplan_item = self.sidebar.gameplans_tree.get_gameplan_item(gameplan_name)
             if gameplan_item:
-                self.sidebar.gameplans_tree.add_clip_to_gameplan(
-                    gameplan_item, clip.title
-                )
+                self.sidebar.gameplans_tree.add_clip_to_gameplan(gameplan_item, clip.title)
 
     def add_clip(self, clip_data):
         """Add a new clip to the dashboard.
@@ -712,18 +701,14 @@ class Dashboard(QMainWindow):
         self.clips.append(clip)
 
         # Add new tags to tag list
-        current_tags = {
-            self.tag_list.item(i).text() for i in range(self.tag_list.count())
-        }
+        current_tags = {self.tag_list.item(i).text() for i in range(self.tag_list.count())}
         for tag in clip_data["tags"]:
             if tag not in current_tags:
                 self.tag_list.addItem(tag)
                 current_tags.add(tag)
 
         # Add player to combo if not exists
-        current_players = {
-            self.player_combo.itemText(i) for i in range(self.player_combo.count())
-        }
+        current_players = {self.player_combo.itemText(i) for i in range(self.player_combo.count())}
         if clip_data["player"] not in current_players:
             self.player_combo.addItem(clip_data["player"])
 

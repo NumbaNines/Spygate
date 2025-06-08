@@ -1,11 +1,4 @@
-from PyQt6.QtChart import (
-    QBarCategoryAxis,
-    QBarSeries,
-    QBarSet,
-    QChart,
-    QChartView,
-    QValueAxis,
-)
+from PyQt6.QtChart import QBarCategoryAxis, QBarSeries, QBarSet, QChart, QChartView, QValueAxis
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QComboBox,
@@ -76,9 +69,7 @@ class AnalyticsView(QWidget):
             }
         """
         )
-        self.player_combo.addItems(
-            ["All Players", "Self", "Opponent: John", "Opponent: Mike"]
-        )
+        self.player_combo.addItems(["All Players", "Self", "Opponent: John", "Opponent: Mike"])
         filter_layout.addWidget(self.player_combo)
 
         filter_layout.addStretch()

@@ -1,0 +1,8 @@
+path: test_dataset # dataset root dir
+train: images/train # train images (relative to 'path')
+val: images/val # val images (relative to 'path')
+test: images/test # test images (relative to 'path')
+
+# Classes
+nc: 6 # number of classes
+names: ["hud", "gamertag", "preplay", "playcall", "no huddle", "audible"] # class names

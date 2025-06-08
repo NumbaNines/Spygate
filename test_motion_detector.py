@@ -1,14 +1,18 @@
+import os
+
 import cv2
 import numpy as np
 import pytest
+
 from motion_detector import MotionDetector, MotionEventLogger
-import os
+
 
 def generate_test_frame(motion=False, shape=(480, 640, 3)):
     frame = np.zeros(shape, dtype=np.uint8)
     if motion:
         cv2.rectangle(frame, (100, 100), (200, 200), (255, 255, 255), -1)
     return frame
+
 
 def test_frame_differencing_detection():
     detector = MotionDetector()
@@ -18,6 +22,7 @@ def test_frame_differencing_detection():
     _, contours = detector.detect_frame_diff(frame2)
     assert len(contours) > 0
 
+
 def test_background_subtraction_detection():
     detector = MotionDetector()
     frame1 = generate_test_frame(motion=False)
@@ -26,11 +31,13 @@ def test_background_subtraction_detection():
     _, contours = detector.detect_bg_subtraction(frame2)
     assert len(contours) > 0
 
+
 def test_sensitivity_adjustment():
     detector = MotionDetector(sensitivity=10)
     assert detector.sensitivity == 10
     detector.set_sensitivity(30)
     assert detector.sensitivity == 30
+
 
 def test_roi_selection():
     detector = MotionDetector()
@@ -40,6 +47,7 @@ def test_roi_selection():
     frame = generate_test_frame(motion=True)
     masked = detector.mask_frame(frame)
     assert masked.shape == frame.shape
+
 
 def test_visualization_methods():
     detector = MotionDetector()
@@ -55,6 +63,7 @@ def test_visualization_methods():
     assert trail_img.shape == frame.shape
     assert heatmap.shape[:2] == frame.shape[:2]
 
+
 def test_event_logging(tmp_path):
     csv_path = tmp_path / "events.csv"
     json_path = tmp_path / "events.json"
@@ -62,23 +71,25 @@ def test_event_logging(tmp_path):
     logger = MotionEventLogger(str(csv_path), str(json_path), str(db_path))
     detector = MotionDetector()
     detector.set_event_logger(logger)
-    detector.log_motion_event(roi=(0,0,100,100), magnitude=42.0, snapshot_path=None)
+    detector.log_motion_event(roi=(0, 0, 100, 100), magnitude=42.0, snapshot_path=None)
     # Check CSV
-    with open(csv_path, 'r') as f:
+    with open(csv_path) as f:
         lines = f.readlines()
         assert len(lines) > 1
     # Check JSON
-    with open(json_path, 'r') as f:
+    with open(json_path) as f:
         data = f.read()
-        assert 'magnitude' in data
+        assert "magnitude" in data
     # Check DB
     import sqlite3
+
     conn = sqlite3.connect(str(db_path))
     c = conn.cursor()
-    c.execute('SELECT * FROM motion_events')
+    c.execute("SELECT * FROM motion_events")
     rows = c.fetchall()
     assert len(rows) > 0
     conn.close()
+
 
 def test_performance_and_resource_usage():
     detector = MotionDetector(resize_width=320, resize_height=240, frame_skip=2)
@@ -86,7 +97,8 @@ def test_performance_and_resource_usage():
     for _ in range(10):
         detector.process_frame(frame)
     usage = detector.get_resource_usage()
-    assert 'cpu_percent' in usage and 'memory_percent' in usage
+    assert "cpu_percent" in usage and "memory_percent" in usage
+
 
 def test_edge_cases():
     detector = MotionDetector()
@@ -100,4 +112,4 @@ def test_edge_cases():
     frame2 = generate_test_frame(motion=True)
     detector.detect_frame_diff(frame1)
     _, contours = detector.detect_frame_diff(frame2)
-    assert len(contours) > 0 
+    assert len(contours) > 0

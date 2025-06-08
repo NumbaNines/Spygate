@@ -15,11 +15,7 @@ from spygate.database.video_manager import VideoManager
 from spygate.services.video_service import VideoService
 from spygate.video.metadata import VideoMetadata
 
-from .utils.test_utils import (
-    cleanup_test_files,
-    create_test_files,
-    create_test_metadata,
-)
+from .utils.test_utils import cleanup_test_files, create_test_files, create_test_metadata
 
 
 # Database fixtures
@@ -53,7 +49,7 @@ def video_service(video_manager):
 
 
 @pytest.fixture
-def test_files(tmp_path) -> Dict[str, str]:
+def test_files(tmp_path) -> dict[str, str]:
     """Create test files."""
     files = create_test_files(tmp_path)
     yield files
@@ -212,9 +208,7 @@ def test_player_creation(video_manager):
 
 def test_video_metadata_storage(video_service, test_files, db_session):
     """Test video metadata storage and retrieval."""
-    metadata = create_test_metadata(
-        width=1920, height=1080, fps=60.0, duration=120.0, codec="h265"
-    )
+    metadata = create_test_metadata(width=1920, height=1080, fps=60.0, duration=120.0, codec="h265")
 
     # Import video
     video_service.import_video(

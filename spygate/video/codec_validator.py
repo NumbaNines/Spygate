@@ -95,8 +95,7 @@ class CodecValidator:
         try:
             subprocess.run(
                 ["ffmpeg", "-version"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
                 check=True,
             )
         except (subprocess.SubprocessError, FileNotFoundError) as e:
@@ -134,8 +133,7 @@ class CodecValidator:
                     "v:0",  # First video stream only
                     file_path,
                 ],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
                 check=True,
             )
 
@@ -156,7 +154,7 @@ class CodecValidator:
             logger.error(f"Failed to parse FFmpeg output: {e}", exc_info=True)
             raise RuntimeError(f"Failed to parse video information: {str(e)}") from e
 
-    def get_video_info(self, file_path: str) -> Dict:
+    def get_video_info(self, file_path: str) -> dict:
         """
         Get detailed information about a video file.
 
@@ -188,8 +186,7 @@ class CodecValidator:
                     "v:0",
                     file_path,
                 ],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
                 check=True,
             )
 
@@ -208,9 +205,7 @@ class CodecValidator:
                     "duration": float(format_info.get("duration", 0)),
                     "size": int(format_info.get("size", 0)),
                     "bit_rate": int(format_info.get("bit_rate", 0)),
-                    "frame_rate": self._parse_frame_rate(
-                        stream.get("r_frame_rate", "")
-                    ),
+                    "frame_rate": self._parse_frame_rate(stream.get("r_frame_rate", "")),
                 }
 
             raise RuntimeError("No video stream found in file")
@@ -241,9 +236,7 @@ class CodecValidator:
             return 0.0
 
     @classmethod
-    def validate_video(
-        cls, file_path: str
-    ) -> Tuple[bool, str, Optional[VideoMetadata]]:
+    def validate_video(cls, file_path: str) -> tuple[bool, str, Optional[VideoMetadata]]:
         """Validate a video file and extract its metadata.
 
         Performs comprehensive validation of a video file, checking:
@@ -300,9 +293,7 @@ class CodecValidator:
             # Try to open the video
             cap = cv2.VideoCapture(file_path)
             if not cap.isOpened():
-                logger.error(
-                    f"Video validation failed: Unable to open video file {file_path}"
-                )
+                logger.error(f"Video validation failed: Unable to open video file {file_path}")
                 return (
                     False,
                     "Failed to open video file. The file may be corrupted.",
@@ -383,9 +374,7 @@ class CodecValidator:
 
                 # Check if codec is supported
                 if fourcc.lower() not in [k.lower() for k in cls.SUPPORTED_CODECS]:
-                    logger.error(
-                        f"Video validation failed: Codec {fourcc} is not supported"
-                    )
+                    logger.error(f"Video validation failed: Codec {fourcc} is not supported")
                     supported_list = ", ".join(set(cls.SUPPORTED_CODECS))
                     return (
                         False,

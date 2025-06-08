@@ -1,3 +1,3 @@
 """
 GUI components for Spygate
-""" 
+"""

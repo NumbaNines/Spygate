@@ -42,9 +42,9 @@ class VideoImportService:
         file_path: str,
         player_name: str,
         title: str,
-        tags: Optional[List[str]] = None,
+        tags: Optional[list[str]] = None,
         progress_callback: Optional[callable] = None,
-    ) -> Tuple[UUID, str]:
+    ) -> tuple[UUID, str]:
         """Import a video file into the system.
 
         Args:
@@ -114,9 +114,7 @@ class VideoImportService:
                 delete_file(thumbnail_path)
             # Update database if entry was created
             if "clip" in locals():
-                update_video_import_status(
-                    clip.id, is_processed=False, error_message=str(e)
-                )
+                update_video_import_status(clip.id, is_processed=False, error_message=str(e))
             raise VideoImportError(f"Failed to import video: {str(e)}")
 
     def cancel_import(self, clip_id: UUID) -> bool:

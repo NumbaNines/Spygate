@@ -26,9 +26,9 @@ class FormGroup(BaseWidget):
             parent: Optional parent widget
         """
         super().__init__(parent)
-        self.fields: Dict[str, QWidget] = {}
-        self.labels: Dict[str, QLabel] = {}
-        self._required_fields: Dict[str, bool] = {}
+        self.fields: dict[str, QWidget] = {}
+        self.labels: dict[str, QLabel] = {}
+        self._required_fields: dict[str, bool] = {}
         self.setObjectName("")
         self._setup_ui()
 
@@ -38,9 +38,7 @@ class FormGroup(BaseWidget):
         self.layout.setContentsMargins(8, 8, 8, 8)
         self.layout.setSpacing(8)
 
-    def add_field(
-        self, name: str, widget: QWidget, label_text: Optional[str] = None
-    ) -> None:
+    def add_field(self, name: str, widget: QWidget, label_text: Optional[str] = None) -> None:
         """Add a field to the form.
 
         Args:
@@ -60,9 +58,7 @@ class FormGroup(BaseWidget):
 
         self.fields[name] = widget
 
-    def add_text_field(
-        self, name: str, label: str, required: bool = False
-    ) -> QLineEdit:
+    def add_text_field(self, name: str, label: str, required: bool = False) -> QLineEdit:
         """Add a text field to the form.
 
         Args:
@@ -79,9 +75,7 @@ class FormGroup(BaseWidget):
         self._required_fields[name] = required
         return field
 
-    def add_password_field(
-        self, name: str, label: str, required: bool = False
-    ) -> QLineEdit:
+    def add_password_field(self, name: str, label: str, required: bool = False) -> QLineEdit:
         """Add a password field to the form.
 
         Args:
@@ -128,7 +122,7 @@ class FormGroup(BaseWidget):
                     return False
         return True
 
-    def get_data(self) -> Dict[str, Any]:
+    def get_data(self) -> dict[str, Any]:
         """Get form data.
 
         Returns:
@@ -150,7 +144,7 @@ class FormGroup(BaseWidget):
             elif isinstance(field, QCheckBox):
                 field.setChecked(False)
 
-    def update_theme(self, theme: Dict[str, Any]) -> None:
+    def update_theme(self, theme: dict[str, Any]) -> None:
         """Update the form's theme.
 
         Args:

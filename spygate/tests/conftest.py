@@ -2,12 +2,15 @@
 
 import os
 import shutil
+from unittest.mock import MagicMock
 
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from ..core.config import Config
+from ..core.hardware import HardwareDetector, HardwareTier
 from ..database import Base, get_db
 from ..database.models import AnalysisJob, Clip, Tag, User
 
@@ -109,3 +112,70 @@ def test_directories():
     for dir_path in dirs:
         if os.path.exists(dir_path):
             shutil.rmtree(dir_path)
+
+
+@pytest.fixture
+def mock_hardware():
+    """Create a mock hardware detector."""
+    hardware = MagicMock(spec=HardwareDetector)
+
+    # Mock GPU detection
+    hardware.has_cuda = True
+    hardware.gpu_count = 1
+    hardware.get_gpu_memory_usage.return_value = 512.0
+    hardware.get_system_memory.return_value = {
+        "total": 16384.0,
+        "available": 8192.0,
+        "used": 8192.0,
+        "percent": 50.0,
+    }
+    hardware.get_cpu_usage.return_value = 50.0
+
+    # Mock hardware tier
+    hardware.tier = HardwareTier.HIGH
+
+    return hardware
+
+
+@pytest.fixture
+def mock_config():
+    """Create a mock configuration."""
+    config = MagicMock(spec=Config)
+
+    # Mock performance settings
+    config.performance = {
+        "target_fps": 30.0,
+        "min_fps": 20.0,
+        "max_memory_mb": 2048.0,
+        "max_gpu_memory_mb": 1024.0,
+        "memory_warning_threshold": 0.9,
+        "gpu_warning_threshold": 0.9,
+        "max_processing_time": 0.05,
+        "max_batch_time": 0.2,
+        "min_quality": 0.5,
+        "max_quality": 1.0,
+        "quality_step": 0.1,
+        "fps_buffer_size": 100,
+        "metrics_interval": 1.0,
+        "cleanup_interval": 100,
+    }
+
+    # Mock tracking settings
+    config.tracking = {
+        "max_age": 30,
+        "min_hits": 3,
+        "iou_threshold": 0.3,
+        "max_prediction_age": 5,
+        "max_tracks": 100,
+        "track_buffer_size": 30,
+    }
+
+    # Mock preprocessing settings
+    config.preprocessing = {
+        "target_size": (640, 640),
+        "normalize": True,
+        "batch_size": 32,
+        "num_workers": 4,
+    }
+
+    return config

@@ -264,6 +264,4 @@ class MainWindow(QMainWindow):
 
         except Exception as e:
             logger.error(f"Error handling imported video: {e}", exc_info=True)
-            QMessageBox.critical(
-                self, "Error", f"Failed to load imported video: {str(e)}"
-            )
+            QMessageBox.critical(self, "Error", f"Failed to load imported video: {str(e)}")

@@ -33,8 +33,8 @@ class BallTracker:
         self,
         confidence_threshold: float = 0.7,
         tracker_type: str = "CSRT",
-        min_ball_size: Tuple[int, int] = (10, 10),
-        max_ball_size: Tuple[int, int] = (50, 50),
+        min_ball_size: tuple[int, int] = (10, 10),
+        max_ball_size: tuple[int, int] = (50, 50),
     ):
         """
         Initialize the ball tracker.
@@ -71,9 +71,7 @@ class BallTracker:
         self.kalman = cv2.KalmanFilter(
             4, 2
         )  # 4 state variables (x, y, dx, dy), 2 measurements (x, y)
-        self.kalman.measurementMatrix = np.array(
-            [[1, 0, 0, 0], [0, 1, 0, 0]], np.float32
-        )
+        self.kalman.measurementMatrix = np.array([[1, 0, 0, 0], [0, 1, 0, 0]], np.float32)
         self.kalman.transitionMatrix = np.array(
             [[1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]], np.float32
         )
@@ -108,9 +106,7 @@ class BallTracker:
         self.models["hough"] = cv2.HoughCircles
         self.models["contour"] = None  # Will use contour detection directly
 
-    def detect_ball(
-        self, frame: np.ndarray
-    ) -> Optional[Tuple[float, float, float, float]]:
+    def detect_ball(self, frame: np.ndarray) -> Optional[tuple[float, float, float, float]]:
         """
         Detect the ball in a frame using available detection methods.
 
@@ -133,9 +129,7 @@ class BallTracker:
         detection = self._detect_ball_traditional(frame)
         return detection
 
-    def _detect_ball_yolo(
-        self, frame: np.ndarray
-    ) -> Optional[Tuple[float, float, float, float]]:
+    def _detect_ball_yolo(self, frame: np.ndarray) -> Optional[tuple[float, float, float, float]]:
         """Detect ball using YOLOv5 model."""
         # Convert BGR to RGB
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -145,9 +139,7 @@ class BallTracker:
 
         # Process results
         for *box, conf, cls in results.xyxy[0]:
-            if (
-                conf > self.confidence_threshold and cls == 0
-            ):  # Assuming 0 is football class
+            if conf > self.confidence_threshold and cls == 0:  # Assuming 0 is football class
                 if torch.cuda.is_available():
                     box = [b.cpu().numpy() for b in box]
                 else:
@@ -158,7 +150,7 @@ class BallTracker:
 
     def _detect_ball_traditional(
         self, frame: np.ndarray
-    ) -> Optional[Tuple[float, float, float, float]]:
+    ) -> Optional[tuple[float, float, float, float]]:
         """Detect ball using traditional computer vision methods."""
         # Convert to grayscale
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -183,9 +175,7 @@ class BallTracker:
 
         # Try contour detection
         edges = cv2.Canny(blurred, 50, 150)
-        contours, _ = cv2.findContours(
-            edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         for contour in contours:
             x, y, w, h = cv2.boundingRect(contour)
@@ -203,7 +193,7 @@ class BallTracker:
 
         return None
 
-    def predict_next_position(self) -> Optional[Tuple[float, float, float, float]]:
+    def predict_next_position(self) -> Optional[tuple[float, float, float, float]]:
         """
         Predict the next ball position based on motion history using Kalman filtering.
 
@@ -223,9 +213,7 @@ class BallTracker:
         # Return predicted position with last known size
         return (float(prediction[0]), float(prediction[1]), w, h)
 
-    def update(
-        self, frame: np.ndarray
-    ) -> Tuple[bool, Optional[Tuple[float, float, float, float]]]:
+    def update(self, frame: np.ndarray) -> tuple[bool, Optional[tuple[float, float, float, float]]]:
         """
         Update ball tracking with a new frame.
 
@@ -245,9 +233,7 @@ class BallTracker:
 
                 # Update Kalman filter with new measurement
                 if not self.kalman_initialized:
-                    self.kalman.statePre = np.array(
-                        [[bbox[0]], [bbox[1]], [0], [0]], np.float32
-                    )
+                    self.kalman.statePre = np.array([[bbox[0]], [bbox[1]], [0], [0]], np.float32)
                     self.kalman_initialized = True
                 else:
                     measurement = np.array([[bbox[0]], [bbox[1]]], np.float32)
@@ -297,7 +283,7 @@ class BallTracker:
 
         return False, None
 
-    def _update_position_history(self, bbox: Tuple[float, float, float, float]):
+    def _update_position_history(self, bbox: tuple[float, float, float, float]):
         """Update position history for motion prediction."""
         self.prev_positions.append(bbox)
         if len(self.prev_positions) > self.max_positions_history:
@@ -306,8 +292,8 @@ class BallTracker:
     def draw_ball(
         self,
         frame: np.ndarray,
-        bbox: Tuple[float, float, float, float],
-        color: Tuple[int, int, int] = (0, 255, 255),
+        bbox: tuple[float, float, float, float],
+        color: tuple[int, int, int] = (0, 255, 255),
         thickness: int = 2,
     ) -> np.ndarray:
         """
@@ -325,20 +311,18 @@ class BallTracker:
         output = frame.copy()
 
         # Draw current bounding box
-        x, y, w, h = [int(v) for v in bbox]
+        x, y, w, h = (int(v) for v in bbox)
         cv2.rectangle(output, (x, y), (x + w, y + h), color, thickness)
 
         # Draw trajectory
         if len(self.prev_positions) > 1:
-            points = [
-                (int(x + w / 2), int(y + h / 2)) for x, y, w, h in self.prev_positions
-            ]
+            points = [(int(x + w / 2), int(y + h / 2)) for x, y, w, h in self.prev_positions]
             for i in range(1, len(points)):
                 cv2.line(output, points[i - 1], points[i], color, thickness)
 
         return output
 
-    def get_ball_stats(self) -> Dict[str, Any]:
+    def get_ball_stats(self) -> dict[str, Any]:
         """
         Get current ball tracking statistics.
 
@@ -407,9 +391,7 @@ class BallTracker:
             # Calculate prediction confidence based on tracking status and stability
             prediction_confidence = 0.0
             if self.tracking_active:
-                base_confidence = max(
-                    0.0, 1.0 - (self.lost_frames / self.max_lost_frames)
-                )
+                base_confidence = max(0.0, 1.0 - (self.lost_frames / self.max_lost_frames))
                 prediction_confidence = base_confidence * trajectory_stability
 
             stats.update(

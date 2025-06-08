@@ -48,7 +48,7 @@ class SituationDetector:
 
         self.initialized = True
 
-    def _get_default_field_rois(self) -> List[Dict[str, Any]]:
+    def _get_default_field_rois(self) -> list[dict[str, Any]]:
         """Get default ROIs for different areas of the football field."""
         # These are relative coordinates (0-1) that will be scaled to frame size
         return [
@@ -66,9 +66,7 @@ class SituationDetector:
             },
         ]
 
-    def detect_situations(
-        self, frame: np.ndarray, frame_number: int, fps: float
-    ) -> Dict[str, Any]:
+    def detect_situations(self, frame: np.ndarray, frame_number: int, fps: float) -> dict[str, Any]:
         """
         Detect situations in a video frame using enhanced motion detection.
 
@@ -93,9 +91,7 @@ class SituationDetector:
         motion_features = self._extract_motion_features(motion_result, frame.shape)
 
         # Detect situations based on motion and HUD info
-        situations = self._analyze_situations(
-            motion_features, hud_info, frame_number, fps
-        )
+        situations = self._analyze_situations(motion_features, hud_info, frame_number, fps)
 
         # Update situation history
         if situations:
@@ -119,8 +115,8 @@ class SituationDetector:
         }
 
     def _extract_motion_features(
-        self, motion_result: Dict[str, Any], frame_shape: Tuple[int, int, int]
-    ) -> Dict[str, Any]:
+        self, motion_result: dict[str, Any], frame_shape: tuple[int, int, int]
+    ) -> dict[str, Any]:
         """Extract meaningful features from motion detection results."""
         features = {
             "overall_motion": motion_result["score"],
@@ -170,8 +166,8 @@ class SituationDetector:
             return "defensive_secondary"
 
     def _analyze_motion_patterns(
-        self, motion_history: List[Dict[str, Any]], frame_shape: Tuple[int, int, int]
-    ) -> List[Dict[str, Any]]:
+        self, motion_history: list[dict[str, Any]], frame_shape: tuple[int, int, int]
+    ) -> list[dict[str, Any]]:
         """Analyze motion patterns from recent history."""
         patterns = []
 
@@ -220,11 +216,11 @@ class SituationDetector:
 
     def _analyze_situations(
         self,
-        motion_features: Dict[str, Any],
-        hud_info: Dict[str, Any],
+        motion_features: dict[str, Any],
+        hud_info: dict[str, Any],
         frame_number: int,
         fps: float,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Analyze and classify situations based on motion features and HUD info."""
         situations = []
         timestamp = frame_number / fps
@@ -247,9 +243,7 @@ class SituationDetector:
                                     "details": {
                                         "direction": pattern["direction"],
                                         "speed": pattern["speed"],
-                                        "motion_score": motion_features[
-                                            "overall_motion"
-                                        ],
+                                        "motion_score": motion_features["overall_motion"],
                                     },
                                 }
                             )
@@ -277,11 +271,11 @@ class SituationDetector:
 
     def analyze_sequence(
         self,
-        frames: List[np.ndarray],
+        frames: list[np.ndarray],
         start_frame: int,
         fps: float,
         window_size: int = 5,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Analyze a sequence of frames for temporal patterns.
 
@@ -313,8 +307,8 @@ class SituationDetector:
         return results
 
     def _analyze_temporal_patterns(
-        self, window: List[Dict[str, Any]], fps: float
-    ) -> List[Dict[str, Any]]:
+        self, window: list[dict[str, Any]], fps: float
+    ) -> list[dict[str, Any]]:
         """Analyze temporal patterns in a window of frames."""
         patterns = []
 
@@ -344,7 +338,7 @@ class SituationDetector:
 
         return patterns
 
-    def extract_hud_info(self, frame: np.ndarray) -> Dict[str, Any]:
+    def extract_hud_info(self, frame: np.ndarray) -> dict[str, Any]:
         """Extract HUD information from a frame using YOLO11-based detection."""
         if not self.initialized:
             raise RuntimeError("Situation detector not initialized")
@@ -355,8 +349,8 @@ class SituationDetector:
         return hud_info
 
     def detect_mistakes(
-        self, situations: List[Dict[str, Any]], hud_info: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+        self, situations: list[dict[str, Any]], hud_info: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """Detect potential mistakes in gameplay.
 
         Args:

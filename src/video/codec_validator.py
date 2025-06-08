@@ -52,9 +52,7 @@ class CodecValidator:
             codec = "".join([chr((codec_numeric >> 8 * i) & 0xFF) for i in range(4)])
 
             # Validate codec
-            if not any(
-                supported in codec.lower() for supported in self.SUPPORTED_CODECS
-            ):
+            if not any(supported in codec.lower() for supported in self.SUPPORTED_CODECS):
                 return None
 
             return VideoMetadata(

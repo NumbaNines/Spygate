@@ -1,0 +1,101 @@
+# Task ID: 2
+# Title: Implement Video Import Feature
+# Status: done
+# Dependencies: 1
+# Priority: high
+# Description: Create the video import functionality allowing users to upload gameplay clips with player identification.
+# Details:
+1. Create Upload page with PyQt6:
+   - Implement QWidget for drag-and-drop file selection
+   - Add file picker dialog as alternative
+   - Design blue "Upload" button (#3B82F6)
+   - Implement QProgressDialog for upload progress
+2. Add codec validation using FFmpeg:
+   - Validate H.264, H.265, VP8, VP9 codecs
+   - Show appropriate error messages for unsupported formats
+3. Create QDialog for player identification:
+   - Prompt for `player_name` ("Self" or "Opponent: Name")
+   - Store selection with video metadata
+4. Implement SQLite storage for video metadata:
+   - Store filename, duration, player_name, upload date
+   - Create database schema with appropriate indices
+5. Generate and store video thumbnails:
+   - Extract first frame or representative frame
+   - Resize to appropriate thumbnail dimensions
+   - Store in efficient format
+6. Integrate with VideoTimeline component (Task 3)
+7. Implement error handling with QMessageBox for invalid files
+8. Add accessibility support with ARIA labels and keyboard navigation
+
+# Test Strategy:
+1. Unit tests for codec validation functions
+2. Unit tests for thumbnail generation
+3. Integration tests for database operations
+4. UI tests for drag-and-drop functionality
+5. UI tests for file picker dialog
+6. UI tests for player identification dialog
+7. Error handling tests with invalid file formats
+8. Accessibility tests for keyboard navigation and screen reader compatibility
+9. Performance tests for large video files
+
+# Subtasks:
+## 1. Design Video Import UI Components [done]
+### Dependencies: None
+### Description: Create the PyQt6 UI components for the video import interface, including file selection dialog, progress indicators, and import controls.
+### Details:
+Implement a clean, intuitive interface with a file browser button, drag-and-drop area, progress bar, and cancel/confirm buttons. Ensure the UI follows the application's design language and is responsive.
+
+## 2. Implement File Selection and Validation [done]
+### Dependencies: 2.1
+### Description: Create functionality to select video files and validate their format, size, and compatibility.
+### Details:
+Support common video formats (MP4, MOV, AVI). Implement file size checks (warn if >500MB). Verify video can be read with OpenCV. Show appropriate error messages for invalid files.
+
+## 3. Develop Video Metadata Extraction [done]
+### Dependencies: 2.2
+### Description: Extract and display relevant metadata from selected video files (duration, resolution, frame rate).
+### Details:
+Use OpenCV or PyAV to extract video properties. Display metadata in the UI to help users confirm they've selected the correct file. Store metadata for later use in the database.
+
+## 4. Create Database Schema for Videos [done]
+### Dependencies: None
+### Description: Design and implement the database schema to store video information and relationships to players/matches.
+### Details:
+Create tables for videos with fields for file path, metadata, import date, status, and foreign keys to related entities. Include indexes for efficient querying. Document the schema design.
+
+## 5. Implement Video File Management System [done]
+### Dependencies: 2.2
+### Description: Create a system to manage the physical storage of video files, including copying to application storage and handling duplicates.
+### Details:
+Implement file copying with progress tracking. Create a consistent file naming convention. Handle duplicate detection using file hashes. Manage storage directory structure.
+
+## 6. Develop Player Identification Interface [done]
+### Dependencies: 2.1, 2.3
+### Description: Create UI components for associating imported videos with specific players or matches.
+### Details:
+Implement player/match selection dropdowns or search fields. Allow tagging videos with multiple players. Include options to create new player profiles during import if needed.
+
+## 7. Implement Database Integration for Video Import [done]
+### Dependencies: 2.4, 2.5
+### Description: Connect the UI and file management systems to the database for storing video information.
+### Details:
+Create data access layer for video operations. Implement transactions to ensure data consistency. Handle database connection errors gracefully. Include logging of import operations.
+
+## 8. Create Import Progress Tracking System [done]
+### Dependencies: 2.1, 2.5
+### Description: Implement a system to track and display the progress of video imports, especially for large files.
+### Details:
+Create a progress bar that updates in real-time. Implement background processing to prevent UI freezing. Allow cancellation of imports in progress. Show estimated time remaining.
+
+## 9. Develop Error Handling and Recovery System [done]
+### Dependencies: 2.2, 2.5, 2.7
+### Description: Implement comprehensive error handling for the import process, including user-friendly error messages and recovery options.
+### Details:
+Create specific error messages for different failure scenarios. Implement retry mechanisms for transient errors. Clean up partial imports if process fails. Log detailed error information for debugging.
+
+## 10. Implement Video Import Testing Suite [done]
+### Dependencies: 2.1, 2.2, 2.3, 2.5, 2.6, 2.7, 2.8, 2.9
+### Description: Create a comprehensive testing suite for the video import functionality to ensure reliability across different scenarios.
+### Details:
+Develop unit tests for individual components. Create integration tests for the full import flow. Test with various video formats and sizes. Include performance testing for large files. Implement automated UI testing for the import interface.
+

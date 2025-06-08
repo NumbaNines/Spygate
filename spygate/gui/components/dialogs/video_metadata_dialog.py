@@ -59,9 +59,7 @@ class VideoMetadataDialog(QDialog):
         file_layout.addRow("File Size:", file_size_label)
 
         # Import date
-        import_date_label = QLabel(
-            self.metadata.import_date.strftime("%Y-%m-%d %H:%M:%S")
-        )
+        import_date_label = QLabel(self.metadata.import_date.strftime("%Y-%m-%d %H:%M:%S"))
         file_layout.addRow("Import Date:", import_date_label)
 
         file_group.setLayout(file_layout)
@@ -153,7 +151,7 @@ class VideoMetadataDialog(QDialog):
 
         self.setLayout(layout)
 
-    def get_metadata(self) -> Dict[str, Any]:
+    def get_metadata(self) -> dict[str, Any]:
         """
         Get the complete metadata including user-entered information.
 

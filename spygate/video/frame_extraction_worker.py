@@ -57,7 +57,7 @@ class FrameExtractionWorker(QThread):
         # Initialize state
         self._should_stop = False
         self._extractor: Optional[FrameExtractor] = None
-        self._frames: List[Tuple[float, np.ndarray]] = []
+        self._frames: list[tuple[float, np.ndarray]] = []
 
         # Ensure video path exists
         if not Path(video_path).exists():
@@ -125,7 +125,7 @@ class FrameExtractionWorker(QThread):
         if self._extractor:
             self._extractor.cancel_extraction()
 
-    def get_frames(self) -> List[Tuple[float, np.ndarray]]:
+    def get_frames(self) -> list[tuple[float, np.ndarray]]:
         """
         Get the currently extracted frames.
         Thread-safe access to partial results.

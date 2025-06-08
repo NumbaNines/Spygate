@@ -18,9 +18,7 @@ from .hardware_monitor import HardwareMonitor
 class TrackingAlgorithm(Enum):
     """Available tracking algorithms."""
 
-    CSRT = (
-        auto()
-    )  # Discriminative Correlation Filter with Channel and Spatial Reliability
+    CSRT = auto()  # Discriminative Correlation Filter with Channel and Spatial Reliability
     KCF = auto()  # Kernelized Correlation Filters
     MOSSE = auto()  # Minimum Output Sum of Squared Error
     MEDIANFLOW = auto()  # Forward-Backward Error
@@ -169,13 +167,11 @@ class TrackingHardwareManager:
         # Default to BASIC mode if no other requirements are met
         return TrackingMode.BASIC
 
-    def _get_available_algorithms(self) -> List[TrackingAlgorithm]:
+    def _get_available_algorithms(self) -> list[TrackingAlgorithm]:
         """Get list of available tracking algorithms based on tracking mode."""
         available = []
         for algo, reqs in self.ALGORITHM_REQUIREMENTS.items():
-            if self._mode_level(reqs["min_mode"]) <= self._mode_level(
-                self.tracking_mode
-            ) and (
+            if self._mode_level(reqs["min_mode"]) <= self._mode_level(self.tracking_mode) and (
                 not reqs["gpu_accelerated"] or self.hardware_monitor.has_gpu_support()
             ):
                 available.append(algo)
@@ -214,9 +210,7 @@ class TrackingHardwareManager:
             return TrackingAlgorithm.CSRT  # Default to CSRT if no algorithms available
 
         # Normalize priorities
-        total = (
-            priority_accuracy + priority_speed + priority_occlusion + priority_recovery
-        )
+        total = priority_accuracy + priority_speed + priority_occlusion + priority_recovery
         priority_accuracy /= total
         priority_speed /= total
         priority_occlusion /= total
@@ -240,7 +234,7 @@ class TrackingHardwareManager:
 
         return best_algo
 
-    def get_tracking_config(self) -> Dict:
+    def get_tracking_config(self) -> dict:
         """Get the current tracking configuration."""
         return {
             "tracking_mode": self.tracking_mode,
@@ -254,10 +248,10 @@ class TrackingHardwareManager:
         """Check if a specific algorithm can run on the current hardware."""
         return algorithm in self.available_algorithms
 
-    def get_algorithm_requirements(self, algorithm: TrackingAlgorithm) -> Dict:
+    def get_algorithm_requirements(self, algorithm: TrackingAlgorithm) -> dict:
         """Get the requirements for a specific algorithm."""
         return self.ALGORITHM_REQUIREMENTS[algorithm].copy()
 
-    def get_mode_requirements(self, mode: TrackingMode) -> Dict:
+    def get_mode_requirements(self, mode: TrackingMode) -> dict:
         """Get the requirements for a specific tracking mode."""
         return self.MODE_REQUIREMENTS[mode].copy()

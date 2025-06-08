@@ -1,6 +1,8 @@
 from celery import shared_task
 from django.utils import timezone
+
 from .models import GameAnalysis
+
 
 @shared_task
 def analyze_video(analysis_id):
@@ -10,7 +12,7 @@ def analyze_video(analysis_id):
     """
     try:
         analysis = GameAnalysis.objects.get(id=analysis_id)
-        analysis.processing_status = 'processing'
+        analysis.processing_status = "processing"
         analysis.save()
 
         # TODO: Integrate with core Python analysis engine
@@ -18,7 +20,7 @@ def analyze_video(analysis_id):
         # For now, we'll just simulate the analysis
 
         # Update analysis with results
-        analysis.processing_status = 'completed'
+        analysis.processing_status = "completed"
         analysis.completed_at = timezone.now()
         analysis.save()
 
@@ -26,7 +28,7 @@ def analyze_video(analysis_id):
         return
     except Exception as e:
         if analysis:
-            analysis.processing_status = 'error'
+            analysis.processing_status = "error"
             analysis.error_message = str(e)
             analysis.save()
-        raise 
+        raise

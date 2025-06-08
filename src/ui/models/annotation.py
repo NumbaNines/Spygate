@@ -32,9 +32,7 @@ class Annotation:
         return (
             (self.timestamp <= other.timestamp <= self.timestamp + self.duration)
             or (
-                self.timestamp
-                <= other.timestamp + other.duration
-                <= self.timestamp + self.duration
+                self.timestamp <= other.timestamp + other.duration <= self.timestamp + self.duration
             )
             or (other.timestamp <= self.timestamp <= other.timestamp + other.duration)
         )

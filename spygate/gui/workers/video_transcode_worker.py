@@ -84,9 +84,7 @@ class VideoTranscodeWorker(QObject):
     def cancel(self):
         """Cancel the current transcoding operation."""
         if self._current_transcode_id:
-            success, error = self.video_service.cancel_transcode(
-                self._current_transcode_id
-            )
+            success, error = self.video_service.cancel_transcode(self._current_transcode_id)
             if success:
                 self.cancelled.emit()
             else:

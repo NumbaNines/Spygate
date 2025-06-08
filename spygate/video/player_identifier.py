@@ -73,8 +73,8 @@ class PlayerIdentifier:
         self,
         frame: np.ndarray,
         bbox: np.ndarray,
-        reference_faces: Optional[Dict[str, np.ndarray]] = None,
-    ) -> Dict[str, Union[str, float]]:
+        reference_faces: Optional[dict[str, np.ndarray]] = None,
+    ) -> dict[str, Union[str, float]]:
         """
         Identify a player in a frame given their bounding box.
 
@@ -121,7 +121,7 @@ class PlayerIdentifier:
 
     def _recognize_jersey_number(
         self, player_region: np.ndarray
-    ) -> Optional[Dict[str, Union[str, float]]]:
+    ) -> Optional[dict[str, Union[str, float]]]:
         """
         Recognize jersey number in player region using OCR.
 
@@ -152,8 +152,8 @@ class PlayerIdentifier:
         return None
 
     def _match_face(
-        self, player_region: np.ndarray, reference_faces: Dict[str, np.ndarray]
-    ) -> Optional[Dict[str, Union[str, float]]]:
+        self, player_region: np.ndarray, reference_faces: dict[str, np.ndarray]
+    ) -> Optional[dict[str, Union[str, float]]]:
         """
         Match a face in the player region against reference faces.
 
@@ -173,21 +173,15 @@ class PlayerIdentifier:
             if not face_locations:
                 return None
 
-            face_encoding = face_recognition.face_encodings(rgb_region, face_locations)[
-                0
-            ]
+            face_encoding = face_recognition.face_encodings(rgb_region, face_locations)[0]
 
             # Find best match
             best_match = None
             best_distance = float("inf")
 
             for name, ref_encoding in reference_faces.items():
-                distance = face_recognition.face_distance(
-                    [ref_encoding], face_encoding
-                )[0]
-                if (
-                    distance < best_distance and distance < 0.6
-                ):  # 0.6 is a good threshold
+                distance = face_recognition.face_distance([ref_encoding], face_encoding)[0]
+                if distance < best_distance and distance < 0.6:  # 0.6 is a good threshold
                     best_distance = distance
                     best_match = name
 
@@ -223,9 +217,7 @@ class PlayerIdentifier:
                 logger.warning(f"No face detected for player {name}")
                 return False
 
-            face_encoding = face_recognition.face_encodings(rgb_image, face_locations)[
-                0
-            ]
+            face_encoding = face_recognition.face_encodings(rgb_image, face_locations)[0]
             self.face_encodings_cache[name] = face_encoding
             logger.info(f"Added reference face for player {name}")
             return True
@@ -234,7 +226,7 @@ class PlayerIdentifier:
             logger.error(f"Failed to add reference face for {name}: {e}")
             return False
 
-    def get_identification_info(self) -> Dict:
+    def get_identification_info(self) -> dict:
         """Get information about available identification methods."""
         return {
             "tracking_mode": self.tracking_mode,

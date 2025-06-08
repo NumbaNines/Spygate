@@ -12,7 +12,7 @@ class ClipService:
     def __init__(self):
         self.db = db
 
-    def create_clip(self, data: Dict[str, Any]) -> Clip:
+    def create_clip(self, data: dict[str, Any]) -> Clip:
         """Create a new clip"""
         with self.db.get_session() as session:
             clip = Clip(
@@ -36,13 +36,13 @@ class ClipService:
     def get_clips(
         self,
         player_name: Optional[str] = None,
-        tag_names: Optional[List[str]] = None,
+        tag_names: Optional[list[str]] = None,
         collection_id: Optional[int] = None,
         sort_by: str = "created_at",
         sort_desc: bool = True,
         limit: int = 50,
         offset: int = 0,
-    ) -> List[Clip]:
+    ) -> list[Clip]:
         """Get clips with optional filtering and sorting"""
         with self.db.get_session() as session:
             query = session.query(Clip)
@@ -55,9 +55,7 @@ class ClipService:
                 query = query.join(Clip.tags).filter(Tag.name.in_(tag_names))
 
             if collection_id:
-                query = query.join(Clip.collections).filter(
-                    Collection.id == collection_id
-                )
+                query = query.join(Clip.collections).filter(Collection.id == collection_id)
 
             # Apply sorting
             sort_column = getattr(Clip, sort_by)
@@ -93,9 +91,7 @@ class ClipService:
             session.add(history)
             session.commit()
 
-    def share_clip(
-        self, clip_id: int, platform: str, channel: str, shared_by: str
-    ) -> None:
+    def share_clip(self, clip_id: int, platform: str, channel: str, shared_by: str) -> None:
         """Record a clip share"""
         with self.db.get_session() as session:
             share = ShareHistory(
@@ -108,9 +104,7 @@ class ClipService:
         """Add a clip to a collection"""
         with self.db.get_session() as session:
             clip = session.query(Clip).filter(Clip.id == clip_id).first()
-            collection = (
-                session.query(Collection).filter(Collection.id == collection_id).first()
-            )
+            collection = session.query(Collection).filter(Collection.id == collection_id).first()
             if clip and collection:
                 clip.collections.append(collection)
                 session.commit()
@@ -119,14 +113,12 @@ class ClipService:
         """Remove a clip from a collection"""
         with self.db.get_session() as session:
             clip = session.query(Clip).filter(Clip.id == clip_id).first()
-            collection = (
-                session.query(Collection).filter(Collection.id == collection_id).first()
-            )
+            collection = session.query(Collection).filter(Collection.id == collection_id).first()
             if clip and collection and collection in clip.collections:
                 clip.collections.remove(collection)
                 session.commit()
 
-    def add_tags(self, clip_id: int, tag_names: List[str]) -> None:
+    def add_tags(self, clip_id: int, tag_names: list[str]) -> None:
         """Add tags to a clip"""
         with self.db.get_session() as session:
             clip = session.query(Clip).filter(Clip.id == clip_id).first()
@@ -140,7 +132,7 @@ class ClipService:
                         clip.tags.append(tag)
                 session.commit()
 
-    def remove_tags(self, clip_id: int, tag_names: List[str]) -> None:
+    def remove_tags(self, clip_id: int, tag_names: list[str]) -> None:
         """Remove tags from a clip"""
         with self.db.get_session() as session:
             clip = session.query(Clip).filter(Clip.id == clip_id).first()

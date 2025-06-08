@@ -90,9 +90,7 @@ class VideoTimelineDemo(QMainWindow):
             sys.exit(1)
 
         # Create video timeline with test video
-        self.timeline = VideoTimeline(
-            video_path=test_video_path, player_name="Self", parent=self
-        )
+        self.timeline = VideoTimeline(video_path=test_video_path, player_name="Self", parent=self)
 
         # Add timeline to main layout
         main_layout.addWidget(self.timeline)

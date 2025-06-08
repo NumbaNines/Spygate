@@ -61,7 +61,7 @@ def create_test_video(
     return path
 
 
-def create_test_files(tmp_path: Path) -> Dict[str, str]:
+def create_test_files(tmp_path: Path) -> dict[str, str]:
     """Create test files for import testing.
 
     Args:
@@ -89,7 +89,7 @@ def create_test_files(tmp_path: Path) -> Dict[str, str]:
 
 
 def create_drag_event(
-    widget: QWidget, urls: List[str], event_type: str = "enter"
+    widget: QWidget, urls: list[str], event_type: str = "enter"
 ) -> QDragEnterEvent:
     """Create a drag event for testing.
 
@@ -143,12 +143,10 @@ def create_test_metadata(
     Returns:
         VideoMetadata instance
     """
-    return VideoMetadata(
-        width=width, height=height, fps=fps, duration=duration, codec=codec
-    )
+    return VideoMetadata(width=width, height=height, fps=fps, duration=duration, codec=codec)
 
 
-def cleanup_test_files(files: Dict[str, str]):
+def cleanup_test_files(files: dict[str, str]):
     """Clean up test files.
 
     Args:

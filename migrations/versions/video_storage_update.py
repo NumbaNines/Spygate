@@ -6,7 +6,9 @@ Create Date: 2025-06-07 16:30:00.000000
 
 """
 
-from typing import Sequence, Union
+from typing import Union
+
+from collections.abc import Sequence
 
 import sqlalchemy as sa
 from alembic import op
@@ -23,16 +25,10 @@ def upgrade() -> None:
     # Modify videos table
     with op.batch_alter_table("videos") as batch_op:
         # Add new columns
-        batch_op.add_column(
-            sa.Column("file_hash", sa.String(64), nullable=True, unique=True)
-        )
+        batch_op.add_column(sa.Column("file_hash", sa.String(64), nullable=True, unique=True))
         batch_op.add_column(sa.Column("file_size", sa.Integer(), nullable=True))
-        batch_op.add_column(
-            sa.Column("original_filename", sa.String(255), nullable=True)
-        )
-        batch_op.add_column(
-            sa.Column("is_deleted", sa.Boolean(), nullable=True, default=False)
-        )
+        batch_op.add_column(sa.Column("original_filename", sa.String(255), nullable=True))
+        batch_op.add_column(sa.Column("is_deleted", sa.Boolean(), nullable=True, default=False))
         batch_op.add_column(sa.Column("delete_date", sa.DateTime(), nullable=True))
         batch_op.add_column(sa.Column("notes", sa.Text(), nullable=True))
 

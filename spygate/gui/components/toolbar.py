@@ -61,9 +61,7 @@ def create_main_toolbar(parent: QWidget) -> QToolBar:
     analysis_action.setStatusTip("Toggle analysis panel")
     analysis_action.setCheckable(True)
     analysis_action.setChecked(False)
-    analysis_action.triggered.connect(
-        lambda checked: parent.analysis_panel.setVisible(checked)
-    )
+    analysis_action.triggered.connect(lambda checked: parent.analysis_panel.setVisible(checked))
     toolbar.addAction(analysis_action)
 
     theme_action = QAction("Theme", parent)

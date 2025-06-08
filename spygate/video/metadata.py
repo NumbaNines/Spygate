@@ -36,7 +36,7 @@ class VideoMetadata:
     has_audio: bool = False
     audio_codec: Optional[str] = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert metadata to a dictionary."""
         base_dict = {
             # File information
@@ -71,7 +71,7 @@ class VideoMetadata:
 
 def _validate_metadata(
     cap: cv2.VideoCapture, file_path: str
-) -> Tuple[bool, Optional[str], Dict[str, Any]]:
+) -> tuple[bool, Optional[str], dict[str, Any]]:
     """
     Validate extracted metadata values.
 

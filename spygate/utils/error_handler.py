@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class VideoImportError(Exception):
     """Base exception for video import errors."""
 
-    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
+    def __init__(self, message: str, details: Optional[dict[str, Any]] = None):
         super().__init__(message)
         self.details = details or {}
 
@@ -42,9 +42,7 @@ class PlayerError(VideoImportError):
     pass
 
 
-def handle_import_error(
-    error: Exception, file_path: Optional[str] = None
-) -> Tuple[str, str]:
+def handle_import_error(error: Exception, file_path: Optional[str] = None) -> tuple[str, str]:
     """
     Handle video import errors and return user-friendly messages.
 
@@ -87,9 +85,7 @@ def handle_import_error(
 
     else:
         title = "Import Error"
-        message = (
-            f"An unexpected error occurred while importing '{file_name}':\n{str(error)}"
-        )
+        message = f"An unexpected error occurred while importing '{file_name}':\n{str(error)}"
 
     # Log the error with full details
     logger.error(

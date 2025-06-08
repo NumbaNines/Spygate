@@ -48,7 +48,7 @@ def create_clip(
     file_path: str,
     title: str = None,
     player_id: int = None,
-    tags: List[str] = None,
+    tags: list[str] = None,
     session: Session = None,
 ) -> Clip:
     """Create a new clip."""
@@ -104,7 +104,7 @@ def create_motion_event(
     return event
 
 
-def get_motion_events(clip_id: int, session: Session = None) -> List[MotionEvent]:
+def get_motion_events(clip_id: int, session: Session = None) -> list[MotionEvent]:
     """Get all motion events for a clip."""
     if session is None:
         session = DatabaseSession()
@@ -131,7 +131,7 @@ def get_tag(tag_id: int, session: Session = None) -> Optional[Tag]:
     return session.query(Tag).filter(Tag.id == tag_id).first()
 
 
-def get_clips_by_tag(tag_name: str, session: Session = None) -> List[Clip]:
+def get_clips_by_tag(tag_name: str, session: Session = None) -> list[Clip]:
     """Get all clips with a specific tag."""
     if session is None:
         session = DatabaseSession()
@@ -140,7 +140,7 @@ def get_clips_by_tag(tag_name: str, session: Session = None) -> List[Clip]:
     return tag.clips if tag else []
 
 
-def get_clips_by_player(player_name: str, include_opponent: bool = True) -> List[Clip]:
+def get_clips_by_player(player_name: str, include_opponent: bool = True) -> list[Clip]:
     """Get all clips for a player."""
     with get_db_session() as session:
         query = session.query(Clip).join(Player).filter(Player.name == player_name)
@@ -149,7 +149,7 @@ def get_clips_by_player(player_name: str, include_opponent: bool = True) -> List
         return query.all()
 
 
-def get_clips_by_tags(tags: List[str], match_all: bool = False) -> List[Clip]:
+def get_clips_by_tags(tags: list[str], match_all: bool = False) -> list[Clip]:
     """Get clips that match the given tags."""
     with get_db_session() as session:
         query = session.query(Clip).join(Clip.tags).filter(Tag.name.in_(tags))
@@ -159,9 +159,7 @@ def get_clips_by_tags(tags: List[str], match_all: bool = False) -> List[Clip]:
         return query.distinct().all()
 
 
-def get_motion_events_for_clip(
-    clip_id: int, event_type: Optional[str] = None
-) -> List[MotionEvent]:
+def get_motion_events_for_clip(clip_id: int, event_type: Optional[str] = None) -> list[MotionEvent]:
     """Get all motion events for a clip."""
     with get_db_session() as session:
         query = session.query(MotionEvent).filter(MotionEvent.clip_id == clip_id)

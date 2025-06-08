@@ -5,18 +5,18 @@ This module handles frame preprocessing operations including normalization,
 noise reduction, and enhancement for optimal tracking performance.
 """
 
+import gc
 import logging
+import threading
+import time
+from collections import deque
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Union
-from collections import deque
-import time
-import threading
-from concurrent.futures import ThreadPoolExecutor
-import gc
 
 import cv2
 import numpy as np
-from numba import jit, cuda
+from numba import cuda, jit
 
 from ..core.hardware import HardwareDetector
 from ..core.optimizer import TierOptimizer
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 class PreprocessingConfig:
     """Configuration for frame preprocessing."""
 
-    target_size: Optional[Tuple[int, int]] = None
+    target_size: Optional[tuple[int, int]] = None
     normalize: bool = True
     denoise: bool = True
     enhance_contrast: bool = True
@@ -79,33 +79,33 @@ def enhance_contrast(frame: np.ndarray) -> np.ndarray:
     # Apply CLAHE-like contrast enhancement
     min_val = np.min(frame)
     max_val = np.max(frame)
-    
+
     if max_val == min_val:
         return frame
-        
+
     # Calculate histogram
     hist = np.zeros(256, dtype=np.int32)
     for i in range(frame.shape[0]):
         for j in range(frame.shape[1]):
             bin_idx = int(255 * (frame[i, j] - min_val) / (max_val - min_val))
             hist[bin_idx] += 1
-            
+
     # Calculate cumulative histogram
     cum_hist = np.zeros(256, dtype=np.float32)
     cum_hist[0] = hist[0]
     for i in range(1, 256):
         cum_hist[i] = cum_hist[i - 1] + hist[i]
-        
+
     # Normalize cumulative histogram
     cum_hist = cum_hist / cum_hist[-1]
-    
+
     # Apply histogram equalization
     enhanced = np.zeros_like(frame)
     for i in range(frame.shape[0]):
         for j in range(frame.shape[1]):
             bin_idx = int(255 * (frame[i, j] - min_val) / (max_val - min_val))
             enhanced[i, j] = cum_hist[bin_idx]
-            
+
     return enhanced
 
 
@@ -136,7 +136,7 @@ class FramePreprocessor:
         self.executor = ThreadPoolExecutor(max_workers=config.max_thread_workers)
         self.memory_usage = 0.0
         self.frame_sizes = {}
-        
+
         # Initialize GPU context if available
         if self.config.enable_gpu and cuda.is_available():
             cuda.select_device(0)
@@ -148,11 +148,11 @@ class FramePreprocessor:
         """Track memory usage of frames."""
         if not self.config.enable_memory_tracking:
             return
-            
+
         frame_size = frame.nbytes / (1024 * 1024)  # Convert to MB
         self.frame_sizes[frame_id] = frame_size
         self.memory_usage += frame_size
-        
+
         # Check memory threshold
         if self.memory_usage > self.config.max_memory_usage * self.config.memory_warning_threshold:
             self._reduce_memory_usage()
@@ -161,25 +161,23 @@ class FramePreprocessor:
         """Reduce memory usage when threshold is reached."""
         if not self.config.enable_memory_tracking:
             return
-            
+
         logger.info(f"Memory usage ({self.memory_usage:.2f}MB) exceeded warning threshold")
-        
+
         # Remove oldest frames from cache
-        while (self.memory_usage > self.config.max_memory_usage * 0.8 and 
-               len(self.cache_order) > 0):
+        while self.memory_usage > self.config.max_memory_usage * 0.8 and len(self.cache_order) > 0:
             oldest_id = self.cache_order.popleft()
             if oldest_id in self.frame_cache:
                 self.memory_usage -= self.frame_sizes.pop(oldest_id, 0)
                 del self.frame_cache[oldest_id]
-                
+
         # Force garbage collection
         gc.collect()
-        
+
         # Adjust quality if needed
         if self.config.enable_adaptive_quality:
             self.current_quality = max(
-                self.config.min_quality,
-                self.current_quality - self.config.quality_step
+                self.config.min_quality, self.current_quality - self.config.quality_step
             )
             logger.info(f"Reduced processing quality to {self.current_quality:.2f}")
 
@@ -187,29 +185,28 @@ class FramePreprocessor:
         """Compress frame data for caching."""
         if not self.config.enable_cache_compression:
             return frame
-            
+
         # Use cv2 compression for RGB/BGR frames
         if len(frame.shape) == 3:
-            encode_param = [cv2.IMWRITE_JPEG_QUALITY, 
-                          int(90 * self.current_quality)]
-            result, encoded = cv2.imencode('.jpg', frame, encode_param)
+            encode_param = [cv2.IMWRITE_JPEG_QUALITY, int(90 * self.current_quality)]
+            result, encoded = cv2.imencode(".jpg", frame, encode_param)
             if result:
                 return encoded
-                
+
         return frame
 
     def _decompress_frame(self, data: np.ndarray) -> np.ndarray:
         """Decompress cached frame data."""
         if not self.config.enable_cache_compression:
             return data
-            
+
         # Check if data is compressed
         if isinstance(data, np.ndarray) and data.dtype == np.uint8:
             try:
                 return cv2.imdecode(data, cv2.IMREAD_COLOR)
             except:
                 pass
-                
+
         return data
 
     @jit(nopython=True)
@@ -221,7 +218,7 @@ class FramePreprocessor:
         """Apply denoising based on current quality."""
         if not self.config.denoise:
             return frame
-            
+
         h = int(10 * self.current_quality)  # Adjust filter strength
         if self.config.enable_gpu and self.stream:
             return cv2.cuda.fastNlMeansDenoisingColored(
@@ -234,89 +231,81 @@ class FramePreprocessor:
         """Enhance frame contrast based on current quality."""
         if not self.config.enhance_contrast:
             return frame
-            
+
         # Apply CLAHE with adaptive clip limit
         clip_limit = 2.0 + (1.0 * self.current_quality)
         if len(frame.shape) == 3:
             lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
             l, a, b = cv2.split(lab)
-            clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=(8,8))
+            clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=(8, 8))
             l = clahe.apply(l)
-            lab = cv2.merge((l,a,b))
+            lab = cv2.merge((l, a, b))
             return cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
         else:
-            clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=(8,8))
+            clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=(8, 8))
             return clahe.apply(frame)
 
     def _resize_frame(self, frame: np.ndarray) -> np.ndarray:
         """Resize frame if target size is set."""
         if self.config.target_size is None:
             return frame
-            
+
         if self.config.enable_gpu and self.stream:
             gpu_frame = cv2.cuda_GpuMat(frame)
             resized = cv2.cuda.resize(
-                gpu_frame, 
-                self.config.target_size,
-                interpolation=cv2.INTER_AREA
+                gpu_frame, self.config.target_size, interpolation=cv2.INTER_AREA
             )
             return resized.download()
         else:
-            return cv2.resize(
-                frame,
-                self.config.target_size,
-                interpolation=cv2.INTER_AREA
-            )
+            return cv2.resize(frame, self.config.target_size, interpolation=cv2.INTER_AREA)
 
     def preprocess_frame(self, frame: np.ndarray, frame_id: int) -> np.ndarray:
         """Preprocess a single frame with quality-aware processing."""
         # Check cache first
         if frame_id in self.frame_cache:
             return self._decompress_frame(self.frame_cache[frame_id])
-            
+
         # Apply preprocessing steps
         processed = frame.copy()
-        
+
         # Resize if needed
         processed = self._resize_frame(processed)
-        
+
         # Normalize
         if self.config.normalize:
             processed = self._normalize_frame(processed)
-            
+
         # Denoise with quality-aware settings
         processed = self._denoise_frame(processed)
-        
+
         # Enhance contrast
         processed = self._enhance_contrast(processed)
-        
+
         # Cache the result
         with self.lock:
             compressed = self._compress_frame(processed)
             self.frame_cache[frame_id] = compressed
             self.cache_order.append(frame_id)
             self._track_memory(frame_id, compressed)
-            
+
         # Periodic cleanup
         self.frame_count += 1
         if (self.frame_count - self.last_cleanup) >= self.config.cleanup_interval:
             self._cleanup()
-            
+
         return processed
 
-    def preprocess_batch(self, frames: List[np.ndarray], start_id: int) -> List[np.ndarray]:
+    def preprocess_batch(self, frames: list[np.ndarray], start_id: int) -> list[np.ndarray]:
         """Preprocess a batch of frames in parallel."""
         if not self.config.enable_parallel:
             return [self.preprocess_frame(f, start_id + i) for i, f in enumerate(frames)]
-            
+
         # Process frames in parallel using thread pool
         futures = []
         for i, frame in enumerate(frames):
-            future = self.executor.submit(
-                self.preprocess_frame, frame, start_id + i
-            )
+            future = self.executor.submit(self.preprocess_frame, frame, start_id + i)
             futures.append(future)
-            
+
         # Collect results
         return [f.result() for f in futures]
 
@@ -329,22 +318,22 @@ class FramePreprocessor:
                 if oldest_id in self.frame_cache:
                     self.memory_usage -= self.frame_sizes.pop(oldest_id, 0)
                     del self.frame_cache[oldest_id]
-                    
+
             # Reset counters
             self.last_cleanup = self.frame_count
-            
+
             # Force garbage collection
             if self.config.enable_memory_tracking:
                 gc.collect()
 
-    def get_performance_metrics(self) -> Dict[str, float]:
+    def get_performance_metrics(self) -> dict[str, float]:
         """Get current performance metrics."""
         return {
             "memory_usage_mb": self.memory_usage,
             "cache_size": len(self.frame_cache),
             "quality_level": self.current_quality,
             "memory_threshold": self.config.max_memory_usage * self.config.memory_warning_threshold,
-            "frames_processed": self.frame_count
+            "frames_processed": self.frame_count,
         }
 
     def __del__(self):

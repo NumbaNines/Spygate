@@ -43,18 +43,14 @@ class TestPlayerIdentifier(unittest.TestCase):
         """Test initialization with different hardware modes."""
         # Test with BASIC mode
         with patch("torch.cuda.is_available", return_value=False):
-            with patch(
-                "spygate.utils.tracking_hardware.TrackingHardwareManager"
-            ) as mock_manager:
+            with patch("spygate.utils.tracking_hardware.TrackingHardwareManager") as mock_manager:
                 mock_manager.return_value.tracking_mode = TrackingMode.BASIC
                 identifier = PlayerIdentifier()
                 self.assertFalse(identifier.use_face_recognition)
 
         # Test with PROFESSIONAL mode and GPU
         with patch("torch.cuda.is_available", return_value=True):
-            with patch(
-                "spygate.utils.tracking_hardware.TrackingHardwareManager"
-            ) as mock_manager:
+            with patch("spygate.utils.tracking_hardware.TrackingHardwareManager") as mock_manager:
                 mock_manager.return_value.tracking_mode = TrackingMode.PROFESSIONAL
                 identifier = PlayerIdentifier()
                 self.assertTrue(identifier.use_face_recognition)

@@ -93,7 +93,7 @@ class TestHardwareDetector(unittest.TestCase):
         """Test game profile for Madden 25."""
         detector = HardwareDetector()
         profile = detector.get_game_profile("madden_25")
-        
+
         self.assertIsNotNone(profile)
         self.assertTrue(profile["compatible"])
         self.assertTrue(profile["meets_minimum"])
@@ -105,7 +105,7 @@ class TestHardwareDetector(unittest.TestCase):
         """Test optimal settings for Madden 25."""
         detector = HardwareDetector()
         settings = detector.get_optimal_settings("madden_25")
-        
+
         self.assertEqual(settings["resolution"], "native")
         self.assertEqual(settings["frame_sampling_rate"], 60)
         self.assertEqual(settings["processing_quality"], "ultra")
@@ -128,7 +128,7 @@ class TestHardwareDetector(unittest.TestCase):
 
         detector = HardwareDetector()
         is_compatible, issues = detector.check_game_compatibility("madden_25")
-        
+
         self.assertTrue(is_compatible)  # Should meet minimum requirements
         profile = detector.get_game_profile("madden_25")
         self.assertTrue(profile["meets_minimum"])
@@ -148,7 +148,7 @@ class TestHardwareDetector(unittest.TestCase):
 
         detector = HardwareDetector()
         is_compatible, issues = detector.check_game_compatibility("madden_25")
-        
+
         self.assertFalse(is_compatible)  # Should not meet minimum requirements
         self.assertGreater(len(issues), 0)  # Should have multiple issues
         profile = detector.get_game_profile("madden_25")
@@ -159,7 +159,7 @@ class TestHardwareDetector(unittest.TestCase):
     def test_performance_tier_calculation(self):
         """Test performance tier calculation."""
         detector = HardwareDetector()
-        
+
         # Should be "professional" with our mocked high-end system
         self.assertEqual(detector.performance_tier, "professional")
 
@@ -221,7 +221,7 @@ class TestHardwareDetector(unittest.TestCase):
         """Test VRAM information retrieval."""
         detector = HardwareDetector()
         vram_info = detector.get_vram_info()
-        
+
         self.assertEqual(vram_info["total"], 12288)  # 12GB
         self.assertEqual(vram_info["free"], 10240)  # 10GB
         self.assertEqual(vram_info["used"], 2048)  # 2GB
@@ -230,7 +230,7 @@ class TestHardwareDetector(unittest.TestCase):
         """Test RAM information retrieval."""
         detector = HardwareDetector()
         ram_info = detector.get_ram_info()
-        
+
         self.assertEqual(ram_info["total"], 16384)  # 16GB
         self.assertEqual(ram_info["free"], 8192)  # 8GB
-        self.assertEqual(ram_info["used"], 8192)  # 8GB 
+        self.assertEqual(ram_info["used"], 8192)  # 8GB

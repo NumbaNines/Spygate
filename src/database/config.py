@@ -45,7 +45,7 @@ def get_database_url(db_type: str = None) -> str:
         raise ValueError(f"Unsupported database type: {db_type}")
 
 
-def get_db_config(db_type: str = None) -> Dict[str, Optional[str]]:
+def get_db_config(db_type: str = None) -> dict[str, Optional[str]]:
     """Get database configuration based on type."""
     if db_type is None:
         db_type = os.getenv("DB_TYPE", "postgresql")

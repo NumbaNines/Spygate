@@ -2,4 +2,4 @@
 SpygateAI Django settings package.
 """
 
-from .development import * 
+from .development import *

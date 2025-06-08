@@ -63,7 +63,7 @@ class DatabaseManager:
             logger.error(f"Failed to initialize database: {str(e)}")
             raise
 
-    def insert_motion_data(self, data: Dict[str, Any]) -> None:
+    def insert_motion_data(self, data: dict[str, Any]) -> None:
         """Insert motion detection result into database.
 
         Args:
@@ -155,9 +155,7 @@ class DatabaseManager:
             Number of records deleted
         """
         try:
-            self.cursor.execute(
-                "DELETE FROM motion_data WHERE timestamp < ?", (before_timestamp,)
-            )
+            self.cursor.execute("DELETE FROM motion_data WHERE timestamp < ?", (before_timestamp,))
             deleted_count = self.cursor.rowcount
             self.conn.commit()
 

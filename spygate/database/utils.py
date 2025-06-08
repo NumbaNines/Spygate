@@ -23,7 +23,7 @@ def create_clip(
     title: str,
     player_name: str,
     session: Session,
-    tags: List[str] = None,
+    tags: list[str] = None,
     description: Optional[str] = None,
 ) -> Clip:
     """Create a new clip in the database."""

@@ -29,9 +29,9 @@ class UniversalStrategy:
     strategy_type: StrategyType
     name: str
     core_principle: str
-    game_implementations: Dict[GameVersion, str]
-    effectiveness_data: Dict[GameVersion, float]
-    metadata: Dict[str, Any]
+    game_implementations: dict[GameVersion, str]
+    effectiveness_data: dict[GameVersion, float]
+    metadata: dict[str, Any]
 
 
 class StrategyMapper:
@@ -44,7 +44,7 @@ class StrategyMapper:
     def __init__(self, game_manager: GameManager):
         """Initialize the strategy mapper."""
         self.game_manager = game_manager
-        self._strategy_db: Dict[str, UniversalStrategy] = {}
+        self._strategy_db: dict[str, UniversalStrategy] = {}
         self._setup_logging()
 
     def _setup_logging(self):
@@ -54,9 +54,7 @@ class StrategyMapper:
 
         if not self.logger.handlers:
             handler = logging.StreamHandler()
-            formatter = logging.Formatter(
-                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-            )
+            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
 
@@ -65,8 +63,8 @@ class StrategyMapper:
         strategy_type: StrategyType,
         name: str,
         core_principle: str,
-        game_implementations: Dict[GameVersion, str],
-        metadata: Optional[Dict[str, Any]] = None,
+        game_implementations: dict[GameVersion, str],
+        metadata: Optional[dict[str, Any]] = None,
     ) -> UniversalStrategy:
         """
         Register a new universal strategy that can be mapped across games.
@@ -129,9 +127,7 @@ class StrategyMapper:
             return None
 
         if target_game not in strategy.game_implementations:
-            self.logger.warning(
-                f"Strategy {strategy_name} not implemented for {target_game}"
-            )
+            self.logger.warning(f"Strategy {strategy_name} not implemented for {target_game}")
             return None
 
         return strategy.game_implementations[target_game]
@@ -153,9 +149,7 @@ class StrategyMapper:
             return
 
         if game_version not in strategy.game_implementations:
-            self.logger.warning(
-                f"Strategy {strategy_name} not implemented for {game_version}"
-            )
+            self.logger.warning(f"Strategy {strategy_name} not implemented for {game_version}")
             return
 
         strategy.effectiveness_data[game_version] = effectiveness
@@ -165,7 +159,7 @@ class StrategyMapper:
 
     def get_similar_strategies(
         self, strategy_name: str, threshold: float = 0.7
-    ) -> List[UniversalStrategy]:
+    ) -> list[UniversalStrategy]:
         """
         Find strategies similar to the given one based on core principles.
 
@@ -193,9 +187,7 @@ class StrategyMapper:
 
         return similar_strategies
 
-    def analyze_cross_game_effectiveness(
-        self, strategy_name: str
-    ) -> Dict[GameVersion, float]:
+    def analyze_cross_game_effectiveness(self, strategy_name: str) -> dict[GameVersion, float]:
         """
         Analyze the effectiveness of a strategy across different games.
 
@@ -212,9 +204,7 @@ class StrategyMapper:
 
         return strategy.effectiveness_data.copy()
 
-    def get_strategies_by_type(
-        self, strategy_type: StrategyType
-    ) -> List[UniversalStrategy]:
+    def get_strategies_by_type(self, strategy_type: StrategyType) -> list[UniversalStrategy]:
         """
         Get all strategies of a specific type.
 
@@ -230,7 +220,7 @@ class StrategyMapper:
             if strategy.strategy_type == strategy_type
         ]
 
-    def export_strategy_data(self) -> Dict[str, Any]:
+    def export_strategy_data(self) -> dict[str, Any]:
         """
         Export all strategy data for storage or analysis.
 
@@ -242,19 +232,17 @@ class StrategyMapper:
                 "type": strategy.strategy_type.value,
                 "core_principle": strategy.core_principle,
                 "implementations": {
-                    version.value: impl
-                    for version, impl in strategy.game_implementations.items()
+                    version.value: impl for version, impl in strategy.game_implementations.items()
                 },
                 "effectiveness": {
-                    version.value: score
-                    for version, score in strategy.effectiveness_data.items()
+                    version.value: score for version, score in strategy.effectiveness_data.items()
                 },
                 "metadata": strategy.metadata,
             }
             for name, strategy in self._strategy_db.items()
         }
 
-    def import_strategy_data(self, data: Dict[str, Any]) -> None:
+    def import_strategy_data(self, data: dict[str, Any]) -> None:
         """
         Import strategy data from storage.
 

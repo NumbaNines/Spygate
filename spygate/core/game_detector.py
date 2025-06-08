@@ -26,8 +26,8 @@ class GameProfile:
     """Game-specific interface and feature information."""
 
     version: GameVersion
-    hud_layout: Dict[str, Dict]  # Regions for different HUD elements
-    supported_features: List[str]  # List of supported features
+    hud_layout: dict[str, dict]  # Regions for different HUD elements
+    supported_features: list[str]  # List of supported features
     interface_version: str  # UI version identifier
 
 
@@ -63,9 +63,7 @@ class GameDetector:
         self._confidence_threshold = 0.8  # Minimum confidence for game detection
         self._frame_buffer_size = 5  # Number of frames to buffer for stable detection
         self._frame_buffer = []  # Buffer of recent detections
-        self._game_profiles: Dict[GameVersion, GameProfile] = (
-            self._initialize_game_profiles()
-        )
+        self._game_profiles: dict[GameVersion, GameProfile] = self._initialize_game_profiles()
         self._setup_logging()
 
     def _setup_logging(self):
@@ -76,13 +74,11 @@ class GameDetector:
         # Add a handler if none exists
         if not self.logger.handlers:
             handler = logging.StreamHandler()
-            formatter = logging.Formatter(
-                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-            )
+            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
 
-    def _initialize_game_profiles(self) -> Dict[GameVersion, GameProfile]:
+    def _initialize_game_profiles(self) -> dict[GameVersion, GameProfile]:
         """Initialize game profiles with interface mappings."""
         return {
             GameVersion.MADDEN_25: GameProfile(
@@ -178,9 +174,7 @@ class GameDetector:
                     confidence_scores[version] = score
                     self.logger.debug(f"Confidence score for {version}: {score:.2f}")
                 except Exception as e:
-                    self.logger.warning(
-                        f"Error calculating confidence for {version}: {e}"
-                    )
+                    self.logger.warning(f"Error calculating confidence for {version}: {e}")
                     confidence_scores[version] = 0.0
 
             # Get the most likely game version
@@ -216,9 +210,7 @@ class GameDetector:
             self.logger.error(f"Unexpected error in game detection: {e}")
             raise GameDetectionError(f"Game detection failed: {e}")
 
-    def _calculate_game_confidence(
-        self, image: Image.Image, version: GameVersion
-    ) -> float:
+    def _calculate_game_confidence(self, image: Image.Image, version: GameVersion) -> float:
         """
         Calculate confidence score for a game version based on image analysis.
 
@@ -232,9 +224,7 @@ class GameDetector:
         profile = self._game_profiles[version]
         return self._analyze_interface_elements(image, profile)
 
-    def _analyze_interface_elements(
-        self, image: Image.Image, profile: GameProfile
-    ) -> float:
+    def _analyze_interface_elements(self, image: Image.Image, profile: GameProfile) -> float:
         """
         Analyze interface elements to determine game version confidence.
 
@@ -355,15 +345,15 @@ class GameDetector:
         height, width = binary_image.shape
 
         # Check for colon in middle section
-        mid_region = binary_image[:, width//3:2*width//3]
+        mid_region = binary_image[:, width // 3 : 2 * width // 3]
         has_colon = np.sum(mid_region > 0) > 0
 
         if not has_colon:
             return 0.0
 
         # Check for two number groups (minutes and seconds)
-        left_region = binary_image[:, :width//3]
-        right_region = binary_image[:, 2*width//3:]
+        left_region = binary_image[:, : width // 3]
+        right_region = binary_image[:, 2 * width // 3 :]
 
         left_density = np.sum(left_region > 0) / (height * width // 3)
         right_density = np.sum(right_region > 0) / (height * width // 3)
@@ -511,9 +501,7 @@ class GameDetector:
         _, binary = cv2.threshold(gray_image, 127, 255, cv2.THRESH_BINARY)
 
         # Find contours
-        contours, _ = cv2.findContours(
-            binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
+        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         if not contours:
             return 0.0
@@ -545,9 +533,7 @@ class GameDetector:
         else:
             return 0.0
 
-    def get_interface_mapping(
-        self, game_version: Optional[GameVersion] = None
-    ) -> GameProfile:
+    def get_interface_mapping(self, game_version: Optional[GameVersion] = None) -> GameProfile:
         """
         Get the interface mapping for a specific game version.
 
@@ -562,9 +548,7 @@ class GameDetector:
         """
         version = game_version or self._current_game
         if not version:
-            raise ValueError(
-                "No game version specified and no current version detected"
-            )
+            raise ValueError("No game version specified and no current version detected")
         return self._game_profiles[version]
 
     def is_feature_supported(
@@ -589,57 +573,53 @@ class GameDetector:
         return self._current_game
 
     @property
-    def supported_versions(self) -> List[GameVersion]:
+    def supported_versions(self) -> list[GameVersion]:
         """Get list of supported game versions."""
         return list(GameVersion)
 
     def _detect_game_version(self, score_bug_roi: np.ndarray) -> str:
         """
         Detect the game version from the score bug ROI.
-        
+
         Args:
             score_bug_roi: Region of interest containing the score bug
-            
+
         Returns:
             Game version string (e.g., "madden_25", "cfb_25")
         """
         # Use template matching to identify the game version
         max_similarity = 0
         detected_version = None
-        
+
         for version, templates in self.score_bug_templates.items():
             for template in templates:
-                similarity = cv2.matchTemplate(
-                    score_bug_roi,
-                    template,
-                    cv2.TM_CCOEFF_NORMED
-                ).max()
-                
+                similarity = cv2.matchTemplate(score_bug_roi, template, cv2.TM_CCOEFF_NORMED).max()
+
                 if similarity > max_similarity:
                     max_similarity = similarity
                     detected_version = version
-        
+
         return detected_version if max_similarity > self.similarity_threshold else "unknown"
 
-    def _detect_game_state(self, score_bug_roi: np.ndarray) -> Dict[str, Any]:
+    def _detect_game_state(self, score_bug_roi: np.ndarray) -> dict[str, Any]:
         """
         Detect the game state from the score bug ROI.
-        
+
         Args:
             score_bug_roi: Region of interest containing the score bug
-            
+
         Returns:
             Dictionary containing game state information
         """
         # Extract text from score bug using OCR
         text = self._extract_text(score_bug_roi)
-        
+
         # Parse game state from text
         state = {
             "quarter": self._parse_quarter(text),
             "time": self._parse_time(text),
             "score": self._parse_score(text),
-            "down_distance": self._parse_down_distance(text)
+            "down_distance": self._parse_down_distance(text),
         }
-        
+
         return state

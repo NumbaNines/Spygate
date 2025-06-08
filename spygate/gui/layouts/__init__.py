@@ -2,7 +2,7 @@
 Spygate Layout Management System
 """
 
-from .layout_manager import LayoutManager
 from .layout_config import LayoutConfig, LayoutConfigs
+from .layout_manager import LayoutManager
 
-__all__ = ['LayoutManager', 'LayoutConfig', 'LayoutConfigs'] 
+__all__ = ["LayoutManager", "LayoutConfig", "LayoutConfigs"]

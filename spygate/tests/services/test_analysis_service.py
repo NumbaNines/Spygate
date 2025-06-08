@@ -57,9 +57,7 @@ def sample_analysis_job(sample_clip):
 
 def test_start_analysis(analysis_service, mock_db_session, sample_clip):
     """Test starting a new analysis job."""
-    with patch(
-        "spygate.services.analysis_service.get_db", return_value=mock_db_session
-    ):
+    with patch("spygate.services.analysis_service.get_db", return_value=mock_db_session):
         job_id = analysis_service.start_analysis(sample_clip.id)
 
         assert job_id is not None
@@ -78,9 +76,7 @@ def test_cancel_analysis(analysis_service, mock_db_session, sample_analysis_job)
     """Test cancelling an analysis job."""
     analysis_service._active_jobs[sample_analysis_job.id] = True
 
-    with patch(
-        "spygate.services.analysis_service.get_db", return_value=mock_db_session
-    ):
+    with patch("spygate.services.analysis_service.get_db", return_value=mock_db_session):
         mock_db_session.query().filter().first.return_value = sample_analysis_job
 
         success = analysis_service.cancel_analysis(sample_analysis_job.id)
@@ -96,9 +92,7 @@ def test_cancel_analysis(analysis_service, mock_db_session, sample_analysis_job)
 
 def test_get_analysis_status(analysis_service, mock_db_session, sample_analysis_job):
     """Test getting analysis job status."""
-    with patch(
-        "spygate.services.analysis_service.get_db", return_value=mock_db_session
-    ):
+    with patch("spygate.services.analysis_service.get_db", return_value=mock_db_session):
         mock_db_session.query().filter().first.return_value = sample_analysis_job
 
         status = analysis_service.get_analysis_status(sample_analysis_job.id)
@@ -112,12 +106,8 @@ def test_process_frame_batch(analysis_service, mock_db_session, sample_analysis_
         *[Mock() for _ in range(5)]
     ]
 
-    with patch(
-        "spygate.services.analysis_service.get_db", return_value=mock_db_session
-    ):
-        with patch(
-            "spygate.services.analysis_service.SituationDetector"
-        ) as mock_detector:
+    with patch("spygate.services.analysis_service.get_db", return_value=mock_db_session):
+        with patch("spygate.services.analysis_service.SituationDetector") as mock_detector:
             # Mock detector to return some test situations
             mock_detector.return_value.detect_situations.return_value = {
                 "frame_number": 0,
@@ -155,9 +145,7 @@ def test_create_situation_clips(analysis_service, mock_db_session, sample_analys
         }
     ]
 
-    with patch(
-        "spygate.services.analysis_service.get_db", return_value=mock_db_session
-    ):
+    with patch("spygate.services.analysis_service.get_db", return_value=mock_db_session):
         with patch("spygate.services.analysis_service.ClipExtractor") as mock_extractor:
             mock_extractor.extract_segment.return_value = (True, None)
 
@@ -182,9 +170,7 @@ def test_handle_analysis_error(analysis_service, mock_db_session, sample_analysi
     """Test error handling during analysis."""
     error_msg = "Test error message"
 
-    with patch(
-        "spygate.services.analysis_service.get_db", return_value=mock_db_session
-    ):
+    with patch("spygate.services.analysis_service.get_db", return_value=mock_db_session):
         mock_db_session.query().filter().first.return_value = sample_analysis_job
 
         analysis_service._handle_analysis_error(sample_analysis_job.id, error_msg)

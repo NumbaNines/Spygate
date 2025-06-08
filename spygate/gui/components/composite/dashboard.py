@@ -222,9 +222,7 @@ class Dashboard(QWidget):
             )
 
             # Check if clip matches selected tags (match any selected tag)
-            tags_match = not selected_tags or any(
-                tag in clip.tags for tag in selected_tags
-            )
+            tags_match = not selected_tags or any(tag in clip.tags for tag in selected_tags)
 
             # Check if clip matches selected gameplan
             gameplan_match = (
@@ -234,12 +232,7 @@ class Dashboard(QWidget):
             )
 
             # Show clip if it matches all active filters
-            if (
-                (title_match or gameplan_match)
-                and player_match
-                and tags_match
-                and gameplan_match
-            ):
+            if (title_match or gameplan_match) and player_match and tags_match and gameplan_match:
                 clips_to_show.append(clip)
 
         # Add clips to grid in order

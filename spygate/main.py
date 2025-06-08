@@ -50,9 +50,7 @@ def main():
         app = QApplication(sys.argv)
 
         # Create and show main window
-        window = MainWindow(
-            video_service=video_service, analysis_service=analysis_service
-        )
+        window = MainWindow(video_service=video_service, analysis_service=analysis_service)
         window.show()
         logger.info("Main window displayed")
 

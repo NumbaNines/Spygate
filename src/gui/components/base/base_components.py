@@ -20,7 +20,7 @@ class BaseWidget(QWidget):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
 
-    def update_theme(self, theme: Dict[str, Any]):
+    def update_theme(self, theme: dict[str, Any]):
         """Update widget theme."""
         style = []
         if "background" in theme:
@@ -49,7 +49,7 @@ class BaseDialog(QDialog):
         self.layout.setContentsMargins(16, 16, 16, 16)
         self.layout.setSpacing(8)
 
-    def update_theme(self, theme: Dict[str, Any]):
+    def update_theme(self, theme: dict[str, Any]):
         """Update dialog theme."""
         style = []
         if "background" in theme:
@@ -78,7 +78,7 @@ class BasePanel(QFrame):
         self.layout.setContentsMargins(8, 8, 8, 8)
         self.layout.setSpacing(4)
 
-    def update_theme(self, theme: Dict[str, Any]):
+    def update_theme(self, theme: dict[str, Any]):
         """Update panel theme."""
         style = []
         if "background" in theme:

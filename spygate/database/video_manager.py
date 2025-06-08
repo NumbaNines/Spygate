@@ -61,8 +61,8 @@ class VideoManager:
         return player
 
     def create_video(
-        self, metadata: VideoMetadata, players: List[Dict[str, Any]]
-    ) -> Tuple[Video, List[str]]:
+        self, metadata: VideoMetadata, players: list[dict[str, Any]]
+    ) -> tuple[Video, list[str]]:
         """
         Create a new video entry in the database.
 
@@ -118,24 +118,18 @@ class VideoManager:
             self.session.commit()
 
             # Log the creation
-            self._log_operation(
-                video.id, "create", "success", "Video entry created successfully"
-            )
+            self._log_operation(video.id, "create", "success", "Video entry created successfully")
 
         except IntegrityError as e:
             self.session.rollback()
             if "UNIQUE constraint failed: videos.file_path" in str(e):
-                warnings.append(
-                    f"Video at {metadata.file_path} already exists in database"
-                )
+                warnings.append(f"Video at {metadata.file_path} already exists in database")
             else:
                 raise
 
         return video, warnings
 
-    def update_video_status(
-        self, video_id: int, status: str, error: Optional[str] = None
-    ) -> None:
+    def update_video_status(self, video_id: int, status: str, error: Optional[str] = None) -> None:
         """
         Update the import status of a video.
 
@@ -186,7 +180,7 @@ class VideoManager:
         """
         return self.session.query(Video).filter_by(file_path=file_path).first()
 
-    def get_videos_by_player(self, player_id: int) -> List[Video]:
+    def get_videos_by_player(self, player_id: int) -> list[Video]:
         """
         Get all videos associated with a player.
 
@@ -202,7 +196,7 @@ class VideoManager:
 
         return player.videos
 
-    def get_player_videos_by_name(self, player_name: str) -> List[Video]:
+    def get_player_videos_by_name(self, player_name: str) -> list[Video]:
         """
         Get all videos associated with a player by their name.
 
@@ -242,9 +236,7 @@ class VideoManager:
             self.session.commit()
 
             # Log the operation
-            self._log_operation(
-                video_id, "add_tag", "success", f"Added tag '{tag_name}'"
-            )
+            self._log_operation(video_id, "add_tag", "success", f"Added tag '{tag_name}'")
 
     def remove_video_tag(self, video_id: int, tag_name: str) -> None:
         """
@@ -264,11 +256,9 @@ class VideoManager:
             self.session.commit()
 
             # Log the operation
-            self._log_operation(
-                video_id, "remove_tag", "success", f"Removed tag '{tag_name}'"
-            )
+            self._log_operation(video_id, "remove_tag", "success", f"Removed tag '{tag_name}'")
 
-    def get_video_tags(self, video_id: int) -> List[str]:
+    def get_video_tags(self, video_id: int) -> list[str]:
         """
         Get all tags associated with a video.
 
@@ -318,11 +308,9 @@ class VideoManager:
         self.session.commit()
 
         # Log the operation
-        self._log_operation(
-            video_id, "mark_deleted", "success", "Marked video as deleted"
-        )
+        self._log_operation(video_id, "mark_deleted", "success", "Marked video as deleted")
 
-    def get_recent_videos(self, limit: int = 10) -> List[Video]:
+    def get_recent_videos(self, limit: int = 10) -> list[Video]:
         """
         Get the most recently imported videos.
 
@@ -340,9 +328,7 @@ class VideoManager:
             .all()
         )
 
-    def get_videos_by_date_range(
-        self, start_date: datetime, end_date: datetime
-    ) -> List[Video]:
+    def get_videos_by_date_range(self, start_date: datetime, end_date: datetime) -> list[Video]:
         """
         Get videos imported within a date range.
 
@@ -369,7 +355,7 @@ class VideoManager:
         job_id: int,
         progress: float,
         status: Optional[str] = None,
-        results: Optional[Dict] = None,
+        results: Optional[dict] = None,
         error: Optional[str] = None,
     ) -> None:
         """
@@ -409,7 +395,7 @@ class VideoManager:
         operation: str,
         status: str,
         message: str,
-        details: Optional[Dict] = None,
+        details: Optional[dict] = None,
     ) -> None:
         """Log a video operation."""
         log = ImportLog(

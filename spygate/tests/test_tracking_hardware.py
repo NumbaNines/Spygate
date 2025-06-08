@@ -8,11 +8,7 @@ import cv2
 import numpy as np
 import pytest
 
-from ..utils.tracking_hardware import (
-    TrackingAlgorithm,
-    TrackingHardwareManager,
-    TrackingMode,
-)
+from ..utils.tracking_hardware import TrackingAlgorithm, TrackingHardwareManager, TrackingMode
 
 
 @pytest.fixture
@@ -63,9 +59,7 @@ def test_tracking_mode_determination_basic(mock_hardware_info_basic):
     """Test tracking mode determination for basic hardware."""
     with patch("cv2.cuda.getCudaEnabledDeviceCount", return_value=0):
         with patch("spygate.utils.hardware_monitor.HardwareMonitor") as mock_monitor:
-            mock_monitor.return_value.get_system_info.return_value = (
-                mock_hardware_info_basic
-            )
+            mock_monitor.return_value.get_system_info.return_value = mock_hardware_info_basic
             mock_monitor.return_value.has_gpu_support.return_value = False
 
             manager = TrackingHardwareManager()
@@ -76,9 +70,7 @@ def test_tracking_mode_determination_standard(mock_hardware_info_standard):
     """Test tracking mode determination for standard hardware."""
     with patch("cv2.cuda.getCudaEnabledDeviceCount", return_value=1):
         with patch("spygate.utils.hardware_monitor.HardwareMonitor") as mock_monitor:
-            mock_monitor.return_value.get_system_info.return_value = (
-                mock_hardware_info_standard
-            )
+            mock_monitor.return_value.get_system_info.return_value = mock_hardware_info_standard
             mock_monitor.return_value.has_gpu_support.return_value = True
 
             manager = TrackingHardwareManager()
@@ -89,9 +81,7 @@ def test_tracking_mode_determination_advanced(mock_hardware_info_advanced):
     """Test tracking mode determination for advanced hardware."""
     with patch("cv2.cuda.getCudaEnabledDeviceCount", return_value=1):
         with patch("spygate.utils.hardware_monitor.HardwareMonitor") as mock_monitor:
-            mock_monitor.return_value.get_system_info.return_value = (
-                mock_hardware_info_advanced
-            )
+            mock_monitor.return_value.get_system_info.return_value = mock_hardware_info_advanced
             mock_monitor.return_value.has_gpu_support.return_value = True
 
             manager = TrackingHardwareManager()
@@ -102,9 +92,7 @@ def test_tracking_mode_determination_professional(mock_hardware_info_professiona
     """Test tracking mode determination for professional hardware."""
     with patch("cv2.cuda.getCudaEnabledDeviceCount", return_value=1):
         with patch("spygate.utils.hardware_monitor.HardwareMonitor") as mock_monitor:
-            mock_monitor.return_value.get_system_info.return_value = (
-                mock_hardware_info_professional
-            )
+            mock_monitor.return_value.get_system_info.return_value = mock_hardware_info_professional
             mock_monitor.return_value.has_gpu_support.return_value = True
 
             manager = TrackingHardwareManager()
@@ -115,9 +103,7 @@ def test_available_algorithms_basic():
     """Test available algorithms for basic mode."""
     with patch("cv2.cuda.getCudaEnabledDeviceCount", return_value=0):
         with patch("spygate.utils.hardware_monitor.HardwareMonitor") as mock_monitor:
-            mock_monitor.return_value.get_system_info.return_value = (
-                mock_hardware_info_basic()
-            )
+            mock_monitor.return_value.get_system_info.return_value = mock_hardware_info_basic()
             mock_monitor.return_value.has_gpu_support.return_value = False
 
             manager = TrackingHardwareManager()
@@ -216,9 +202,7 @@ def test_can_run_algorithm():
     """Test algorithm availability checking."""
     with patch("cv2.cuda.getCudaEnabledDeviceCount", return_value=0):
         with patch("spygate.utils.hardware_monitor.HardwareMonitor") as mock_monitor:
-            mock_monitor.return_value.get_system_info.return_value = (
-                mock_hardware_info_basic()
-            )
+            mock_monitor.return_value.get_system_info.return_value = mock_hardware_info_basic()
             mock_monitor.return_value.has_gpu_support.return_value = False
 
             manager = TrackingHardwareManager()

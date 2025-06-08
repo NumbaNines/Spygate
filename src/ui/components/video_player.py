@@ -14,9 +14,7 @@ class VideoPlayer(QWidget):
     # Signals
     positionChanged = pyqtSignal(int)  # Current position in milliseconds
     durationChanged = pyqtSignal(int)  # Video duration in milliseconds
-    playbackStateChanged = pyqtSignal(
-        QMediaPlayer.PlaybackState
-    )  # Playback state changes
+    playbackStateChanged = pyqtSignal(QMediaPlayer.PlaybackState)  # Playback state changes
 
     def __init__(self, parent: Optional[QWidget] = None):
         """Initialize the video player.

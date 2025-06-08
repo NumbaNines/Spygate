@@ -100,9 +100,7 @@ class VideoImportWidget(QWidget):
         """
         )
         self.select_button.clicked.connect(self._show_file_dialog)
-        drop_layout.addWidget(
-            self.select_button, alignment=Qt.AlignmentFlag.AlignCenter
-        )
+        drop_layout.addWidget(self.select_button, alignment=Qt.AlignmentFlag.AlignCenter)
 
         layout.addWidget(self.drop_frame)
 
@@ -191,7 +189,7 @@ class VideoImportWidget(QWidget):
         if files:
             self._handle_video_files(files)
 
-    def _handle_video_files(self, file_paths: List[str]):
+    def _handle_video_files(self, file_paths: list[str]):
         """Handle video file import process."""
         # Extract metadata first
         files_with_metadata = []
@@ -294,9 +292,7 @@ class VideoImportWidget(QWidget):
             item = QListWidgetItem(self.video_list)
             item.setText(f"{file_name} - {message}")
             item.setIcon(
-                self.style().standardIcon(
-                    self.style().StandardPixmap.SP_DialogApplyButton
-                )
+                self.style().standardIcon(self.style().StandardPixmap.SP_DialogApplyButton)
             )
             self.video_list.addItem(item)
         else:
@@ -305,9 +301,7 @@ class VideoImportWidget(QWidget):
             item = QListWidgetItem(self.video_list)
             item.setText(f"{file_name} - {message}")
             item.setIcon(
-                self.style().standardIcon(
-                    self.style().StandardPixmap.SP_DialogCancelButton
-                )
+                self.style().standardIcon(self.style().StandardPixmap.SP_DialogCancelButton)
             )
             self.video_list.addItem(item)
 

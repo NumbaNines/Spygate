@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }}</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      h1,
+      h2,
+      h3 {
+        color: #333;
+        margin-top: 20px;
+      }
+
+      .summary-box {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 15px;
+        margin: 10px 0;
+      }
+
+      .metric-group {
+        margin: 20px 0;
+      }
+
+      .metric-value {
+        font-weight: bold;
+        color: #007bff;
+      }
+
+      .visualization {
+        margin: 20px 0;
+        text-align: center;
+      }
+
+      .visualization img {
+        max-width: 100%;
+        height: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+      }
+
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
+        border: 1px solid #dee2e6;
+      }
+
+      th {
+        background-color: #f8f9fa;
+      }
+
+      .status-passed {
+        color: #28a745;
+      }
+
+      .status-failed {
+        color: #dc3545;
+      }
+
+      .metadata {
+        font-size: 0.9em;
+        color: #6c757d;
+      }
+
+      .footer {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #dee2e6;
+        text-align: center;
+        font-size: 0.9em;
+        color: #6c757d;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>{{ title }}</h1>
+      <div class="metadata">Generated on: {{ timestamp }}</div>
+
+      <!-- Test Summary -->
+      <h2>Test Summary</h2>
+      <div class="summary-box">
+        <h3>Tracking Metrics</h3>
+        {% if metrics_summary %} {% if metrics_summary.accuracy %}
+        <div class="metric-group">
+          <h4>Accuracy</h4>
+          <table>
+            <tr>
+              <th>Mean</th>
+              <th>Min</th>
+              <th>Max</th>
+            </tr>
+            <tr>
+              <td class="metric-value">
+                {{ "%.2f"|format(metrics_summary.accuracy.mean) }}
+              </td>
+              <td class="metric-value">
+                {{ "%.2f"|format(metrics_summary.accuracy.min) }}
+              </td>
+              <td class="metric-value">
+                {{ "%.2f"|format(metrics_summary.accuracy.max) }}
+              </td>
+            </tr>
+          </table>
+        </div>
+        {% endif %} {% if metrics_summary.position %}
+        <div class="metric-group">
+          <h4>Position Tracking</h4>
+          <table>
+            <tr>
+              <th>Mean Error</th>
+              <th>RMSE</th>
+            </tr>
+            <tr>
+              <td class="metric-value">
+                {{ "%.2f"|format(metrics_summary.position.mean_error) }}
+              </td>
+              <td class="metric-value">
+                {{ "%.2f"|format(metrics_summary.position.rmse) }}
+              </td>
+            </tr>
+          </table>
+        </div>
+        {% endif %} {% if metrics_summary.velocity %}
+        <div class="metric-group">
+          <h4>Velocity Tracking</h4>
+          <table>
+            <tr>
+              <th>Mean Error</th>
+              <th>RMSE</th>
+            </tr>
+            <tr>
+              <td class="metric-value">
+                {{ "%.2f"|format(metrics_summary.velocity.mean_error) }}
+              </td>
+              <td class="metric-value">
+                {{ "%.2f"|format(metrics_summary.velocity.rmse) }}
+              </td>
+            </tr>
+          </table>
+        </div>
+        {% endif %} {% if metrics_summary.occlusion %}
+        <div class="metric-group">
+          <h4>Occlusion Handling</h4>
+          <table>
+            <tr>
+              <th>Recovery Rate</th>
+              <th>Tracking Persistence</th>
+            </tr>
+            <tr>
+              <td class="metric-value">
+                {{ "%.2f"|format(metrics_summary.occlusion.recovery_rate) }}
+              </td>
+              <td class="metric-value">
+                {{ "%.2f"|format(metrics_summary.occlusion.tracking_persistence)
+                }}
+              </td>
+            </tr>
+          </table>
+        </div>
+        {% endif %} {% if metrics_summary.formation %}
+        <div class="metric-group">
+          <h4>Formation Analysis</h4>
+          <table>
+            <tr>
+              <th>Formation Accuracy</th>
+              <th>Stability Score</th>
+            </tr>
+            <tr>
+              <td class="metric-value">
+                {{ "%.2f"|format(metrics_summary.formation.formation_accuracy)
+                }}
+              </td>
+              <td class="metric-value">
+                {{ "%.2f"|format(metrics_summary.formation.stability_score) }}
+              </td>
+            </tr>
+          </table>
+        </div>
+        {% endif %} {% else %}
+        <p>No tracking metrics available.</p>
+        {% endif %}
+      </div>
+
+      <!-- Performance Summary -->
+      <div class="summary-box">
+        <h3>Performance Metrics</h3>
+        {% if performance_summary %} {% if performance_summary.timing %}
+        <div class="metric-group">
+          <h4>Timing</h4>
+          <table>
+            <tr>
+              <th>Total Time (s)</th>
+              <th>Tests/Second</th>
+            </tr>
+            <tr>
+              <td class="metric-value">
+                {{ "%.2f"|format(performance_summary.timing.total_time) }}
+              </td>
+              <td class="metric-value">
+                {{ "%.2f"|format(performance_summary.timing.tests_per_second) }}
+              </td>
+            </tr>
+          </table>
+        </div>
+        {% endif %} {% if performance_summary.system %}
+        <div class="metric-group">
+          <h4>System Resources</h4>
+          <table>
+            <tr>
+              <th>CPU Usage (%)</th>
+              <th>Memory Usage (MB)</th>
+            </tr>
+            <tr>
+              <td class="metric-value">
+                {{ "%.2f"|format(performance_summary.system.cpu_usage) }}
+              </td>
+              <td class="metric-value">
+                {{ "%.2f"|format(performance_summary.system.memory_usage) }}
+              </td>
+            </tr>
+          </table>
+        </div>
+        {% endif %} {% if performance_summary.coverage %}
+        <div class="metric-group">
+          <h4>Code Coverage</h4>
+          <table>
+            <tr>
+              <th>Line Coverage (%)</th>
+              <th>Branch Coverage (%)</th>
+            </tr>
+            <tr>
+              <td class="metric-value">
+                {{ "%.2f"|format(performance_summary.coverage.line_rate * 100)
+                }}
+              </td>
+              <td class="metric-value">
+                {{ "%.2f"|format(performance_summary.coverage.branch_rate * 100)
+                }}
+              </td>
+            </tr>
+          </table>
+        </div>
+        {% endif %} {% else %}
+        <p>No performance metrics available.</p>
+        {% endif %}
+      </div>
+
+      <!-- Visualizations -->
+      <h2>Visualizations</h2>
+      {% if visualization_paths %} {% if visualization_paths.tracking_accuracy
+      %}
+      <div class="visualization">
+        <h3>Tracking Accuracy</h3>
+        <img
+          src="{{ visualization_paths.tracking_accuracy }}"
+          alt="Tracking Accuracy"
+        />
+      </div>
+      {% endif %} {% if visualization_paths.position_errors %}
+      <div class="visualization">
+        <h3>Position Errors</h3>
+        <img
+          src="{{ visualization_paths.position_errors }}"
+          alt="Position Errors"
+        />
+      </div>
+      {% endif %} {% if visualization_paths.velocity_errors %}
+      <div class="visualization">
+        <h3>Velocity Errors</h3>
+        <img
+          src="{{ visualization_paths.velocity_errors }}"
+          alt="Velocity Errors"
+        />
+      </div>
+      {% endif %} {% if visualization_paths.occlusion_metrics %}
+      <div class="visualization">
+        <h3>Occlusion Metrics</h3>
+        <img
+          src="{{ visualization_paths.occlusion_metrics }}"
+          alt="Occlusion Metrics"
+        />
+      </div>
+      {% endif %} {% if visualization_paths.formation_metrics %}
+      <div class="visualization">
+        <h3>Formation Metrics</h3>
+        <img
+          src="{{ visualization_paths.formation_metrics }}"
+          alt="Formation Metrics"
+        />
+      </div>
+      {% endif %} {% if visualization_paths.performance_metrics %}
+      <div class="visualization">
+        <h3>Performance Metrics</h3>
+        <img
+          src="{{ visualization_paths.performance_metrics }}"
+          alt="Performance Metrics"
+        />
+      </div>
+      {% endif %} {% else %}
+      <p>No visualizations available.</p>
+      {% endif %}
+
+      <div class="footer">Generated by Spygate Test Suite</div>
+    </div>
+  </body>
+</html>

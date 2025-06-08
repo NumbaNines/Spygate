@@ -1,13 +1,6 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QKeySequence
-from PyQt6.QtWidgets import (
-    QMainWindow,
-    QMessageBox,
-    QPushButton,
-    QToolBar,
-    QVBoxLayout,
-    QWidget,
-)
+from PyQt6.QtWidgets import QMainWindow, QMessageBox, QPushButton, QToolBar, QVBoxLayout, QWidget
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -77,9 +70,7 @@ class MainWindow(QMainWindow):
         toolbar.addWidget(help_btn)
 
         # Create video timeline view
-        self.timeline_view = VideoTimelineView(
-            self.frame_extractor, self.motion_service, self
-        )
+        self.timeline_view = VideoTimelineView(self.frame_extractor, self.motion_service, self)
         layout.addWidget(self.timeline_view)
 
         # Create analysis panel
@@ -118,20 +109,14 @@ class MainWindow(QMainWindow):
         msg.setInformativeText(
             "\n".join(
                 f"- {t.title}: {t.description}"
-                + (
-                    " (Completed)"
-                    if self.tutorial_manager.is_tutorial_completed(t.id)
-                    else ""
-                )
+                + (" (Completed)" if self.tutorial_manager.is_tutorial_completed(t.id) else "")
                 for t in tutorials
             )
         )
 
         # Add buttons for each tutorial
         for tutorial in tutorials:
-            button = msg.addButton(
-                f"Start {tutorial.title}", QMessageBox.ButtonRole.ActionRole
-            )
+            button = msg.addButton(f"Start {tutorial.title}", QMessageBox.ButtonRole.ActionRole)
             button.clicked.connect(lambda t=tutorial: self.start_tutorial(t.id))
 
         msg.addButton(QMessageBox.StandardButton.Close)

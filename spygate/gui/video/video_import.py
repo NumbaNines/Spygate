@@ -31,9 +31,7 @@ from ...video.codec_validator import CodecValidator, VideoMetadata
 class VideoImportWorker(QThread):
     """Worker thread for importing and validating videos."""
 
-    progress = pyqtSignal(
-        int, int, str, bool, str
-    )  # current, total, path, success, message
+    progress = pyqtSignal(int, int, str, bool, str)  # current, total, path, success, message
     finished = pyqtSignal(list)  # List of (path, metadata) tuples
 
     def __init__(self, video_files):
@@ -138,9 +136,7 @@ class VideoListItem(QWidget):
             }
         """
         )
-        self.delete_button.clicked.connect(
-            lambda: self.deleteClicked.emit(self.video_path)
-        )
+        self.delete_button.clicked.connect(lambda: self.deleteClicked.emit(self.video_path))
         layout.addWidget(self.delete_button)
 
 
@@ -221,8 +217,7 @@ class VideoImportWidget(QWidget):
         if event.mimeData().hasUrls():
             urls = event.mimeData().urls()
             if any(
-                url.toLocalFile().lower().endswith((".mp4", ".avi", ".mov", ".mkv"))
-                for url in urls
+                url.toLocalFile().lower().endswith((".mp4", ".avi", ".mov", ".mkv")) for url in urls
             ):
                 self.drop_frame.setStyleSheet(
                     """
@@ -339,22 +334,16 @@ class VideoImportWidget(QWidget):
 
         event.accept()
 
-    def _on_progress(
-        self, current: int, total: int, path: str, success: bool, message: str
-    ):
+    def _on_progress(self, current: int, total: int, path: str, success: bool, message: str):
         """Handle progress updates."""
         if hasattr(self, "progress_dialog"):
             self.progress_dialog.setValue(current)
             if path == "Uploading files...":
                 self.progress_dialog.setLabelText(path)
             else:
-                self.progress_dialog.setLabelText(
-                    f"Processing: {os.path.basename(path)}"
-                )
+                self.progress_dialog.setLabelText(f"Processing: {os.path.basename(path)}")
             if not success and message:
-                QMessageBox.warning(
-                    self, "Import Error", f"Error importing {path}:\n{message}"
-                )
+                QMessageBox.warning(self, "Import Error", f"Error importing {path}:\n{message}")
 
     def _on_import_finished(self, results):
         """Handle import completion."""
@@ -384,9 +373,7 @@ class VideoImportWidget(QWidget):
     def _on_delete_video(self, video_path: str):
         """Handle video deletion."""
         # Find and remove from imported_videos list
-        self.imported_videos = [
-            (p, m) for p, m in self.imported_videos if p != video_path
-        ]
+        self.imported_videos = [(p, m) for p, m in self.imported_videos if p != video_path]
 
         # Find and remove from list widget
         for i in range(self.video_list.count()):

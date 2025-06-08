@@ -74,9 +74,7 @@ def create_menu_bar(parent):
     analysis_action = QAction("Analysis Panel", parent)
     analysis_action.setStatusTip("Toggle analysis panel visibility")
     analysis_action.setCheckable(True)
-    analysis_action.triggered.connect(
-        lambda checked: parent.analysis_dock.setVisible(checked)
-    )
+    analysis_action.triggered.connect(lambda checked: parent.analysis_dock.setVisible(checked))
     view_menu.addAction(analysis_action)
 
     # Theme menu
@@ -84,9 +82,7 @@ def create_menu_bar(parent):
 
     theme_action = QAction("Theme Settings...", parent)
     theme_action.setStatusTip("Change application theme")
-    theme_action.triggered.connect(
-        lambda: ThemeDialog(parent.theme_manager, parent).exec()
-    )
+    theme_action.triggered.connect(lambda: ThemeDialog(parent.theme_manager, parent).exec())
     theme_menu.addAction(theme_action)
 
     # Help menu

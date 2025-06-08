@@ -23,7 +23,7 @@ class HealthChecker:
             "api_latency": 0,
         }
 
-    def check_system_health(self) -> Dict[str, Any]:
+    def check_system_health(self) -> dict[str, Any]:
         """Check system health metrics."""
         try:
             # CPU usage
@@ -86,7 +86,7 @@ class HealthChecker:
             )
             return False
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get current health metrics."""
         return {
             "metrics": self.metrics,

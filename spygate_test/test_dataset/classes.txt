@@ -1,0 +1,20 @@
+# Game State Elements (0-9)
+score_bug
+down_distance
+game_clock
+play_clock
+formation_display
+presnap_adjustments
+player_stats
+timeout_indicator
+challenge_indicator
+penalty_indicator
+
+# UI Elements (10-16)
+hud
+gamertag
+preplay
+playcall
+no_huddle
+audible
+replay_controls

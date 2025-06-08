@@ -6,7 +6,9 @@ Create Date: 2025-06-07 15:30:00.000000
 
 """
 
-from typing import Sequence, Union
+from typing import Union
+
+from collections.abc import Sequence
 
 import sqlalchemy as sa
 from alembic import op
@@ -37,9 +39,7 @@ def upgrade() -> None:
     )
 
     # Add new columns to videos table
-    op.add_column(
-        "videos", sa.Column("file_path", sa.String(), nullable=False, unique=True)
-    )
+    op.add_column("videos", sa.Column("file_path", sa.String(), nullable=False, unique=True))
     op.add_column("videos", sa.Column("width", sa.Integer(), nullable=True))
     op.add_column("videos", sa.Column("height", sa.Integer(), nullable=True))
     op.add_column("videos", sa.Column("fps", sa.Float(), nullable=True))

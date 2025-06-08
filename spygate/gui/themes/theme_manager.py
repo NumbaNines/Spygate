@@ -18,12 +18,10 @@ class ThemeManager:
         """Initialize the theme manager."""
         self.app = QApplication.instance()
         self.current_theme = "dark_teal"
-        self.custom_styles: Dict[str, str] = {}
+        self.custom_styles: dict[str, str] = {}
 
         # Load built-in Qt Material themes
-        self.material_themes = {
-            theme.replace(".xml", ""): theme for theme in list_themes()
-        }
+        self.material_themes = {theme.replace(".xml", ""): theme for theme in list_themes()}
 
         # Create themes directory if it doesn't exist
         self.themes_dir = Path(__file__).parent / "custom"
@@ -39,7 +37,7 @@ class ThemeManager:
         """Load custom QSS themes from the themes directory."""
         for theme_file in self.themes_dir.glob("*.json"):
             try:
-                with open(theme_file, "r") as f:
+                with open(theme_file) as f:
                     theme_data = json.load(f)
                     name = theme_data.get("name")
                     if name:
@@ -109,7 +107,7 @@ class ThemeManager:
             print(f"Error saving theme {name}: {e}")
             return False
 
-    def get_available_themes(self) -> Dict[str, str]:
+    def get_available_themes(self) -> dict[str, str]:
         """Get all available themes.
 
         Returns:

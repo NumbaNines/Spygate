@@ -7,12 +7,12 @@ and formation analysis.
 """
 
 import logging
+import threading
+import time
+from collections import deque
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Union
-from collections import deque
-import time
-import threading
-from concurrent.futures import ThreadPoolExecutor
 
 import cv2
 import numpy as np
@@ -78,9 +78,7 @@ class TrackingPipeline:
         )
         self.preprocessor = FramePreprocessor(self.config.preprocessing_config)
         self.algorithm_selector = AlgorithmSelector()
-        self.motion_system = (
-            MotionSystem() if self.config.use_motion_detection else None
-        )
+        self.motion_system = MotionSystem() if self.config.use_motion_detection else None
         self.object_tracker = MultiObjectTracker(
             config=self.config.tracking_config,
             hardware_manager=self.tracking_hw,
@@ -93,25 +91,25 @@ class TrackingPipeline:
         self.scene_complexity = SceneComplexity.LOW
         self.tracking_mode = TrackingMode.STANDARD
         self.fps = 30.0
-        
+
         # Performance monitoring
         self.frame_times = deque(maxlen=self.config.max_frame_buffer)
         self.current_quality = self.config.max_quality
         self.last_quality_check = time.time()
         self.quality_check_interval = 1.0  # Check every second
-        
+
         # Frame buffer for batch processing
         self.frame_buffer = []
         self.result_buffer = {}
-        
+
         # Memory management
         self.memory_usage = 0.0
         self.last_memory_check = time.time()
         self.memory_check_interval = 5.0  # Check every 5 seconds
-        
+
         # Thread pool for parallel processing
         self.thread_pool = ThreadPoolExecutor(max_workers=self.config.thread_pool_size)
-        
+
         # Frame prefetching
         if self.config.enable_prefetch:
             self.prefetch_queue = deque(maxlen=self.config.prefetch_size)
@@ -121,9 +119,7 @@ class TrackingPipeline:
         # Initialize GPU context if available
         self._init_gpu()
 
-        logger.info(
-            f"Initialized TrackingPipeline with {self.hardware.tier.name} tier"
-        )
+        logger.info(f"Initialized TrackingPipeline with {self.hardware.tier.name} tier")
         logger.info(f"Processing parameters: {self.optimizer.get_current_params()}")
 
     def _init_gpu(self):
@@ -156,35 +152,34 @@ class TrackingPipeline:
             return
 
         self.last_quality_check = current_time
-        
+
         # Calculate FPS using a weighted moving average
         recent_times = list(self.frame_times)[-10:]  # Last 10 frames
-        older_times = list(self.frame_times)[:-10]   # Older frames
-        
+        older_times = list(self.frame_times)[:-10]  # Older frames
+
         if recent_times:
             recent_fps = 1.0 / np.mean(recent_times)
             weight = 0.7  # Give more weight to recent frames
         else:
             recent_fps = 0.0
             weight = 0.0
-            
+
         if older_times:
             older_fps = 1.0 / np.mean(older_times)
         else:
             older_fps = 0.0
-            
+
         current_fps = weight * recent_fps + (1 - weight) * older_fps
 
         # Check memory usage
         if current_time - self.last_memory_check >= self.memory_check_interval:
             self.last_memory_check = current_time
             self.memory_usage = self.hardware.get_memory_usage()
-            
+
             # Reduce quality if memory usage is too high
             if self.memory_usage > self.config.max_memory_usage * 0.9:
                 self.current_quality = max(
-                    self.current_quality - self.config.quality_step * 2,
-                    self.config.min_quality
+                    self.current_quality - self.config.quality_step * 2, self.config.min_quality
                 )
                 logger.warning(f"High memory usage ({self.memory_usage:.0f}MB), reducing quality")
                 return
@@ -192,14 +187,15 @@ class TrackingPipeline:
         # Adjust quality based on FPS
         if current_fps < self.config.min_fps and self.current_quality > self.config.min_quality:
             self.current_quality = max(
-                self.current_quality - self.config.quality_step,
-                self.config.min_quality
+                self.current_quality - self.config.quality_step, self.config.min_quality
             )
             logger.info(f"Reducing quality to {self.current_quality:.2f} to maintain performance")
-        elif current_fps > self.config.target_fps * 1.1 and self.current_quality < self.config.max_quality:
+        elif (
+            current_fps > self.config.target_fps * 1.1
+            and self.current_quality < self.config.max_quality
+        ):
             self.current_quality = min(
-                self.current_quality + self.config.quality_step,
-                self.config.max_quality
+                self.current_quality + self.config.quality_step, self.config.max_quality
             )
             logger.info(f"Increasing quality to {self.current_quality:.2f}")
 
@@ -209,19 +205,19 @@ class TrackingPipeline:
             try:
                 if len(self.prefetch_queue) < self.config.prefetch_size and self.frame_buffer:
                     frame, frame_number = self.frame_buffer[0]
-                    
+
                     # Pre-process frame
                     if self.use_gpu:
                         gpu_frame = cv2.cuda.GpuMat(frame)
                         processed = self.preprocessor.process_gpu(gpu_frame)
                     else:
                         processed = self.preprocessor.process(frame)
-                        
+
                     self.prefetch_queue.append((processed, frame_number))
-                    
+
                 else:
                     time.sleep(0.001)  # Short sleep to prevent busy waiting
-                    
+
             except Exception as e:
                 logger.error(f"Error in frame prefetching: {e}")
                 time.sleep(0.1)  # Longer sleep on error
@@ -232,7 +228,7 @@ class TrackingPipeline:
         video_id: int,
         frame_number: int,
         fps: Optional[float] = None,
-    ) -> Dict[str, Union[np.ndarray, Dict]]:
+    ) -> dict[str, Union[np.ndarray, dict]]:
         """Process a single frame through the tracking pipeline.
 
         Args:
@@ -286,42 +282,38 @@ class TrackingPipeline:
         self.frame_count += 1
         return results
 
-    def _process_batch(self) -> Dict[int, Dict]:
+    def _process_batch(self) -> dict[int, dict]:
         """Process a batch of frames efficiently."""
         batch_results = {}
-        
+
         # Use prefetched frames if available
         if self.config.enable_prefetch and self.prefetch_queue:
             norm_frames = []
             frame_numbers = []
             frames = []
-            
+
             while self.prefetch_queue and len(frames) < self.config.batch_size:
                 processed, number = self.prefetch_queue.popleft()
                 norm_frames.append(processed)
                 frame_numbers.append(number)
                 frames.append(self.frame_buffer[len(frames)][0])
-                
+
         else:
             # Pre-process batch
             frames = [f[0] for f in self.frame_buffer]
             frame_numbers = [f[1] for f in self.frame_buffer]
-            
+
             # Use GPU if available
             if self.use_gpu:
                 gpu_frames = []
                 for frame in frames:
                     gpu_frame = self.gpu_memory_pool.getBuffer(
-                        frame.shape[0],
-                        frame.shape[1],
-                        frame.dtype
+                        frame.shape[0], frame.shape[1], frame.dtype
                     )
                     gpu_frame.upload(frame)
                     gpu_frames.append(gpu_frame)
-                    
-                norm_frames = [
-                    self.preprocessor.process_gpu(f) for f in gpu_frames
-                ]
+
+                norm_frames = [self.preprocessor.process_gpu(f) for f in gpu_frames]
             else:
                 norm_frames = [self.preprocessor.process(f) for f in frames]
 
@@ -336,7 +328,7 @@ class TrackingPipeline:
                 self._process_frame_parallel,
                 frame,
                 norm_frame if not self.use_gpu else norm_frame.download(),
-                frame_number
+                frame_number,
             )
             futures.append((frame_number, future))
 
@@ -359,14 +351,11 @@ class TrackingPipeline:
         return batch_results
 
     def _process_frame_parallel(
-        self,
-        frame: np.ndarray,
-        norm_frame: np.ndarray,
-        frame_number: int
-    ) -> Dict:
+        self, frame: np.ndarray, norm_frame: np.ndarray, frame_number: int
+    ) -> dict:
         """Process a single frame in parallel."""
         results = {}
-        
+
         # Run motion detection if enabled
         if self.motion_system:
             motion_frame, motion_results = self.motion_system.process_frame(
@@ -404,17 +393,13 @@ class TrackingPipeline:
 
         return results
 
-    def _process_single_frame(self, frame: np.ndarray) -> Dict:
+    def _process_single_frame(self, frame: np.ndarray) -> dict:
         """Process a single frame when batch processing is not possible."""
         results = {}
-        
+
         # Pre-process frame
         if self.use_gpu:
-            gpu_frame = self.gpu_memory_pool.getBuffer(
-                frame.shape[0],
-                frame.shape[1],
-                frame.dtype
-            )
+            gpu_frame = self.gpu_memory_pool.getBuffer(frame.shape[0], frame.shape[1], frame.dtype)
             gpu_frame.upload(frame)
             norm_frame = self.preprocessor.process_gpu(gpu_frame)
         else:
@@ -428,9 +413,7 @@ class TrackingPipeline:
 
         # Process frame
         results = self._process_frame_parallel(
-            frame,
-            norm_frame if not self.use_gpu else norm_frame.download(),
-            self.frame_count
+            frame, norm_frame if not self.use_gpu else norm_frame.download(), self.frame_count
         )
 
         # Clean up GPU memory
@@ -443,7 +426,7 @@ class TrackingPipeline:
     def _visualize_results(
         self,
         frame: np.ndarray,
-        results: Dict[str, Union[np.ndarray, Dict]],
+        results: dict[str, Union[np.ndarray, dict]],
     ) -> np.ndarray:
         """Generate visualization of tracking and analysis results.
 
@@ -522,7 +505,7 @@ class TrackingPipeline:
 
         return frame
 
-    def get_performance_stats(self) -> Dict[str, float]:
+    def get_performance_stats(self) -> dict[str, float]:
         """Get current performance statistics."""
         if not self.frame_times:
             return {
@@ -531,12 +514,14 @@ class TrackingPipeline:
                 "quality": self.current_quality,
                 "memory_usage_mb": self.memory_usage,
                 "batch_size": self.config.batch_size,
-                "prefetch_queue_size": len(self.prefetch_queue) if self.config.enable_prefetch else 0,
+                "prefetch_queue_size": (
+                    len(self.prefetch_queue) if self.config.enable_prefetch else 0
+                ),
             }
-            
+
         avg_frame_time = np.mean(self.frame_times)
         current_fps = 1.0 / avg_frame_time if avg_frame_time > 0 else 0.0
-        
+
         return {
             "fps": current_fps,
             "avg_frame_time": avg_frame_time,
@@ -556,8 +541,8 @@ class TrackingPipeline:
         self.current_quality = self.config.max_quality
         self.last_quality_check = time.time()
         self.prefetch_queue.clear()
-        
+
         if self.motion_system:
             self.motion_system.reset()
         self.object_tracker.reset()
-        self.formation_analyzer.reset() 
+        self.formation_analyzer.reset()

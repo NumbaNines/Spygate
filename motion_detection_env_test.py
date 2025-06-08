@@ -14,9 +14,9 @@ while True:
     ret, frame = cap.read()
     if not ret:
         break
-    cv2.imshow('Test Frame', frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    cv2.imshow("Test Frame", frame)
+    if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
 cap.release()
-cv2.destroyAllWindows() 
+cv2.destroyAllWindows()

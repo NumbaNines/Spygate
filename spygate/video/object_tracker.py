@@ -5,18 +5,18 @@ This module provides object tracking functionality with support for multiple
 tracking algorithms, parallel processing, and memory-efficient operation.
 """
 
+import gc
 import logging
+import threading
+import time
+from collections import deque
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Union
-from collections import deque
-import time
-import threading
-from concurrent.futures import ThreadPoolExecutor
-import gc
 
 import cv2
 import numpy as np
-from numba import jit, cuda
+from numba import cuda, jit
 
 from ..core.hardware import HardwareDetector
 from ..core.optimizer import TierOptimizer
@@ -71,17 +71,17 @@ def calculate_iou(bbox1: np.ndarray, bbox2: np.ndarray) -> float:
     y1 = max(bbox1[1], bbox2[1])
     x2 = min(bbox1[2], bbox2[2])
     y2 = min(bbox1[3], bbox2[3])
-    
+
     if x2 < x1 or y2 < y1:
         return 0.0
-        
+
     intersection = (x2 - x1) * (y2 - y1)
-    
+
     area1 = (bbox1[2] - bbox1[0]) * (bbox1[3] - bbox1[1])
     area2 = (bbox2[2] - bbox2[0]) * (bbox2[3] - bbox2[1])
-    
+
     union = area1 + area2 - intersection
-    
+
     return intersection / union if union > 0 else 0.0
 
 
@@ -94,18 +94,18 @@ def calculate_iou_batch_gpu(bboxes1, bboxes2, results):
         y1 = max(bboxes1[idx, 1], bboxes2[idx, 1])
         x2 = min(bboxes1[idx, 2], bboxes2[idx, 2])
         y2 = min(bboxes1[idx, 3], bboxes2[idx, 3])
-        
+
         if x2 < x1 or y2 < y1:
             results[idx] = 0.0
             return
-            
+
         intersection = (x2 - x1) * (y2 - y1)
-        
+
         area1 = (bboxes1[idx, 2] - bboxes1[idx, 0]) * (bboxes1[idx, 3] - bboxes1[idx, 1])
         area2 = (bboxes2[idx, 2] - bboxes2[idx, 0]) * (bboxes2[idx, 3] - bboxes2[idx, 1])
-        
+
         union = area1 + area2 - intersection
-        
+
         results[idx] = intersection / union if union > 0 else 0.0
 
 
@@ -117,7 +117,7 @@ class ObjectTracker:
         self.optimizer = TierOptimizer(hardware)
         self.hardware_manager = TrackingHardwareManager()
         self.algorithm_selector = AlgorithmSelector()
-        
+
         # Initialize tracking state
         self.tracks = {}  # track_id -> track_data
         self.track_history = {}  # track_id -> deque(positions)
@@ -126,16 +126,16 @@ class ObjectTracker:
         self.next_track_id = 0
         self.frame_count = 0
         self.last_cleanup = 0
-        
+
         # Performance monitoring
         self.processing_times = deque(maxlen=100)
         self.memory_usage = 0.0
         self.current_quality = config.max_quality
-        
+
         # Threading and synchronization
         self.lock = threading.Lock()
         self.executor = ThreadPoolExecutor(max_workers=config.max_thread_workers)
-        
+
         # GPU resources
         if self.config.enable_gpu_acceleration and cuda.is_available():
             cuda.select_device(0)
@@ -144,16 +144,16 @@ class ObjectTracker:
         else:
             self.stream = None
             self.gpu_memory_pool = None
-            
+
         logger.info(f"Initialized ObjectTracker with {hardware.tier.name} tier")
 
     def _track_memory(self, track_id: int, data_size: float):
         """Track memory usage of tracking data."""
         if not self.config.enable_memory_tracking:
             return
-            
+
         self.memory_usage += data_size
-        
+
         # Check memory threshold
         if self.memory_usage > self.config.max_memory_usage * self.config.memory_warning_threshold:
             self._reduce_memory_usage()
@@ -162,28 +162,25 @@ class ObjectTracker:
         """Reduce memory usage when threshold is reached."""
         if not self.config.enable_memory_tracking:
             return
-            
+
         logger.info(f"Memory usage ({self.memory_usage:.2f}MB) exceeded warning threshold")
-        
+
         # Remove old tracks
         with self.lock:
-            old_tracks = sorted(
-                self.track_ages.items(),
-                key=lambda x: x[1],
-                reverse=True
-            )[:len(self.track_ages)//4]  # Remove oldest 25%
-            
+            old_tracks = sorted(self.track_ages.items(), key=lambda x: x[1], reverse=True)[
+                : len(self.track_ages) // 4
+            ]  # Remove oldest 25%
+
             for track_id, _ in old_tracks:
                 self._remove_track(track_id)
-                
+
         # Force garbage collection
         gc.collect()
-        
+
         # Adjust quality if needed
         if self.config.enable_adaptive_quality:
             self.current_quality = max(
-                self.config.min_quality,
-                self.current_quality - self.config.quality_step
+                self.config.min_quality, self.current_quality - self.config.quality_step
             )
             logger.info(f"Reduced tracking quality to {self.current_quality:.2f}")
 
@@ -197,7 +194,7 @@ class ObjectTracker:
             del self.track_predictions[track_id]
         if track_id in self.track_ages:
             del self.track_ages[track_id]
-            
+
         # Free GPU resources
         if self.gpu_memory_pool and track_id in self.gpu_memory_pool:
             self.gpu_memory_pool[track_id].free()
@@ -208,11 +205,11 @@ class ObjectTracker:
         """Predict future motion using trajectory analysis."""
         if len(history) < 2:
             return history[-1] if len(history) > 0 else np.zeros(4)
-            
+
         # Calculate velocity using recent positions
         velocities = np.diff(history, axis=0)
-        avg_velocity = np.mean(velocities[-min(len(velocities), 5):], axis=0)
-        
+        avg_velocity = np.mean(velocities[-min(len(velocities), 5) :], axis=0)
+
         # Predict future position
         return history[-1] + avg_velocity
 
@@ -220,31 +217,30 @@ class ObjectTracker:
         """Update motion predictions for all tracks."""
         if not self.config.enable_motion_prediction:
             return
-            
+
         for track_id in self.tracks:
             history = np.array(list(self.track_history[track_id]))
             if len(history) >= 2:
                 predictions = []
                 current = history[-1]
-                
+
                 # Predict future positions
                 for _ in range(self.config.prediction_horizon):
                     current = self._predict_motion(np.vstack([history, current]))
                     predictions.append(current)
-                    
+
                 self.track_predictions[track_id] = np.array(predictions)
 
     def _select_algorithm(self, frame: np.ndarray) -> str:
         """Select tracking algorithm based on scene complexity."""
         if not self.config.enable_scene_adaptation:
             return "default"
-            
+
         # Analyze scene complexity
         motion = cv2.calcOpticalFlowFarneback(
-            cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY),
-            None, 0.5, 3, 15, 3, 5, 1.2, 0
+            cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), None, 0.5, 3, 15, 3, 5, 1.2, 0
         )
-        
+
         avg_motion = np.mean(np.abs(motion))
         if avg_motion > 5.0:
             return "complex"
@@ -253,38 +249,38 @@ class ObjectTracker:
         else:
             return "simple"
 
-    def _fuse_tracks(self, detections: List[np.ndarray]):
+    def _fuse_tracks(self, detections: list[np.ndarray]):
         """Merge similar tracks to prevent duplicates."""
         if not self.config.enable_track_fusion:
             return
-            
+
         def calculate_iou(box1, box2):
             x1 = max(box1[0], box2[0])
             y1 = max(box1[1], box2[1])
             x2 = min(box1[0] + box1[2], box2[0] + box2[2])
             y2 = min(box1[1] + box1[3], box2[1] + box2[3])
-            
+
             if x2 <= x1 or y2 <= y1:
                 return 0.0
-                
+
             intersection = (x2 - x1) * (y2 - y1)
             area1 = box1[2] * box1[3]
             area2 = box2[2] * box2[3]
-            
+
             return intersection / (area1 + area2 - intersection)
-            
+
         # Find tracks to merge
         to_merge = []
         track_ids = list(self.tracks.keys())
-        
+
         for i in range(len(track_ids)):
             for j in range(i + 1, len(track_ids)):
                 track1 = self.tracks[track_ids[i]]
                 track2 = self.tracks[track_ids[j]]
-                
+
                 if calculate_iou(track1, track2) > self.config.fusion_iou_threshold:
                     to_merge.append((track_ids[i], track_ids[j]))
-                    
+
         # Merge tracks
         for track1_id, track2_id in to_merge:
             if track1_id in self.tracks and track2_id in self.tracks:
@@ -294,37 +290,30 @@ class ObjectTracker:
                 else:
                     self._remove_track(track1_id)
 
-    def update(self, frame: np.ndarray, detections: List[np.ndarray]):
+    def update(self, frame: np.ndarray, detections: list[np.ndarray]):
         """Update tracking with new detections."""
         start_time = time.time()
-        
+
         # Select tracking algorithm
         algorithm = self._select_algorithm(frame)
-        
+
         # Update frame count
         self.frame_count += 1
-        
+
         # Process detections
         if self.config.enable_parallel_tracking and len(detections) > 1:
             # Process detections in parallel
             futures = []
             for detection in detections:
-                future = self.executor.submit(
-                    self._process_detection,
-                    detection,
-                    algorithm
-                )
+                future = self.executor.submit(self._process_detection, detection, algorithm)
                 futures.append(future)
-                
+
             # Collect results
             results = [f.result() for f in futures]
         else:
             # Process sequentially
-            results = [
-                self._process_detection(d, algorithm)
-                for d in detections
-            ]
-            
+            results = [self._process_detection(d, algorithm) for d in detections]
+
         # Update tracks
         with self.lock:
             for track_id, detection in results:
@@ -333,47 +322,43 @@ class ObjectTracker:
                     track_id = self.next_track_id
                     self.next_track_id += 1
                     self.tracks[track_id] = detection
-                    self.track_history[track_id] = deque(
-                        maxlen=self.config.prediction_buffer_size
-                    )
+                    self.track_history[track_id] = deque(maxlen=self.config.prediction_buffer_size)
                     self.track_ages[track_id] = 0
                 else:
                     # Update existing track
                     self.tracks[track_id] = detection
                     self.track_ages[track_id] = 0
-                    
+
                 # Update history
                 self.track_history[track_id].append(detection)
-                
+
         # Update predictions
         self._update_track_predictions()
-        
+
         # Fuse similar tracks
         self._fuse_tracks(detections)
-        
+
         # Age and prune tracks
         self._age_tracks()
-        
+
         # Cleanup if needed
         if (self.frame_count - self.last_cleanup) >= self.config.cleanup_interval:
             self._cleanup()
-            
+
         # Update performance metrics
         end_time = time.time()
         self.processing_times.append(end_time - start_time)
-        
+
         # Return active tracks
         return self.get_active_tracks()
 
     def _process_detection(
-        self,
-        detection: np.ndarray,
-        algorithm: str
-    ) -> Tuple[Optional[int], np.ndarray]:
+        self, detection: np.ndarray, algorithm: str
+    ) -> tuple[Optional[int], np.ndarray]:
         """Process a single detection."""
         best_match = None
-        best_score = float('inf')
-        
+        best_score = float("inf")
+
         # Find best matching track
         for track_id, track in self.tracks.items():
             if algorithm == "simple":
@@ -384,11 +369,11 @@ class ObjectTracker:
                 # Use IoU-based matching
                 iou = self._calculate_iou(detection, track)
                 score = 1.0 - iou
-                
+
             if score < best_score:
                 best_score = score
                 best_match = track_id
-                
+
         # Return match or None for new track
         return (best_match, detection) if best_score < 0.5 else (None, detection)
 
@@ -396,12 +381,12 @@ class ObjectTracker:
         """Age tracks and remove old ones."""
         if not self.config.enable_track_pruning:
             return
-            
+
         with self.lock:
             # Age all tracks
             for track_id in list(self.track_ages.keys()):
                 self.track_ages[track_id] += 1
-                
+
                 # Remove old tracks
                 if self.track_ages[track_id] > self.config.track_pruning_threshold:
                     self._remove_track(track_id)
@@ -411,20 +396,17 @@ class ObjectTracker:
         with self.lock:
             # Remove old tracks
             while len(self.tracks) > self.config.max_cached_tracks:
-                oldest_track = max(
-                    self.track_ages.items(),
-                    key=lambda x: x[1]
-                )[0]
+                oldest_track = max(self.track_ages.items(), key=lambda x: x[1])[0]
                 self._remove_track(oldest_track)
-                
+
             # Reset cleanup counter
             self.last_cleanup = self.frame_count
-            
+
             # Force garbage collection
             if self.config.enable_memory_tracking:
                 gc.collect()
 
-    def get_active_tracks(self) -> Dict[int, np.ndarray]:
+    def get_active_tracks(self) -> dict[int, np.ndarray]:
         """Get currently active tracks."""
         return {
             track_id: track
@@ -436,7 +418,7 @@ class ObjectTracker:
         """Get motion predictions for a track."""
         return self.track_predictions.get(track_id)
 
-    def get_performance_metrics(self) -> Dict[str, float]:
+    def get_performance_metrics(self) -> dict[str, float]:
         """Get current performance metrics."""
         if not self.processing_times:
             return {
@@ -444,9 +426,9 @@ class ObjectTracker:
                 "fps": 0.0,
                 "memory_usage_mb": self.memory_usage,
                 "quality_level": self.current_quality,
-                "active_tracks": len(self.tracks)
+                "active_tracks": len(self.tracks),
             }
-            
+
         avg_time = np.mean(self.processing_times)
         return {
             "avg_processing_time": avg_time,
@@ -455,7 +437,7 @@ class ObjectTracker:
             "quality_level": self.current_quality,
             "active_tracks": len(self.tracks),
             "memory_threshold": self.config.max_memory_usage * self.config.memory_warning_threshold,
-            "gpu_memory_mb": self.hardware_manager.get_gpu_memory_usage() if self.stream else 0.0
+            "gpu_memory_mb": self.hardware_manager.get_gpu_memory_usage() if self.stream else 0.0,
         }
 
     def __del__(self):
@@ -472,16 +454,26 @@ class ObjectTracker:
         self.track_ages.clear()
         gc.collect()
 
+
 class MultiObjectTracker:
     """
     MultiObjectTracker manages multiple ObjectTracker instances for multi-object tracking.
     Each object is tracked with a unique ID and supports occlusion handling and identity maintenance.
     """
-    def __init__(self, tracker_type='KCF', max_lost_frames=30, iou_threshold=0.3, 
-                 reidentify_threshold=0.7, max_prediction_frames=10):
+
+    def __init__(
+        self,
+        tracker_type="KCF",
+        max_lost_frames=30,
+        iou_threshold=0.3,
+        reidentify_threshold=0.7,
+        max_prediction_frames=10,
+    ):
         self.tracker_type = tracker_type
         self.trackers = {}  # id -> ObjectTracker
-        self.lost = {}      # id -> {'hist': ..., 'bbox': ..., 'frames_lost': int, 'last_velocity': (dx,dy)}
+        self.lost = (
+            {}
+        )  # id -> {'hist': ..., 'bbox': ..., 'frames_lost': int, 'last_velocity': (dx,dy)}
         self.max_lost_frames = max_lost_frames
         self.iou_threshold = iou_threshold
         self.reidentify_threshold = reidentify_threshold
@@ -493,27 +485,27 @@ class MultiObjectTracker:
         """Calculate Intersection over Union between two bounding boxes."""
         x1, y1, w1, h1 = bbox1
         x2, y2, w2, h2 = bbox2
-        
+
         # Convert to x1,y1,x2,y2 format
         box1 = [x1, y1, x1 + w1, y1 + h1]
         box2 = [x2, y2, x2 + w2, y2 + h2]
-        
+
         # Calculate intersection
         xi1 = max(box1[0], box2[0])
         yi1 = max(box1[1], box2[1])
         xi2 = min(box1[2], box2[2])
         yi2 = min(box1[3], box2[3])
-        
+
         if xi2 < xi1 or yi2 < yi1:
             return 0.0
-        
+
         intersection = (xi2 - xi1) * (yi2 - yi1)
-        
+
         # Calculate union
         box1_area = (box1[2] - box1[0]) * (box1[3] - box1[1])
         box2_area = (box2[2] - box2[0]) * (box2[3] - box2[1])
         union = box1_area + box2_area - intersection
-        
+
         return intersection / union if union > 0 else 0.0
 
     def _detect_occlusions(self):
@@ -531,13 +523,16 @@ class MultiObjectTracker:
         """Predict object's next position based on its velocity."""
         if obj_id not in self.lost:
             return None
-        
+
         lost_info = self.lost[obj_id]
-        if 'last_velocity' not in lost_info or lost_info['frames_lost'] > self.max_prediction_frames:
+        if (
+            "last_velocity" not in lost_info
+            or lost_info["frames_lost"] > self.max_prediction_frames
+        ):
             return None
-            
-        dx, dy = lost_info['last_velocity']
-        x, y, w, h = lost_info['bbox']
+
+        dx, dy = lost_info["last_velocity"]
+        x, y, w, h = lost_info["bbox"]
         predicted_bbox = (x + dx, y + dy, w, h)
         return predicted_bbox
 
@@ -545,7 +540,7 @@ class MultiObjectTracker:
         """Calculate object's velocity from its last two positions."""
         if len(tracker.history) < 2:
             return None
-        
+
         x1, y1, w1, h1 = tracker.history[-2]
         x2, y2, w2, h2 = tracker.history[-1]
         dx = x2 - x1
@@ -570,10 +565,10 @@ class MultiObjectTracker:
             velocity = self._calculate_velocity(tracker)
             hist = tracker.get_histogram(frame)
             self.lost[obj_id] = {
-                'hist': hist, 
-                'bbox': tracker.bbox,
-                'frames_lost': 0,
-                'last_velocity': velocity
+                "hist": hist,
+                "bbox": tracker.bbox,
+                "frames_lost": 0,
+                "last_velocity": velocity,
             }
             del self.trackers[obj_id]
 
@@ -581,63 +576,63 @@ class MultiObjectTracker:
         """Try to re-identify a lost object using appearance and motion cues."""
         if threshold is None:
             threshold = self.reidentify_threshold
-            
-        x, y, w, h = [int(v) for v in bbox]
-        roi = frame[y:y+h, x:x+w]
+
+        x, y, w, h = (int(v) for v in bbox)
+        roi = frame[y : y + h, x : x + w]
         if roi.size == 0:
             return None
-            
+
         hist = cv2.calcHist([roi], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
         cv2.normalize(hist, hist)
         hist = hist.flatten()
-        
+
         best_id = None
         best_score = 0
-        
+
         for obj_id, lost_info in list(self.lost.items()):
             # Skip if object has been lost too long
-            if lost_info['frames_lost'] > self.max_lost_frames:
+            if lost_info["frames_lost"] > self.max_lost_frames:
                 del self.lost[obj_id]
                 continue
-                
-            lost_hist = lost_info['hist']
+
+            lost_hist = lost_info["hist"]
             if lost_hist is None:
                 continue
-                
+
             # Calculate appearance similarity
             appearance_score = cv2.compareHist(hist, lost_hist, cv2.HISTCMP_CORREL)
-            
+
             # Calculate position similarity using predicted position
             position_score = 0.0
             predicted_bbox = self._predict_bbox(obj_id)
             if predicted_bbox is not None:
                 iou = self._calculate_iou(bbox, predicted_bbox)
                 position_score = iou
-            
+
             # Combine scores (weighted average)
             final_score = 0.7 * appearance_score + 0.3 * position_score
-            
+
             if final_score > best_score and final_score > threshold:
                 best_score = final_score
                 best_id = obj_id
-                
+
         return best_id
 
     def update(self, frame):
         """Update all trackers with the new frame, handling occlusions and lost objects."""
         self.frame_count += 1
-        
+
         # Detect occlusions first
         self._detect_occlusions()
-        
+
         results = {}
         lost_ids = []
-        
+
         # Update trackers and handle lost objects
         for obj_id, tracker in list(self.trackers.items()):
             ok, bbox = tracker.update(frame)
             results[obj_id] = (ok, bbox)
-            
+
             if not ok:
                 lost_ids.append(obj_id)
             else:
@@ -645,25 +640,25 @@ class MultiObjectTracker:
                 velocity = self._calculate_velocity(tracker)
                 if velocity is not None:
                     tracker.last_velocity = velocity
-        
+
         # Handle lost objects
         for obj_id in lost_ids:
             self.mark_lost(obj_id, frame)
-        
+
         # Update lost objects
         for obj_id in list(self.lost.keys()):
             lost_info = self.lost[obj_id]
-            lost_info['frames_lost'] += 1
-            
+            lost_info["frames_lost"] += 1
+
             # Try to predict position for visualization
             predicted_bbox = self._predict_bbox(obj_id)
             if predicted_bbox is not None:
                 results[obj_id] = (False, predicted_bbox)
-            
+
             # Remove if lost for too long
-            if lost_info['frames_lost'] > self.max_lost_frames:
+            if lost_info["frames_lost"] > self.max_lost_frames:
                 del self.lost[obj_id]
-        
+
         return results
 
     def remove(self, obj_id):
@@ -673,11 +668,17 @@ class MultiObjectTracker:
 
     def get_bboxes(self):
         """Get current bounding boxes for all tracked objects."""
-        return {obj_id: tracker.bbox for obj_id, tracker in self.trackers.items() if tracker.initialized}
+        return {
+            obj_id: tracker.bbox for obj_id, tracker in self.trackers.items() if tracker.initialized
+        }
 
     def get_paths(self):
         """Get the path history for all tracked objects."""
-        return {obj_id: tracker.get_path() for obj_id, tracker in self.trackers.items() if tracker.initialized}
+        return {
+            obj_id: tracker.get_path()
+            for obj_id, tracker in self.trackers.items()
+            if tracker.initialized
+        }
 
     def _get_color(self, obj_id):
         """Generate a unique color for each object ID."""
@@ -688,58 +689,64 @@ class MultiObjectTracker:
     def draw_bboxes(self, frame, thickness=2):
         """Draw bounding boxes for all tracked and predicted objects."""
         output = frame.copy()
-        
+
         # Draw active trackers
         for obj_id, tracker in self.trackers.items():
             if tracker.initialized and tracker.bbox is not None:
-                x, y, w, h = [int(v) for v in tracker.bbox]
+                x, y, w, h = (int(v) for v in tracker.bbox)
                 color = self._get_color(obj_id)
                 cv2.rectangle(output, (x, y), (x + w, y + h), color, thickness)
-                cv2.putText(output, str(obj_id), (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
-                
+                cv2.putText(
+                    output, str(obj_id), (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2
+                )
+
                 # Draw occlusion indicator if object is in occlusion
                 for pair in self.occlusion_pairs:
                     if obj_id in pair:
-                        cv2.putText(output, "Occluded", (x, y - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                        cv2.putText(
+                            output, "Occluded", (x, y - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2
+                        )
                         break
-        
+
         # Draw predicted positions for lost objects
         for obj_id in self.lost:
             predicted_bbox = self._predict_bbox(obj_id)
             if predicted_bbox is not None:
-                x, y, w, h = [int(v) for v in predicted_bbox]
+                x, y, w, h = (int(v) for v in predicted_bbox)
                 color = self._get_color(obj_id)
                 cv2.rectangle(output, (x, y), (x + w, y + h), color, 1)
-                cv2.putText(output, f"{obj_id}?", (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 1)
-        
+                cv2.putText(
+                    output, f"{obj_id}?", (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 1
+                )
+
         return output
 
     def draw_paths(self, frame, thickness=2, max_trail_length=30):
         """Draw path trails for all tracked objects with length limitation."""
         output = frame.copy()
-        
+
         for obj_id, tracker in self.trackers.items():
             path = tracker.get_path()
             color = self._get_color(obj_id)
-            
+
             if len(path) > 1:
                 # Limit trail length
                 if len(path) > max_trail_length:
                     path = path[-max_trail_length:]
-                
+
                 # Draw path with fading effect
                 for i in range(1, len(path)):
-                    x1, y1, w1, h1 = [int(v) for v in path[i-1]]
-                    x2, y2, w2, h2 = [int(v) for v in path[i]]
+                    x1, y1, w1, h1 = (int(v) for v in path[i - 1])
+                    x2, y2, w2, h2 = (int(v) for v in path[i])
                     center1 = (x1 + w1 // 2, y1 + h1 // 2)
                     center2 = (x2 + w2 // 2, y2 + h2 // 2)
-                    
+
                     # Calculate alpha for fading effect
                     alpha = (i / len(path)) * 0.8 + 0.2
                     line_color = tuple(int(c * alpha) for c in color)
-                    
+
                     cv2.line(output, center1, center2, line_color, thickness)
-        
+
         return output
 
     def get_statistics(self, fps=1.0):
@@ -749,23 +756,23 @@ class MultiObjectTracker:
             if tracker.initialized:
                 speed, direction = tracker.get_speed_and_direction(fps=fps)
                 stats[obj_id] = {
-                    'speed': speed,
-                    'direction': direction,
-                    'status': 'tracked',
-                    'occluded': any(obj_id in pair for pair in self.occlusion_pairs)
+                    "speed": speed,
+                    "direction": direction,
+                    "status": "tracked",
+                    "occluded": any(obj_id in pair for pair in self.occlusion_pairs),
                 }
-        
+
         # Include predicted statistics for lost objects
         for obj_id, lost_info in self.lost.items():
-            if 'last_velocity' in lost_info:
-                dx, dy = lost_info['last_velocity']
+            if "last_velocity" in lost_info:
+                dx, dy = lost_info["last_velocity"]
                 speed = math.hypot(dx, dy) * fps
                 direction = math.degrees(math.atan2(dy, dx)) % 360
                 stats[obj_id] = {
-                    'speed': speed,
-                    'direction': direction,
-                    'status': 'lost',
-                    'frames_lost': lost_info['frames_lost']
+                    "speed": speed,
+                    "direction": direction,
+                    "status": "lost",
+                    "frames_lost": lost_info["frames_lost"],
                 }
-        
-        return stats 
+
+        return stats

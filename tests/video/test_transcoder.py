@@ -5,12 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from spygate.video.transcoder import (
-    TranscodeError,
-    TranscodeOptions,
-    Transcoder,
-    TranscodeStatus,
-)
+from spygate.video.transcoder import TranscodeError, TranscodeOptions, Transcoder, TranscodeStatus
 
 
 @pytest.fixture
@@ -97,9 +92,7 @@ def test_transcode_custom_resolution(transcoder, mock_ffmpeg, tmp_path):
     with open(input_path, "wb") as f:
         f.write(b"dummy video data")
 
-    options = TranscodeOptions(
-        codec="h264", fps=30, quality=23, width=1920, height=1080
-    )
+    options = TranscodeOptions(codec="h264", fps=30, quality=23, width=1920, height=1080)
 
     transcoder.transcode(input_path, output_path, options)
 
@@ -136,9 +129,7 @@ def test_transcode_error_handling(transcoder, mock_ffmpeg, tmp_path):
 def test_transcode_invalid_input(transcoder):
     """Test transcoding with invalid input file."""
     with pytest.raises(TranscodeError) as exc_info:
-        transcoder.transcode(
-            "nonexistent.mp4", "output.mp4", TranscodeOptions(codec="h264")
-        )
+        transcoder.transcode("nonexistent.mp4", "output.mp4", TranscodeOptions(codec="h264"))
 
     assert "Input file not found" in str(exc_info.value)
 

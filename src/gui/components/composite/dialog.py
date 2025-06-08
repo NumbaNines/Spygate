@@ -18,8 +18,8 @@ class Dialog(BaseDialog):
         """
         super().__init__(parent)
         self._content: Optional[QWidget] = None
-        self._buttons: List[QPushButton] = []
-        self.content_widgets: List[QWidget] = []
+        self._buttons: list[QPushButton] = []
+        self.content_widgets: list[QWidget] = []
         self.setObjectName("")
         self._setup_ui()
 
@@ -64,7 +64,7 @@ class Dialog(BaseDialog):
         self._buttons.append(button)
         self._button_layout.addWidget(button)
 
-    def buttons(self) -> List[QPushButton]:
+    def buttons(self) -> list[QPushButton]:
         """Get all dialog buttons.
 
         Returns:
@@ -86,12 +86,10 @@ class Dialog(BaseDialog):
         Args:
             widget: Widget to add
         """
-        self.layout.insertWidget(
-            self.layout.count() - 1, widget
-        )  # Insert before button layout
+        self.layout.insertWidget(self.layout.count() - 1, widget)  # Insert before button layout
         self.content_widgets.append(widget)
 
-    def update_theme(self, theme: Dict[str, Any]) -> None:
+    def update_theme(self, theme: dict[str, Any]) -> None:
         """Update the dialog's theme.
 
         Args:

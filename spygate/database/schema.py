@@ -37,9 +37,7 @@ video_players = Table(
     Base.metadata,
     Column("video_id", Integer, ForeignKey("videos.id"), primary_key=True),
     Column("player_id", Integer, ForeignKey("players.id"), primary_key=True),
-    Column(
-        "is_primary", Boolean, default=False
-    ),  # Indicates if this is the primary player
+    Column("is_primary", Boolean, default=False),  # Indicates if this is the primary player
 )
 
 

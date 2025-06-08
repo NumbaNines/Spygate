@@ -208,9 +208,7 @@ class ClipCard(QWidget):
         height, width = frame.shape[:2]
         bytes_per_line = 3 * width
 
-        q_image = QImage(
-            frame.data, width, height, bytes_per_line, QImage.Format.Format_RGB888
-        )
+        q_image = QImage(frame.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
 
         pixmap = QPixmap.fromImage(q_image)
         self.thumbnail_label.setPixmap(
@@ -242,9 +240,7 @@ class ClipCard(QWidget):
         )
 
         # Add menu actions
-        menu.addAction(
-            "Add to Collection", lambda: self.handle_menu_action("add_to_collection")
-        )
+        menu.addAction("Add to Collection", lambda: self.handle_menu_action("add_to_collection"))
         menu.addAction("Share", lambda: self.handle_menu_action("share"))
         menu.addAction("Download", lambda: self.handle_menu_action("download"))
         menu.addSeparator()
@@ -273,9 +269,7 @@ class ClipCard(QWidget):
         """Format duration in seconds to MM:SS"""
         duration = timedelta(seconds=int(seconds))
         if duration.total_seconds() >= 3600:
-            return (
-                f"{int(duration.total_seconds() // 3600)}:{duration.strftime('%M:%S')}"
-            )
+            return f"{int(duration.total_seconds() // 3600)}:{duration.strftime('%M:%S')}"
         return duration.strftime("%M:%S")
 
     @staticmethod

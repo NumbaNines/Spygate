@@ -28,9 +28,9 @@ class VideoService:
         """Initialize the service."""
         self.upload_dir = Path("data/videos")
         self.upload_dir.mkdir(parents=True, exist_ok=True)
-        self._preview_cache: Dict[str, Dict] = {}
-        self._preview_threads: Dict[str, threading.Thread] = {}
-        self._preview_queues: Dict[str, Queue] = {}
+        self._preview_cache: dict[str, dict] = {}
+        self._preview_threads: dict[str, threading.Thread] = {}
+        self._preview_queues: dict[str, Queue] = {}
         self._executor = ThreadPoolExecutor(max_workers=4)
         self._lock = threading.Lock()
 
@@ -40,7 +40,7 @@ class VideoService:
         metadata: CodecMetadata,
         player_name: str,
         progress_callback: Optional[Callable[[int], None]] = None,
-    ) -> Tuple[uuid.UUID, str]:
+    ) -> tuple[uuid.UUID, str]:
         """Upload a video file and create its database entry.
 
         Args:
@@ -115,9 +115,9 @@ class VideoService:
 
     def upload_videos(
         self,
-        files: List[Tuple[str, VideoMetadata]],
+        files: list[tuple[str, VideoMetadata]],
         progress_callback: Optional[callable] = None,
-    ) -> List[Tuple[uuid.UUID, str]]:
+    ) -> list[tuple[uuid.UUID, str]]:
         """Upload multiple video files.
 
         Args:
@@ -140,18 +140,12 @@ class VideoService:
                 def progress_wrapper(file_progress):
                     if progress_callback:
                         total_progress = int(
-                            (
-                                (uploaded_size + (file_size * file_progress / 100))
-                                / total_size
-                            )
-                            * 100
+                            ((uploaded_size + (file_size * file_progress / 100)) / total_size) * 100
                         )
                         progress_callback(total_progress)
 
                 # Upload the file
-                video_id, dest_path = self.upload_video(
-                    file_path, metadata, progress_wrapper
-                )
+                video_id, dest_path = self.upload_video(file_path, metadata, progress_wrapper)
                 results.append((video_id, dest_path))
                 uploaded_size += file_size
 
@@ -237,9 +231,7 @@ class VideoService:
 
         return int(frame_count / fps)
 
-    def generate_thumbnail(
-        self, video_path: str, timestamp: float = 0.0
-    ) -> Optional[str]:
+    def generate_thumbnail(self, video_path: str, timestamp: float = 0.0) -> Optional[str]:
         """Generate a thumbnail from a video at the specified timestamp"""
         try:
             cap = cv2.VideoCapture(video_path)
@@ -359,9 +351,7 @@ class VideoService:
         finally:
             cap.release()
 
-    def get_cached_preview(
-        self, video_path: str, timestamp: float
-    ) -> Optional[np.ndarray]:
+    def get_cached_preview(self, video_path: str, timestamp: float) -> Optional[np.ndarray]:
         """Get a cached preview frame near the requested timestamp"""
         with self._lock:
             if video_path not in self._preview_cache:

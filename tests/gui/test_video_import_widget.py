@@ -167,9 +167,7 @@ def test_select_files_valid(
     def mock_get_open_file_names(*args, **kwargs):
         return ["test1.mp4", "test2.mp4"], None
 
-    monkeypatch.setattr(
-        "PySide6.QtWidgets.QFileDialog.getOpenFileNames", mock_get_open_file_names
-    )
+    monkeypatch.setattr("PySide6.QtWidgets.QFileDialog.getOpenFileNames", mock_get_open_file_names)
 
     # Mock codec validation
     metadata = VideoMetadata(width=1920, height=1080, fps=30, codec="h264", duration=60)
@@ -204,9 +202,7 @@ def test_select_files_cancel_player_dialog(
     def mock_get_open_file_names(*args, **kwargs):
         return ["test.mp4"], None
 
-    monkeypatch.setattr(
-        "PySide6.QtWidgets.QFileDialog.getOpenFileNames", mock_get_open_file_names
-    )
+    monkeypatch.setattr("PySide6.QtWidgets.QFileDialog.getOpenFileNames", mock_get_open_file_names)
 
     # Mock codec validation
     metadata = VideoMetadata(width=1920, height=1080, fps=30, codec="h264", duration=60)
@@ -245,9 +241,7 @@ def test_import_error(video_widget, mock_video_service, qtbot, monkeypatch):
     monkeypatch.setattr(QMessageBox, "critical", mock_critical)
 
     # Mock video service to raise error
-    mock_video_service.return_value.upload_videos.side_effect = Exception(
-        "Import failed"
-    )
+    mock_video_service.return_value.upload_videos.side_effect = Exception("Import failed")
 
     # Start import
     with qtbot.waitSignal(video_widget.import_error):

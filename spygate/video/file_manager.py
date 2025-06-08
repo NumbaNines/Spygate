@@ -85,14 +85,12 @@ class VideoFileManager:
         current_time = datetime.now()
         for temp_file in self.temp_dir.glob("*"):
             if temp_file.is_file():
-                file_age = current_time - datetime.fromtimestamp(
-                    temp_file.stat().st_mtime
-                )
+                file_age = current_time - datetime.fromtimestamp(temp_file.stat().st_mtime)
                 if file_age > self.max_temp_age:
                     logger.info(f"Removing old temp file: {temp_file}")
                     temp_file.unlink()
 
-    def validate_file(self, file_path: Path) -> Tuple[bool, Optional[str]]:
+    def validate_file(self, file_path: Path) -> tuple[bool, Optional[str]]:
         """
         Validate a video file before import.
 
@@ -143,9 +141,7 @@ class VideoFileManager:
                 return str(existing_video.file_path)
         return None
 
-    def import_file(
-        self, source_path: Path, move: bool = False
-    ) -> Tuple[Path, str, int]:
+    def import_file(self, source_path: Path, move: bool = False) -> tuple[Path, str, int]:
         """
         Import a video file into managed storage.
 
@@ -249,9 +245,7 @@ class VideoFileManager:
         date_dir = now.strftime("%Y/%m/%d")
 
         # Clean player name for file system
-        safe_player = "".join(
-            c for c in player_name if c.isalnum() or c in (" ", "-", "_")
-        ).strip()
+        safe_player = "".join(c for c in player_name if c.isalnum() or c in (" ", "-", "_")).strip()
         safe_player = safe_player.replace(" ", "_")
 
         # Get original filename and extension
@@ -292,7 +286,7 @@ class VideoFileManager:
         source_path: str,
         player_name: str,
         progress_callback: Optional[callable] = None,
-    ) -> Tuple[Path, List[str]]:
+    ) -> tuple[Path, list[str]]:
         """
         Copy a video file to storage with progress tracking.
 
@@ -385,15 +379,13 @@ class VideoFileManager:
             if preview_path.exists():
                 preview_path.unlink()
 
-            logger.info(
-                f"Successfully deleted video and associated files: {video_path}"
-            )
+            logger.info(f"Successfully deleted video and associated files: {video_path}")
 
         except Exception as e:
             logger.error(f"Error deleting video {video_path}: {e}")
             raise
 
-    def get_storage_stats(self) -> Dict:
+    def get_storage_stats(self) -> dict:
         """
         Get storage statistics for the video directory.
 

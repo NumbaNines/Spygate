@@ -1,33 +1,36 @@
-# Use Python 3.9 Windows base image
-FROM python:3.9-windowsservercore
+# Use an official Python runtime as a parent image
+FROM python:3.11-slim
 
 # Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PATH="C:\Program Files\PostgreSQL\13\bin;${PATH}"
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DJANGO_SETTINGS_MODULE=spygate_site.settings.production
 
-# Set working directory
+# Set work directory
 WORKDIR /app
 
 # Install system dependencies
-SHELL ["powershell", "-Command"]
-RUN Set-ExecutionPolicy Bypass -Scope Process -Force; \
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; \
-    iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')); \
-    choco install -y postgresql13 vcredist140 git
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
+# Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application
+# Copy project
 COPY . .
 
 # Create necessary directories
-RUN mkdir -p logs data models
+RUN mkdir -p /app/logs /app/media /app/static
 
-# Expose ports for the application
-EXPOSE 8000
+# Collect static files
+RUN python spygate_site/manage.py collectstatic --noinput
 
-# Set the default command
-CMD ["python", "src/main.py"]
+# Create a non-root user
+RUN useradd -m spygate
+RUN chown -R spygate:spygate /app
+USER spygate
+
+# Run gunicorn
+CMD ["gunicorn", "--chdir", "spygate_site", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "spygate_site.wsgi:application"]

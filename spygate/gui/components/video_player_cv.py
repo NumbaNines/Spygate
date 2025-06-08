@@ -11,14 +11,7 @@ import cv2
 import numpy as np
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QImage, QPixmap
-from PyQt6.QtWidgets import (
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
-)
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from ...core.hardware import HardwareDetector
 from ...core.optimizer import TierOptimizer
@@ -353,9 +346,7 @@ class VideoPlayerCV(QWidget):
             # Convert frame to QImage
             height, width = frame.shape[:2]
             bytes_per_line = 3 * width
-            q_image = QImage(
-                frame.data, width, height, bytes_per_line, QImage.Format.Format_RGB888
-            )
+            q_image = QImage(frame.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
 
             # Create pixmap and scale to fit
             pixmap = QPixmap.fromImage(q_image)

@@ -13,7 +13,7 @@ def create_clip(
     title: str,
     player_name: str,  # "Self" or "Opponent: <gamertag>"
     session: Session,
-    tags: List[str] = None,
+    tags: list[str] = None,
     description: Optional[str] = None,
     duration: Optional[float] = None,
     width: Optional[int] = None,

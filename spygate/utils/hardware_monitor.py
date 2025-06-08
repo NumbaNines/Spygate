@@ -70,8 +70,7 @@ class HardwareMonitor:
             self._performance_tier = "low"
 
         logger.info(
-            f"System performance tier: {self._performance_tier} "
-            f"(Score: {total_score:.1f})"
+            f"System performance tier: {self._performance_tier} " f"(Score: {total_score:.1f})"
         )
 
     def has_gpu_support(self) -> bool:

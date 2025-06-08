@@ -1,0 +1,3664 @@
+{
+  "hardware_tier": "premium",
+  "scale_factor": 0.75,
+  "results": [
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0000.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.2557469606399536,
+          "bbox": [
+            1659.8953450520833,
+            4.238508224487305,
+            1918.0418294270833,
+            48.40851338704427
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0001.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": []
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0002.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": []
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0003.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": []
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0004.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": []
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0005.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": []
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0006.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3754004240036011,
+          "bbox": [
+            319.04128011067706,
+            1014.5059407552084,
+            1730.71923828125,
+            1078.5699869791667
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0007.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.29670122265815735,
+          "bbox": [
+            368.0211181640625,
+            1013.5060221354166,
+            1779.49609375,
+            1078.995849609375
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0008.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.28438207507133484,
+          "bbox": [
+            365.98828125,
+            1013.1095377604166,
+            1783.2216796875,
+            1079.7742513020833
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0009.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.34277236461639404,
+          "bbox": [
+            186.38836669921875,
+            1015.3636067708334,
+            1592.7374674479167,
+            1078.1244303385417
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0010.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.2906944751739502,
+          "bbox": [
+            366.4641927083333,
+            1013.1023763020834,
+            1778.876953125,
+            1079.5048828125
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0011.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.351613849401474,
+          "bbox": [
+            192.03533935546875,
+            1015.5221354166666,
+            1591.1975911458333,
+            1077.5355631510417
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0012.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3215341567993164,
+          "bbox": [
+            260.8765869140625,
+            1014.3658854166666,
+            1593.9127604166667,
+            1078.5882161458333
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0013.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3254801332950592,
+          "bbox": [
+            209.36385091145834,
+            1011.309326171875,
+            1597.1080729166667,
+            1079.85693359375
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0014.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.30963078141212463,
+          "bbox": [
+            317.470458984375,
+            1010.8194986979166,
+            1735.5670572916667,
+            1079.50634765625
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0015.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.25569960474967957,
+          "bbox": [
+            365.7606608072917,
+            1010.7639973958334,
+            1783.5608723958333,
+            1079.7161458333333
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0016.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": []
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0017.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4552830159664154,
+          "bbox": [
+            412.0142415364583,
+            0.0,
+            1763.7076822916667,
+            45.3283437093099
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0018.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.364095538854599,
+          "bbox": [
+            658.6041259765625,
+            470.2831217447917,
+            1920.0,
+            530.2686767578125
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0019.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.2509009540081024,
+          "bbox": [
+            152.11871337890625,
+            1014.135498046875,
+            1501.05908203125,
+            1078.6631673177083
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0020.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.3928010165691376,
+          "bbox": [
+            418.2577311197917,
+            469.3322347005208,
+            1829.0078125,
+            534.1200764973959
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.26168471574783325,
+          "bbox": [
+            365.8028157552083,
+            1013.3885904947916,
+            1777.2903645833333,
+            1079.1617838541667
+          ]
+        },
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.25138190388679504,
+          "bbox": [
+            99.89447021484375,
+            519.2829996744791,
+            1499.0349934895833,
+            896.3511555989584
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0021.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.29976508021354675,
+          "bbox": [
+            188.55743408203125,
+            1015.159423828125,
+            1589.0623372395833,
+            1078.4998372395833
+          ]
+        },
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.28609931468963623,
+          "bbox": [
+            29.818267822265625,
+            471.1749267578125,
+            1349.376708984375,
+            537.752685546875
+          ]
+        },
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.2528707683086395,
+          "bbox": [
+            610.4424641927084,
+            471.2196451822917,
+            1920.0,
+            535.2952067057291
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0022.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.36047035455703735,
+          "bbox": [
+            611.93994140625,
+            469.9574788411458,
+            1920.0,
+            526.9902750651041
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.29846692085266113,
+          "bbox": [
+            180.8302001953125,
+            1015.7100423177084,
+            1594.0177408854167,
+            1079.0384928385417
+          ]
+        },
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.2967178523540497,
+          "bbox": [
+            598.340087890625,
+            532.6433919270834,
+            1920.0,
+            1012.19677734375
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0023.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.2868255376815796,
+          "bbox": [
+            558.3943684895834,
+            1015.3548177083334,
+            1835.3917643229167,
+            1078.0204264322917
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.2623629868030548,
+          "bbox": [
+            225.37628173828125,
+            1015.295654296875,
+            1638.9173177083333,
+            1078.9418131510417
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0024.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.30786803364753723,
+          "bbox": [
+            171.62274169921875,
+            1014.9251302083334,
+            1452.78173828125,
+            1078.6853841145833
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.29421040415763855,
+          "bbox": [
+            316.7373453776042,
+            1012.9542643229166,
+            1734.4459635416667,
+            1080.0
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0025.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3637153208255768,
+          "bbox": [
+            607.598388671875,
+            1015.8408203125,
+            1853.47607421875,
+            1077.5206705729167
+          ]
+        },
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.3549550771713257,
+          "bbox": [
+            564.2893473307291,
+            471.5930989583333,
+            1920.0,
+            533.3408203125
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.296735942363739,
+          "bbox": [
+            164.13949584960938,
+            1017.1126302083334,
+            1496.33544921875,
+            1077.4835611979167
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0026.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.33827340602874756,
+          "bbox": [
+            606.4825032552084,
+            1016.6592610677084,
+            1878.7384440104167,
+            1077.9603678385417
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.31361904740333557,
+          "bbox": [
+            185.6135050455729,
+            1016.143310546875,
+            1592.15869140625,
+            1079.098876953125
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0027.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.3376897871494293,
+          "bbox": [
+            418.415771484375,
+            469.9374186197917,
+            1829.0167643229167,
+            533.9322509765625
+          ]
+        },
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.2605203688144684,
+          "bbox": [
+            185.71453857421875,
+            472.6837565104167,
+            1586.4407552083333,
+            532.6945393880209
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0028.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.2826178967952728,
+          "bbox": [
+            229.06549072265625,
+            1013.943603515625,
+            1640.4612630208333,
+            1078.88671875
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0029.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.449605256319046,
+          "bbox": [
+            321.06005859375,
+            471.0169677734375,
+            1735.6165364583333,
+            537.6787109375
+          ]
+        },
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.3176719844341278,
+          "bbox": [
+            510.3916829427083,
+            540.8068440755209,
+            1920.0,
+            1013.7481282552084
+          ]
+        },
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.3162030279636383,
+          "bbox": [
+            66.2567138671875,
+            545.778076171875,
+            1681.48291015625,
+            1014.3076171875
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0030.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": []
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0031.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": []
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0032.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.3190694749355316,
+          "bbox": [
+            276.6060384114583,
+            470.8907063802083,
+            1686.1497395833333,
+            534.7183430989584
+          ]
+        },
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.27393046021461487,
+          "bbox": [
+            1663.5611979166667,
+            3.6871719360351562,
+            1918.3590494791667,
+            46.68769327799479
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0033.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.27533620595932007,
+          "bbox": [
+            1663.4186197916667,
+            3.7140140533447266,
+            1918.8427734375,
+            46.4569091796875
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.25614044070243835,
+          "bbox": [
+            177.91263834635416,
+            1013.8460286458334,
+            1593.36474609375,
+            1080.0
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0034.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3836895525455475,
+          "bbox": [
+            192.72802734375,
+            1014.6492513020834,
+            1594.4156901041667,
+            1079.74658203125
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0035.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.34149059653282166,
+          "bbox": [
+            142.522705078125,
+            1017.217041015625,
+            1447.505859375,
+            1077.0782877604167
+          ]
+        },
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.2513681650161743,
+          "bbox": [
+            1661.408203125,
+            3.685572624206543,
+            1919.0555013020833,
+            45.91429138183594
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0036.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.3247135579586029,
+          "bbox": [
+            511.84716796875,
+            1017.1803385416666,
+            1828.7132161458333,
+            1078.3665364583333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.25479549169540405,
+          "bbox": [
+            136.6181437174479,
+            1017.77490234375,
+            1447.34375,
+            1077.4833984375
+          ]
+        },
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.25080230832099915,
+          "bbox": [
+            1662.0358072916667,
+            3.798116683959961,
+            1918.34326171875,
+            45.88008117675781
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0037.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.30903592705726624,
+          "bbox": [
+            510.8694254557292,
+            1017.544189453125,
+            1860.3948567708333,
+            1078.3492838541667
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0038.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.40457209944725037,
+          "bbox": [
+            510.5399576822917,
+            1017.1695963541666,
+            1863.48486328125,
+            1077.6357421875
+          ]
+        },
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.40419265627861023,
+          "bbox": [
+            78.07470703125,
+            1015.0729166666666,
+            1400.6017252604167,
+            1076.875732421875
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0039.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.3153660297393799,
+          "bbox": [
+            511.4586181640625,
+            1017.9322102864584,
+            1875.1858723958333,
+            1077.8688151041667
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0040.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": []
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0041.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4246877431869507,
+          "bbox": [
+            111.99838256835938,
+            1017.6538899739584,
+            1444.3059895833333,
+            1076.8375651041667
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.36413252353668213,
+          "bbox": [
+            857.0125325520834,
+            1015.193603515625,
+            1913.9132486979167,
+            1076.97607421875
+          ]
+        },
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.2697933614253998,
+          "bbox": [
+            0.0,
+            472.1832275390625,
+            1352.1172688802083,
+            542.0370279947916
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.2550959587097168,
+          "bbox": [
+            320.560546875,
+            1014.582275390625,
+            1728.3035481770833,
+            1077.9744466145833
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0042.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.34829869866371155,
+          "bbox": [
+            93.27978515625,
+            1016.91357421875,
+            1447.6959635416667,
+            1077.1845703125
+          ]
+        },
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.3179665505886078,
+          "bbox": [
+            5.9432373046875,
+            469.0806070963542,
+            1398.8932291666667,
+            534.2648518880209
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.29885134100914,
+          "bbox": [
+            558.97412109375,
+            1015.1212565104166,
+            1896.8155924479167,
+            1077.69091796875
+          ]
+        },
+        {
+          "class": 3,
+          "class_name": "play_clock",
+          "confidence": 0.2720150947570801,
+          "bbox": [
+            179.86322021484375,
+            475.3667399088542,
+            1583.8582356770833,
+            535.328125
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0043.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.399857759475708,
+          "bbox": [
+            76.857421875,
+            1016.7159830729166,
+            1395.0948893229167,
+            1076.6962076822917
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.370349258184433,
+          "bbox": [
+            856.77392578125,
+            1015.0135091145834,
+            1899.802734375,
+            1077.2078450520833
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3094274699687958,
+          "bbox": [
+            272.77423095703125,
+            1015.158935546875,
+            1678.16357421875,
+            1078.1089680989583
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0044.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.39221733808517456,
+          "bbox": [
+            84.60003662109375,
+            1017.084716796875,
+            1388.1611328125,
+            1076.122802734375
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.35274484753608704,
+          "bbox": [
+            858.5613606770834,
+            1015.270751953125,
+            1898.41748046875,
+            1076.375244140625
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.280132919549942,
+          "bbox": [
+            273.64471435546875,
+            1015.56103515625,
+            1678.5556640625,
+            1077.6709798177083
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0045.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4680294692516327,
+          "bbox": [
+            49.922149658203125,
+            1017.2109375,
+            1288.532470703125,
+            1074.8118489583333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4573911130428314,
+          "bbox": [
+            228.0596923828125,
+            1017.3055826822916,
+            1640.5916341145833,
+            1077.892822265625
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.33432167768478394,
+          "bbox": [
+            557.6394856770834,
+            1016.0421549479166,
+            1905.37060546875,
+            1078.3914388020833
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0046.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.47092288732528687,
+          "bbox": [
+            48.34259033203125,
+            1017.188232421875,
+            1289.3626302083333,
+            1074.7643229166667
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.45641225576400757,
+          "bbox": [
+            227.08868408203125,
+            1017.4698893229166,
+            1640.5382486979167,
+            1077.8440755208333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3350675702095032,
+          "bbox": [
+            557.4792887369791,
+            1016.1360677083334,
+            1905.92431640625,
+            1078.4150390625
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0047.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5949033498764038,
+          "bbox": [
+            195.38850911458334,
+            1016.7193196614584,
+            1591.1197916666667,
+            1078.1175130208333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4128386080265045,
+          "bbox": [
+            60.89300537109375,
+            1016.6953938802084,
+            1301.0938313802083,
+            1075.7848307291667
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.30145981907844543,
+          "bbox": [
+            461.7246500651042,
+            1015.0301106770834,
+            1863.6848958333333,
+            1078.566650390625
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0048.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.44283756613731384,
+          "bbox": [
+            222.17317708333334,
+            1017.3308919270834,
+            1574.53857421875,
+            1076.00244140625
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.37649908661842346,
+          "bbox": [
+            76.62991333007812,
+            1017.7107747395834,
+            1276.3500162760417,
+            1073.8570149739583
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0049.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.36905765533447266,
+          "bbox": [
+            207.0670166015625,
+            1017.296875,
+            1538.5867513020833,
+            1075.9972330729167
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3470429480075836,
+          "bbox": [
+            617.086669921875,
+            1016.9620768229166,
+            1856.3883463541667,
+            1076.4398600260417
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.2520126402378082,
+          "bbox": [
+            282.5225830078125,
+            1016.8482259114584,
+            1217.9375813802083,
+            1074.0975748697917
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0050.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.423755407333374,
+          "bbox": [
+            214.31103515625,
+            1016.8546549479166,
+            1578.7335611979167,
+            1076.6165364583333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.2867251932621002,
+          "bbox": [
+            613.9471842447916,
+            1016.0159505208334,
+            1851.2999674479167,
+            1075.9217122395833
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0051.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.47678592801094055,
+          "bbox": [
+            371.6724446614583,
+            1015.9952799479166,
+            1752.8665364583333,
+            1077.1239420572917
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.34337323904037476,
+          "bbox": [
+            201.37957763671875,
+            1016.9147135416666,
+            1493.8986002604167,
+            1075.7003580729167
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0052.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5174590945243835,
+          "bbox": [
+            212.44588216145834,
+            1016.3941243489584,
+            1585.1443684895833,
+            1076.9441731770833
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.2722511291503906,
+          "bbox": [
+            464.0991617838542,
+            1016.140869140625,
+            1819.587890625,
+            1077.3079427083333
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0053.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.541318953037262,
+          "bbox": [
+            372.5452880859375,
+            1015.890380859375,
+            1752.6181640625,
+            1077.372802734375
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3835476040840149,
+          "bbox": [
+            267.02541097005206,
+            1016.5790201822916,
+            1277.8465169270833,
+            1074.192626953125
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0054.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5333260297775269,
+          "bbox": [
+            371.468994140625,
+            1015.7740885416666,
+            1748.4456380208333,
+            1077.3678385416667
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3332176208496094,
+          "bbox": [
+            225.6763916015625,
+            1016.226806640625,
+            1442.59326171875,
+            1074.318359375
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0055.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.546416699886322,
+          "bbox": [
+            372.3291015625,
+            1015.891845703125,
+            1751.92578125,
+            1077.4378255208333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3385227918624878,
+          "bbox": [
+            226.40104166666666,
+            1016.366455078125,
+            1442.5242513020833,
+            1074.349365234375
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0056.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5362849235534668,
+          "bbox": [
+            372.2682291666667,
+            1015.9845377604166,
+            1749.8919270833333,
+            1077.2794596354167
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.33201199769973755,
+          "bbox": [
+            225.18841552734375,
+            1016.4345703125,
+            1442.2115885416667,
+            1074.2384440104167
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0057.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5427091121673584,
+          "bbox": [
+            372.5293782552083,
+            1015.843505859375,
+            1752.1306966145833,
+            1077.346435546875
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3623484969139099,
+          "bbox": [
+            212.3582560221354,
+            1016.7744140625,
+            1492.64892578125,
+            1075.576904296875
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0058.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5409663915634155,
+          "bbox": [
+            207.45121256510416,
+            1016.6211751302084,
+            1570.2281901041667,
+            1076.6819661458333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.29633259773254395,
+          "bbox": [
+            464.5411376953125,
+            1016.135498046875,
+            1811.6927083333333,
+            1077.283203125
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0059.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5456081032752991,
+          "bbox": [
+            208.8343505859375,
+            1016.5043131510416,
+            1570.658203125,
+            1076.7771809895833
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.2910609543323517,
+          "bbox": [
+            464.6257731119792,
+            1016.088134765625,
+            1814.1808268229167,
+            1077.2814127604167
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0060.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5507493019104004,
+          "bbox": [
+            208.44818115234375,
+            1016.6238606770834,
+            1572.7447916666667,
+            1076.7931315104167
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.2820037305355072,
+          "bbox": [
+            464.3292643229167,
+            1016.1131998697916,
+            1810.9793294270833,
+            1077.3011881510417
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0061.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5256015062332153,
+          "bbox": [
+            240.8636678059896,
+            1016.6273600260416,
+            1619.9189453125,
+            1076.6944173177083
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0062.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5281558036804199,
+          "bbox": [
+            240.51214599609375,
+            1016.5338541666666,
+            1620.1974283854167,
+            1076.6209309895833
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0063.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5267971754074097,
+          "bbox": [
+            241.29986572265625,
+            1016.55712890625,
+            1620.43212890625,
+            1076.5537109375
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0064.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5417284965515137,
+          "bbox": [
+            241.35736083984375,
+            1016.4905598958334,
+            1621.2939453125,
+            1076.7088216145833
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0065.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5437946915626526,
+          "bbox": [
+            241.39801025390625,
+            1016.4441731770834,
+            1621.3922526041667,
+            1076.708740234375
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0066.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5398922562599182,
+          "bbox": [
+            244.24896240234375,
+            1016.67626953125,
+            1618.7713216145833,
+            1076.50341796875
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0067.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5475437045097351,
+          "bbox": [
+            371.21484375,
+            1016.0089518229166,
+            1730.31884765625,
+            1077.2928873697917
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.30502432584762573,
+          "bbox": [
+            224.7703857421875,
+            1015.8914388020834,
+            1443.74755859375,
+            1074.06591796875
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0068.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5335374474525452,
+          "bbox": [
+            240.2647705078125,
+            1016.090087890625,
+            1618.6775716145833,
+            1076.8059895833333
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0069.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.49882403016090393,
+          "bbox": [
+            370.0916748046875,
+            1014.5315755208334,
+            1752.9650065104167,
+            1077.7098795572917
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4622570872306824,
+          "bbox": [
+            103.336669921875,
+            1015.7449544270834,
+            1278.7556966145833,
+            1075.368896484375
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0070.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5224591493606567,
+          "bbox": [
+            367.0662434895833,
+            1014.6404622395834,
+            1773.1884765625,
+            1078.2861328125
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.44013047218322754,
+          "bbox": [
+            208.43558756510416,
+            1014.6354166666666,
+            1450.4109700520833,
+            1076.4307454427083
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.36322447657585144,
+          "bbox": [
+            0.0,
+            1014.880126953125,
+            1201.2919921875,
+            1076.894775390625
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0071.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5558319687843323,
+          "bbox": [
+            201.4385782877604,
+            1016.927978515625,
+            1541.5255533854167,
+            1077.493896484375
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.43502283096313477,
+          "bbox": [
+            0.0,
+            1016.3329264322916,
+            1182.9973958333333,
+            1076.2186686197917
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3744989037513733,
+          "bbox": [
+            464.537109375,
+            1016.460205078125,
+            1829.9342447916667,
+            1077.9290364583333
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0072.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5268440246582031,
+          "bbox": [
+            201.5643310546875,
+            1016.4967447916666,
+            1543.61767578125,
+            1077.165771484375
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3899475634098053,
+          "bbox": [
+            0.0,
+            1015.9982096354166,
+            1181.0410970052083,
+            1076.2508951822917
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.37110257148742676,
+          "bbox": [
+            464.723876953125,
+            1016.4833984375,
+            1831.20654296875,
+            1077.77294921875
+          ]
+        },
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.25742265582084656,
+          "bbox": [
+            1662.1845703125,
+            4.326330184936523,
+            1829.8499348958333,
+            42.88196818033854
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0073.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5455130338668823,
+          "bbox": [
+            182.03411865234375,
+            1016.6170247395834,
+            1544.0514322916667,
+            1077.1009928385417
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4849179983139038,
+          "bbox": [
+            414.7010904947917,
+            1015.9488118489584,
+            1770.5870768229167,
+            1077.7779947916667
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4383047819137573,
+          "bbox": [
+            35.637542724609375,
+            1016.5907389322916,
+            1233.331787109375,
+            1075.41650390625
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0074.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5945255160331726,
+          "bbox": [
+            367.594482421875,
+            1016.3976236979166,
+            1704.8727213541667,
+            1077.44677734375
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.53140789270401,
+          "bbox": [
+            185.84674072265625,
+            1016.086669921875,
+            1447.044921875,
+            1075.4908854166667
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4419901371002197,
+          "bbox": [
+            4.084625244140625,
+            1015.9827473958334,
+            1194.9466145833333,
+            1075.616943359375
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0075.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5218648910522461,
+          "bbox": [
+            231.52298990885416,
+            1015.231689453125,
+            1625.51953125,
+            1076.547607421875
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5053783655166626,
+          "bbox": [
+            44.5682373046875,
+            1016.38330078125,
+            1285.1665852864583,
+            1075.39013671875
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.2855025827884674,
+          "bbox": [
+            613.0760904947916,
+            1016.05517578125,
+            1876.2067057291667,
+            1076.007568359375
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0076.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5931376814842224,
+          "bbox": [
+            193.84478759765625,
+            1017.0184733072916,
+            1582.8072916666667,
+            1077.6842447916667
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5808435082435608,
+          "bbox": [
+            41.0621337890625,
+            1016.79345703125,
+            1288.5547688802083,
+            1075.9376627604167
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.35546424984931946,
+          "bbox": [
+            463.4710693359375,
+            1017.3053385416666,
+            1785.8597005208333,
+            1077.6306966145833
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0077.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5251412391662598,
+          "bbox": [
+            192.64434814453125,
+            1015.19140625,
+            1593.5559895833333,
+            1077.9632161458333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.517132580280304,
+          "bbox": [
+            42.53759765625,
+            1015.525634765625,
+            1291.0530598958333,
+            1076.5166015625
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3364931643009186,
+          "bbox": [
+            559.237060546875,
+            1015.3971354166666,
+            1872.4742838541667,
+            1077.8197428385417
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0078.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5681878328323364,
+          "bbox": [
+            189.122314453125,
+            1015.775390625,
+            1539.9358723958333,
+            1077.54931640625
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.28961610794067383,
+          "bbox": [
+            29.685791015625,
+            1015.6256510416666,
+            1248.3826497395833,
+            1076.6290690104167
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.276613712310791,
+          "bbox": [
+            462.593994140625,
+            1015.0174967447916,
+            1811.193359375,
+            1077.8985188802083
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0079.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4863792955875397,
+          "bbox": [
+            159.74871826171875,
+            1015.9055989583334,
+            1541.0550130208333,
+            1077.6088053385417
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3969837427139282,
+          "bbox": [
+            0.0,
+            1015.598388671875,
+            1195.48583984375,
+            1076.51708984375
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.387889564037323,
+          "bbox": [
+            414.771240234375,
+            1015.4007161458334,
+            1746.7102864583333,
+            1078.4853515625
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0080.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5118326544761658,
+          "bbox": [
+            196.34033203125,
+            1014.6831868489584,
+            1586.7259114583333,
+            1077.7923177083333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.47489479184150696,
+          "bbox": [
+            33.45941162109375,
+            1015.3824869791666,
+            1288.107421875,
+            1076.1228841145833
+          ]
+        },
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.35308554768562317,
+          "bbox": [
+            1658.5830078125,
+            2.5832462310791016,
+            1917.54541015625,
+            46.990753173828125
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.2661912441253662,
+          "bbox": [
+            560.1468912760416,
+            1014.4347330729166,
+            1862.7600911458333,
+            1077.6351725260417
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0081.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.6857914328575134,
+          "bbox": [
+            1660.1051432291667,
+            2.9166412353515625,
+            1915.8391927083333,
+            48.257731119791664
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.47926899790763855,
+          "bbox": [
+            815.6153157552084,
+            1014.6436360677084,
+            1920.0,
+            1076.8138020833333
+          ]
+        },
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.36402609944343567,
+          "bbox": [
+            1666.0462239583333,
+            5.991717020670573,
+            1824.4661458333333,
+            48.256876627604164
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.30747202038764954,
+          "bbox": [
+            271.76824951171875,
+            1015.5481770833334,
+            1636.7493489583333,
+            1078.2940266927083
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.2880239486694336,
+          "bbox": [
+            562.3042805989584,
+            1013.8113606770834,
+            1852.763671875,
+            1078.16748046875
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0082.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.5768242478370667,
+          "bbox": [
+            1659.4964192708333,
+            3.8434982299804688,
+            1831.2259114583333,
+            45.33775838216146
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4748009741306305,
+          "bbox": [
+            755.3997395833334,
+            1014.5813802083334,
+            1846.6246744791667,
+            1077.0301920572917
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3847626745700836,
+          "bbox": [
+            251.482177734375,
+            1016.8145345052084,
+            1576.4835611979167,
+            1078.1822916666667
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0083.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.6169078350067139,
+          "bbox": [
+            1659.8645833333333,
+            2.8669281005859375,
+            1908.9181315104167,
+            50.3007558186849
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.43948373198509216,
+          "bbox": [
+            258.64599609375,
+            1017.1053059895834,
+            1578.54931640625,
+            1078.0504557291667
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.38125744462013245,
+          "bbox": [
+            804.1605631510416,
+            1013.7222493489584,
+            1920.0,
+            1077.1726888020833
+          ]
+        },
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.3040884733200073,
+          "bbox": [
+            1659.07421875,
+            5.933523813883464,
+            1824.3818359375,
+            48.933939615885414
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0084.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4505884051322937,
+          "bbox": [
+            896.7599283854166,
+            1016.9853515625,
+            1917.6233723958333,
+            1076.2620442708333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3970966637134552,
+          "bbox": [
+            271.54266357421875,
+            1017.970458984375,
+            1538.7482096354167,
+            1076.5713704427083
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3269215226173401,
+          "bbox": [
+            586.0938313802084,
+            1015.4549153645834,
+            1840.171875,
+            1076.8095703125
+          ]
+        },
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.26120197772979736,
+          "bbox": [
+            1667.6612955729167,
+            3.6651763916015625,
+            1829.6765950520833,
+            44.721883138020836
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0085.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.5025312900543213,
+          "bbox": [
+            59.24867248535156,
+            0.0,
+            307.2777913411458,
+            30.595357259114582
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4262838065624237,
+          "bbox": [
+            787.4578450520834,
+            1015.0401204427084,
+            1920.0,
+            1076.3854166666667
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3668921887874603,
+          "bbox": [
+            256.6761474609375,
+            1018.1925455729166,
+            1551.31640625,
+            1075.9890950520833
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.28549471497535706,
+          "bbox": [
+            516.1009114583334,
+            1015.59375,
+            1803.6643880208333,
+            1077.6140950520833
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0086.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4656012952327728,
+          "bbox": [
+            674.093994140625,
+            1015.7953287760416,
+            1827.0478515625,
+            1076.3311360677083
+          ]
+        },
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.43919432163238525,
+          "bbox": [
+            47.46174112955729,
+            0.0,
+            251.66634114583334,
+            21.201679229736328
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3611418306827545,
+          "bbox": [
+            255.69012451171875,
+            1020.35986328125,
+            1458.1748046875,
+            1075.1673990885417
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0087.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.38979390263557434,
+          "bbox": [
+            214.35772705078125,
+            1018.1097819010416,
+            1565.0419921875,
+            1076.9056803385417
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.32337915897369385,
+          "bbox": [
+            572.0655924479166,
+            1015.7396647135416,
+            1816.42919921875,
+            1077.5608723958333
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0088.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4561915099620819,
+          "bbox": [
+            250.40189615885416,
+            1018.370361328125,
+            1572.0773111979167,
+            1077.5947265625
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3342190384864807,
+          "bbox": [
+            641.3014322916666,
+            1016.6033528645834,
+            1845.3896484375,
+            1075.8767903645833
+          ]
+        },
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.2605884373188019,
+          "bbox": [
+            1662.017578125,
+            3.152996063232422,
+            1867.9840494791667,
+            45.422261555989586
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0089.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3731992840766907,
+          "bbox": [
+            631.895751953125,
+            1017.71484375,
+            1807.6015625,
+            1076.02587890625
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.35126858949661255,
+          "bbox": [
+            256.77703857421875,
+            1018.3174641927084,
+            1566.7034505208333,
+            1076.5475260416667
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.25058043003082275,
+          "bbox": [
+            853.7801106770834,
+            1018.681640625,
+            1920.0,
+            1073.9285481770833
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0090.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4744044840335846,
+          "bbox": [
+            257.912109375,
+            1018.8922526041666,
+            1555.7311197916667,
+            1077.12158203125
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.27487340569496155,
+          "bbox": [
+            626.7601318359375,
+            1014.974609375,
+            1839.7532552083333,
+            1076.112548828125
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0091.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3997061848640442,
+          "bbox": [
+            267.0080973307292,
+            1018.6526692708334,
+            1574.5774739583333,
+            1076.6809895833333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3792788088321686,
+          "bbox": [
+            638.738525390625,
+            1016.9798177083334,
+            1826.7659505208333,
+            1076.4401041666667
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0092.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.56004798412323,
+          "bbox": [
+            182.37396240234375,
+            1015.960205078125,
+            1537.4425455729167,
+            1077.790771484375
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3397127389907837,
+          "bbox": [
+            0.0,
+            1015.39599609375,
+            1203.5923665364583,
+            1076.9679361979167
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0093.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5126652717590332,
+          "bbox": [
+            148.41815185546875,
+            1015.890625,
+            1536.0852864583333,
+            1077.4873046875
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.34838876128196716,
+          "bbox": [
+            19.53131103515625,
+            1015.2610677083334,
+            1205.6998697916667,
+            1076.5060221354167
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0094.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5556453466415405,
+          "bbox": [
+            201.17875162760416,
+            1015.3738606770834,
+            1583.6549479166667,
+            1077.5165201822917
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.31499096751213074,
+          "bbox": [
+            40.9449462890625,
+            1015.9482421875,
+            1246.2017415364583,
+            1076.0712890625
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0095.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5725735425949097,
+          "bbox": [
+            194.1004435221354,
+            1015.3016764322916,
+            1524.1748046875,
+            1078.2189127604167
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.25555354356765747,
+          "bbox": [
+            0.0,
+            1015.9837239583334,
+            1203.6088053385417,
+            1076.52978515625
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0096.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.45830658078193665,
+          "bbox": [
+            194.04840087890625,
+            1016.51953125,
+            1493.9617513020833,
+            1076.6223958333333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.36201590299606323,
+          "bbox": [
+            6.9931640625,
+            1015.5293782552084,
+            1192.7841796875,
+            1075.966796875
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.29226624965667725,
+          "bbox": [
+            415.1370849609375,
+            1015.3203938802084,
+            1745.9425455729167,
+            1077.7190755208333
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0097.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5368807315826416,
+          "bbox": [
+            194.11962890625,
+            1016.303466796875,
+            1583.6560872395833,
+            1077.624755859375
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.29963207244873047,
+          "bbox": [
+            30.017303466796875,
+            1015.735107421875,
+            1245.6241048177083,
+            1075.71240234375
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0098.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4900219738483429,
+          "bbox": [
+            198.10107421875,
+            1015.699951171875,
+            1494.4454752604167,
+            1077.1204427083333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.357883483171463,
+          "bbox": [
+            27.562225341796875,
+            1014.921630859375,
+            1244.1259765625,
+            1076.386474609375
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.33518677949905396,
+          "bbox": [
+            566.3212076822916,
+            1016.3329264322916,
+            1851.2317708333333,
+            1078.1780598958333
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0099.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.46812912821769714,
+          "bbox": [
+            173.0679931640625,
+            1015.7847493489584,
+            1540.04296875,
+            1077.706787109375
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3986755907535553,
+          "bbox": [
+            21.79833984375,
+            1016.0537109375,
+            1245.4169108072917,
+            1075.755615234375
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0100.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5050322413444519,
+          "bbox": [
+            191.41259765625,
+            1014.720458984375,
+            1593.12548828125,
+            1078.1346028645833
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4367744028568268,
+          "bbox": [
+            68.20834350585938,
+            1015.123291015625,
+            1291.9083658854167,
+            1075.8163248697917
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.34536948800086975,
+          "bbox": [
+            509.95751953125,
+            1014.9090169270834,
+            1837.482421875,
+            1078.586181640625
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0101.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5426494479179382,
+          "bbox": [
+            366.6335042317708,
+            1014.617431640625,
+            1750.88671875,
+            1078.4469401041667
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.46232545375823975,
+          "bbox": [
+            170.2563680013021,
+            1015.584716796875,
+            1498.5660807291667,
+            1077.2066243489583
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.39453771710395813,
+          "bbox": [
+            0.0,
+            1015.7950032552084,
+            1199.6065266927083,
+            1076.1743977864583
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0102.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5288639664649963,
+          "bbox": [
+            181.87060546875,
+            1015.9188639322916,
+            1277.8743489583333,
+            1075.55322265625
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.45292696356773376,
+          "bbox": [
+            367.546875,
+            1015.7964680989584,
+            1730.6129557291667,
+            1078.1332194010417
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0103.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5207802653312683,
+          "bbox": [
+            165.24700927734375,
+            1016.464599609375,
+            1458.2578125,
+            1076.8414713541667
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.45645204186439514,
+          "bbox": [
+            0.0,
+            1015.5101725260416,
+            1186.78369140625,
+            1076.5326334635417
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0104.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5041447281837463,
+          "bbox": [
+            275.064697265625,
+            1016.4746907552084,
+            1631.6767578125,
+            1076.9837239583333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5040996074676514,
+          "bbox": [
+            211.76312255859375,
+            1019.8452962239584,
+            1333.6827799479167,
+            1076.1307779947917
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.290848970413208,
+          "bbox": [
+            8.2210693359375,
+            1017.3600260416666,
+            1148.89306640625,
+            1076.2877604166667
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0105.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.566653847694397,
+          "bbox": [
+            228.4969482421875,
+            1016.3182779947916,
+            1584.5533854166667,
+            1077.4202473958333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5149004459381104,
+          "bbox": [
+            60.7335205078125,
+            1018.5371907552084,
+            1285.3470052083333,
+            1076.0546061197917
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0106.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.42591989040374756,
+          "bbox": [
+            61.8980712890625,
+            1016.3435872395834,
+            1280.3406575520833,
+            1074.9186197916667
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3372614085674286,
+          "bbox": [
+            416.2375895182292,
+            1016.1209309895834,
+            1757.4759114583333,
+            1077.7168782552083
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.2675730884075165,
+          "bbox": [
+            665.52099609375,
+            1017.5485026041666,
+            1903.3951822916667,
+            1075.9527180989583
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0107.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5013332962989807,
+          "bbox": [
+            221.65777587890625,
+            1016.3885904947916,
+            1283.1507161458333,
+            1075.4584147135417
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.45984235405921936,
+          "bbox": [
+            318.48280843098956,
+            1015.0603841145834,
+            1709.6617838541667,
+            1077.9248860677083
+          ]
+        },
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.36910662055015564,
+          "bbox": [
+            1663.88525390625,
+            3.42678165435791,
+            1919.7399088541667,
+            51.56743367513021
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0108.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.503998875617981,
+          "bbox": [
+            174.0389607747396,
+            1015.8924967447916,
+            1545.5550130208333,
+            1077.76416015625
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.38389086723327637,
+          "bbox": [
+            0.0,
+            1016.1373697916666,
+            1192.6463216145833,
+            1076.2091471354167
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3324471116065979,
+          "bbox": [
+            414.1834716796875,
+            1014.2579752604166,
+            1786.0608723958333,
+            1078.4781901041667
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0109.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5049221515655518,
+          "bbox": [
+            168.30120849609375,
+            1015.9392903645834,
+            1545.4583333333333,
+            1077.7648111979167
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3973165452480316,
+          "bbox": [
+            0.0,
+            1015.9293619791666,
+            1192.730712890625,
+            1076.2220052083333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.35505422949790955,
+          "bbox": [
+            414.4451497395833,
+            1014.6791178385416,
+            1785.931640625,
+            1078.3881022135417
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0110.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5258464217185974,
+          "bbox": [
+            181.73529052734375,
+            1015.8958333333334,
+            1545.6162109375,
+            1077.6888020833333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4340692162513733,
+          "bbox": [
+            4.0579833984375,
+            1015.869873046875,
+            1242.9208170572917,
+            1075.8946126302083
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.35188645124435425,
+          "bbox": [
+            414.2457275390625,
+            1014.5399576822916,
+            1768.5222981770833,
+            1078.3412272135417
+          ]
+        },
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.3102976679801941,
+          "bbox": [
+            1668.1735026041667,
+            4.830814361572266,
+            1920.0,
+            46.815205891927086
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0111.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.500053882598877,
+          "bbox": [
+            177.02164713541666,
+            1014.7708333333334,
+            1546.9456380208333,
+            1078.1018880208333
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.37879911065101624,
+          "bbox": [
+            0.0,
+            1015.2083333333334,
+            1201.64404296875,
+            1076.9771321614583
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.31877875328063965,
+          "bbox": [
+            413.3607584635417,
+            1014.0252278645834,
+            1775.3639322916667,
+            1078.6848958333333
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0112.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5238511562347412,
+          "bbox": [
+            178.0491943359375,
+            1015.0309244791666,
+            1547.1778971354167,
+            1078.0997721354167
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3659432530403137,
+          "bbox": [
+            0.0,
+            1015.1940104166666,
+            1253.3531087239583,
+            1076.4530436197917
+          ]
+        },
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.35232919454574585,
+          "bbox": [
+            1658.56640625,
+            4.155635833740234,
+            1817.7766927083333,
+            46.62608846028646
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3284864127635956,
+          "bbox": [
+            413.2606201171875,
+            1013.9563802083334,
+            1774.0782877604167,
+            1078.65966796875
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0113.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5210195779800415,
+          "bbox": [
+            192.3973388671875,
+            1014.6527506510416,
+            1591.32861328125,
+            1078.0790201822917
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.43774038553237915,
+          "bbox": [
+            45.25579833984375,
+            1015.3125813802084,
+            1297.4297688802083,
+            1076.283935546875
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0114.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5082572102546692,
+          "bbox": [
+            192.136962890625,
+            1014.393798828125,
+            1591.86376953125,
+            1078.0525716145833
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.31597161293029785,
+          "bbox": [
+            0.0,
+            1015.2791341145834,
+            1204.5838216145833,
+            1077.0638834635417
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0115.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4758600890636444,
+          "bbox": [
+            190.4146728515625,
+            1014.1810709635416,
+            1590.9239908854167,
+            1077.9395345052083
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3067155182361603,
+          "bbox": [
+            0.0,
+            1015.115966796875,
+            1204.7085774739583,
+            1077.2945149739583
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0116.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.5872405767440796,
+          "bbox": [
+            1655.71435546875,
+            3.645509719848633,
+            1918.8087565104167,
+            51.62915547688802
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.4860663414001465,
+          "bbox": [
+            186.6125284830729,
+            1013.7864583333334,
+            1591.5836588541667,
+            1078.1847330729167
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.38226237893104553,
+          "bbox": [
+            25.496063232421875,
+            1014.9620768229166,
+            1302.3046875,
+            1076.5810546875
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0117.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.5047643780708313,
+          "bbox": [
+            189.54693603515625,
+            1013.854248046875,
+            1588.52099609375,
+            1078.1044921875
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.34367507696151733,
+          "bbox": [
+            0.0,
+            1014.5791015625,
+            1301.138427734375,
+            1077.0797526041667
+          ]
+        },
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.3260785937309265,
+          "bbox": [
+            1657.4654947916667,
+            4.085466384887695,
+            1853.96484375,
+            47.801361083984375
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0118.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.40918976068496704,
+          "bbox": [
+            147.46014404296875,
+            1013.6930338541666,
+            1542.826171875,
+            1077.8943684895833
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.3292306959629059,
+          "bbox": [
+            414.64013671875,
+            1013.4021809895834,
+            1783.65087890625,
+            1078.4431966145833
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.283893346786499,
+          "bbox": [
+            0.0,
+            1014.2736002604166,
+            1203.9097493489583,
+            1077.1007486979167
+          ]
+        }
+      ]
+    },
+    {
+      "image": "test_dataset\\images\\madden_test\\madden_frame_20250608_080245_0119.png",
+      "hardware_tier": "premium",
+      "scale_factor": 0.75,
+      "detections": [
+        {
+          "class": 1,
+          "class_name": "down_distance",
+          "confidence": 0.454398512840271,
+          "bbox": [
+            1658.25146484375,
+            2.544879913330078,
+            1919.18701171875,
+            53.30584716796875
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.43375658988952637,
+          "bbox": [
+            189.8521728515625,
+            1013.408203125,
+            1591.4501953125,
+            1078.7283528645833
+          ]
+        },
+        {
+          "class": 0,
+          "class_name": "score_bug",
+          "confidence": 0.27890902757644653,
+          "bbox": [
+            9.3427734375,
+            1015.2550455729166,
+            1246.7762858072917,
+            1076.47705078125
+          ]
+        }
+      ]
+    }
+  ]
+}

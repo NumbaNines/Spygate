@@ -57,8 +57,8 @@ class VideoImportWorker(QObject):
 
     def __init__(
         self,
-        files: List[Tuple[str, VideoMetadata]],
-        players: List[Dict[str, Any]],
+        files: list[tuple[str, VideoMetadata]],
+        players: list[dict[str, Any]],
         video_service: VideoService,
     ):
         """Initialize the worker.
@@ -114,9 +114,7 @@ class VideoImportWorker(QObject):
 
                 # Update progress for metadata stage
                 self.progress.emit(
-                    ImportProgress(
-                        ImportStage.METADATA, int(50 * (i + 1) / total_files), file_name
-                    )
+                    ImportProgress(ImportStage.METADATA, int(50 * (i + 1) / total_files), file_name)
                 )
 
                 # Import the video

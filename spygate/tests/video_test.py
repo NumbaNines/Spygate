@@ -36,8 +36,7 @@ class TestVideoProcessing(unittest.TestCase):
         try:
             result = subprocess.run(
                 ["where", "ffmpeg"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
                 text=True,
             )
             ffmpeg_path = result.stdout.strip()
@@ -47,8 +46,7 @@ class TestVideoProcessing(unittest.TestCase):
             # Verify FFmpeg version
             result = subprocess.run(
                 ["ffmpeg", "-version"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
                 text=True,
             )
             self.assertEqual(
@@ -74,8 +72,7 @@ class TestVideoProcessing(unittest.TestCase):
             # Verify 7-Zip version
             result = subprocess.run(
                 [seven_zip_path, "--help"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
                 text=True,
             )
             self.assertEqual(result.returncode, 0, "7-Zip help command should succeed")

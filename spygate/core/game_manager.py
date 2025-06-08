@@ -16,9 +16,9 @@ logger = logging.getLogger(__name__)
 class GameSettings:
     """Game-specific settings based on hardware capabilities."""
 
-    resolution: Tuple[int, int]  # Width, height
+    resolution: tuple[int, int]  # Width, height
     frame_rate: int  # Target FPS
-    analysis_features: List[str]  # Enabled analysis features
+    analysis_features: list[str]  # Enabled analysis features
     performance_mode: str  # "quality" or "performance"
     gpu_enabled: bool  # Whether GPU acceleration is enabled
 
@@ -39,7 +39,7 @@ class GameManager:
 
     def _initialize_performance_profiles(
         self,
-    ) -> Dict[Tuple[GameVersion, PerformanceTier], GameSettings]:
+    ) -> dict[tuple[GameVersion, PerformanceTier], GameSettings]:
         """Initialize performance profiles for each game and hardware tier combination."""
         return {
             (GameVersion.MADDEN_25, PerformanceTier.MINIMUM): GameSettings(
@@ -130,9 +130,7 @@ class GameManager:
             ),
         }
 
-    def detect_and_configure(
-        self, frame: np.ndarray
-    ) -> Tuple[GameVersion, GameSettings]:
+    def detect_and_configure(self, frame: np.ndarray) -> tuple[GameVersion, GameSettings]:
         """
         Detect the game from a frame and configure optimal settings.
 
@@ -144,9 +142,7 @@ class GameManager:
         """
         # Detect game version
         version, confidence = self.game_detector.detect_game_version(frame)
-        logger.info(
-            f"Detected game version {version.value} with confidence {confidence:.2f}"
-        )
+        logger.info(f"Detected game version {version.value} with confidence {confidence:.2f}")
 
         # Get hardware tier
         tier = self.hardware.get_performance_tier()
@@ -180,9 +176,7 @@ class GameManager:
             if self.game_detector.is_feature_supported(feature, game_version):
                 supported_features.append(feature)
             else:
-                logger.warning(
-                    f"Feature {feature} not supported by {game_version.value}"
-                )
+                logger.warning(f"Feature {feature} not supported by {game_version.value}")
 
         # Create optimized settings
         optimized_settings = GameSettings(

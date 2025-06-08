@@ -32,9 +32,7 @@ def test_db():
 
 def test_create_player(test_db):
     """Test creating a player."""
-    player = create_player(
-        name="John Doe", team="Test Team", position="Forward", session=test_db
-    )
+    player = create_player(name="John Doe", team="Test Team", position="Forward", session=test_db)
     assert player.id is not None
     assert player.name == "John Doe"
     assert player.team == "Test Team"
@@ -139,12 +137,8 @@ def test_get_tag(test_db):
 def test_get_clips_by_tag(test_db):
     """Test getting clips by tag."""
     player = create_player("John Doe", session=test_db)
-    clip1 = create_clip(
-        "test1.mp4", player_id=player.id, tags=["tag1"], session=test_db
-    )
-    clip2 = create_clip(
-        "test2.mp4", player_id=player.id, tags=["tag1", "tag2"], session=test_db
-    )
+    clip1 = create_clip("test1.mp4", player_id=player.id, tags=["tag1"], session=test_db)
+    clip2 = create_clip("test2.mp4", player_id=player.id, tags=["tag1", "tag2"], session=test_db)
     clips = get_clips_by_tag("tag1", session=test_db)
     assert len(clips) == 2
     assert clips[0].file_path == "test1.mp4"

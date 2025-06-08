@@ -115,14 +115,10 @@ class Video(Base):
     file_size = Column(Integer, nullable=False)
     file_hash = Column(String, nullable=False)
     player_name = Column(String, nullable=False)  # "Self" or "Opponent: Name"
-    import_status = Column(
-        SQLEnum(ImportStatus), nullable=False, default=ImportStatus.PENDING
-    )
+    import_status = Column(SQLEnum(ImportStatus), nullable=False, default=ImportStatus.PENDING)
     error_message = Column(String)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(
-        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     video_metadata = relationship(
@@ -146,9 +142,7 @@ class VideoMetadata(Base):
     fps = Column(Float, nullable=False)
     codec = Column(String, nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(
-        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     video = relationship("Video", back_populates="video_metadata")

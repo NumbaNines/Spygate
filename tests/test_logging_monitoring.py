@@ -89,9 +89,7 @@ def test_health_check_initialization():
     """Test that the health checker is properly initialized."""
     # Test database health check
     db_status = health_checker.check_database()
-    assert isinstance(
-        db_status, dict
-    ), "Database health check should return a dictionary"
+    assert isinstance(db_status, dict), "Database health check should return a dictionary"
     assert "status" in db_status, "Database health check should include status"
     assert "timestamp" in db_status, "Database health check should include timestamp"
 
@@ -103,16 +101,10 @@ def test_health_check_initialization():
 
     # Test overall health check
     overall_status = health_checker.check_all()
-    assert isinstance(
-        overall_status, dict
-    ), "Overall health check should return a dictionary"
-    assert (
-        "database" in overall_status
-    ), "Overall health check should include database status"
+    assert isinstance(overall_status, dict), "Overall health check should return a dictionary"
+    assert "database" in overall_status, "Overall health check should include database status"
     assert "disk" in overall_status, "Overall health check should include disk status"
-    assert (
-        "overall_status" in overall_status
-    ), "Overall health check should include overall status"
+    assert "overall_status" in overall_status, "Overall health check should include overall status"
 
 
 def test_health_check_database():
@@ -155,12 +147,8 @@ def test_prometheus_metrics():
     metric_names = [metric.name for metric in metrics]
 
     # Check if our custom metrics are present
-    assert (
-        "spygate_system_health" in metric_names
-    ), "System health metric should be present"
-    assert (
-        "spygate_db_connection_status" in metric_names
-    ), "DB connection metric should be present"
+    assert "spygate_system_health" in metric_names, "System health metric should be present"
+    assert "spygate_db_connection_status" in metric_names, "DB connection metric should be present"
 
 
 def test_health_check_all():
@@ -192,8 +180,6 @@ def test_sentry_integration():
         try:
             raise ValueError("Test error for Sentry")
         except Exception as e:
-            logger.error(
-                "Test error occurred", error=str(e), error_type=type(e).__name__
-            )
+            logger.error("Test error occurred", error=str(e), error_type=type(e).__name__)
     else:
         pytest.skip("Sentry DSN not configured")

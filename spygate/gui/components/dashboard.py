@@ -348,9 +348,7 @@ class Dashboard(QMainWindow):
         for clip in self.clips:
             matches_search = search_text in clip.title.lower()
             matches_player = not selected_player or selected_player == clip.player_name
-            matches_tags = not selected_tags or any(
-                tag in clip.tags for tag in selected_tags
-            )
+            matches_tags = not selected_tags or any(tag in clip.tags for tag in selected_tags)
 
             clip.setVisible(matches_search and matches_player and matches_tags)
 
@@ -398,9 +396,7 @@ class Dashboard(QMainWindow):
         self.stability_bar.setValue(int(metrics["stability"] * 100))
 
         # Update processing settings
-        self.resolution_label.setText(
-            f"Resolution Scale: {params.resolution_scale:.2f}x"
-        )
+        self.resolution_label.setText(f"Resolution Scale: {params.resolution_scale:.2f}x")
         self.frame_skip_label.setText(f"Frame Skip: {params.frame_skip}")
         self.batch_size_label.setText(f"Batch Size: {params.batch_size}")
 

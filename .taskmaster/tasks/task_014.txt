@@ -1,0 +1,52 @@
+# Task ID: 14
+# Title: Implement Export and Stream Recording
+# Status: done
+# Dependencies: 3, 7, 10
+# Priority: medium
+# Description: Create systems for exporting analyzed clips and recording gameplay from streams.
+# Details:
+1. Design export UI:
+   - Create export dialog with options
+   - Implement format selection
+   - Add quality settings
+   - Include player_name in metadata
+2. Implement export functionality:
+   - Support MP4 export with annotations
+   - Create JSON export with analysis data
+   - Generate CSV reports
+3. Design stream recording UI:
+   - Create stream setup interface in Community page
+   - Implement channel management
+   - Add recording controls
+   - Include player_name attribution
+4. Implement streamlink/ffmpeg integration:
+   - Support Twitch and YouTube recording
+   - Implement quality selection
+   - Add scheduling functionality
+5. Create OBS Studio integration:
+   - Implement screen capture setup
+   - Add output monitoring
+   - Support local recording
+6. Implement legal compliance:
+   - Create compliance modal with terms
+   - Add consent checkbox
+   - Store compliance acknowledgment
+7. Create performance analytics export:
+   - Generate statistical reports
+   - Export charts and visualizations
+   - Support CSV data export
+8. Implement notification system:
+   - Alert when exports complete
+   - Notify when streams start
+   - Provide recording status updates
+
+# Test Strategy:
+1. UI tests for export dialog
+2. Tests for export formats and quality
+3. UI tests for stream recording interface
+4. Integration tests for streamlink/ffmpeg
+5. Integration tests for OBS Studio
+6. Tests for legal compliance modal
+7. Performance tests for export speed
+8. Tests for player_name attribution
+9. Error handling and recovery tests

@@ -130,9 +130,7 @@ class CommunityView(QWidget):
 
         # Channel table
         self.channel_table = QTableWidget(0, 3)  # 0 rows, 3 columns
-        self.channel_table.setHorizontalHeaderLabels(
-            ["Channel", "Player Name", "Status"]
-        )
+        self.channel_table.setHorizontalHeaderLabels(["Channel", "Player Name", "Status"])
         self.channel_table.horizontalHeader().setStretchLastSection(True)
         layout.addWidget(self.channel_table)
 
@@ -169,9 +167,7 @@ class CommunityView(QWidget):
                     f"Started OBS recording for player: {player_name}",
                 )
             else:
-                QMessageBox.warning(
-                    self, "Invalid Input", "Please enter a player name."
-                )
+                QMessageBox.warning(self, "Invalid Input", "Please enter a player name.")
 
     def start_stream_recording(self):
         """Start streamlink/FFmpeg recording."""

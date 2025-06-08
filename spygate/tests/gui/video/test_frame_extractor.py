@@ -1,13 +1,16 @@
-import pytest
-import cv2
-import numpy as np
 import os
 import tempfile
-from spygate.video.frame_extractor import FrameExtractor
+
+import cv2
+import numpy as np
+import pytest
+
 from spygate.video.frame_extraction_worker import FrameExtractionWorker
+from spygate.video.frame_extractor import FrameExtractor
+
 
 def create_temp_video(path, num_frames=10, width=64, height=48, fps=10):
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     out = cv2.VideoWriter(path, fourcc, fps, (width, height))
     for i in range(num_frames):
         frame = np.full((height, width, 3), i * 25, dtype=np.uint8)
@@ -66,7 +69,7 @@ def test_frame_extraction_worker(qtbot):
     with tempfile.TemporaryDirectory() as tmpdir:
         video_path = os.path.join(tmpdir, "test.mp4")
         # Create a 2-second, 10 fps video (20 frames)
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         out = cv2.VideoWriter(video_path, fourcc, 10, (32, 24))
         for i in range(20):
             frame = np.full((24, 32, 3), i * 10, dtype=np.uint8)
@@ -96,7 +99,7 @@ def test_frame_extraction_worker(qtbot):
 def test_frame_extraction_worker_stop(qtbot):
     with tempfile.TemporaryDirectory() as tmpdir:
         video_path = os.path.join(tmpdir, "test.mp4")
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         out = cv2.VideoWriter(video_path, fourcc, 10, (32, 24))
         for i in range(20):
             frame = np.full((24, 32, 3), i * 10, dtype=np.uint8)
@@ -112,4 +115,4 @@ def test_frame_extraction_worker_stop(qtbot):
         qtbot.wait(100)
         frames = result.args[0] if result.args is not None else results[0]
         # Should emit finished, but with fewer frames
-        assert len(frames) < 20 
+        assert len(frames) < 20

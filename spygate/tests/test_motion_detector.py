@@ -15,9 +15,7 @@ from spygate.video.motion_detector import (
 )
 
 
-def create_test_frame(
-    width: int = 640, height: int = 480, color: tuple = (0, 0, 0)
-) -> np.ndarray:
+def create_test_frame(width: int = 640, height: int = 480, color: tuple = (0, 0, 0)) -> np.ndarray:
     """Create a test frame with specified dimensions and color."""
     return np.full((height, width, 3), color, dtype=np.uint8)
 
@@ -92,9 +90,7 @@ class TestMotionDetector:
         assert len(result2.bounding_boxes) > 0
 
         # Motion mask should be binary
-        assert np.array_equal(
-            result2.motion_mask, result2.motion_mask.astype(bool) * 255
-        )
+        assert np.array_equal(result2.motion_mask, result2.motion_mask.astype(bool) * 255)
 
     def test_reset(self):
         """Test detector reset."""
@@ -125,9 +121,7 @@ class TestMotionDetector:
         result = detector.detect_motion(frame)
 
         assert "method" in result.metadata
-        assert (
-            result.metadata["method"] == MotionDetectionMethod.FRAME_DIFFERENCING.value
-        )
+        assert result.metadata["method"] == MotionDetectionMethod.FRAME_DIFFERENCING.value
         assert "threshold" in result.metadata
         assert result.metadata["threshold"] == detector.threshold
 
@@ -173,9 +167,7 @@ class TestMotionDetector:
 
     def test_background_subtraction_motion(self):
         """Test background subtraction with moving object."""
-        detector = MotionDetector(
-            method=MotionDetectionMethod.BACKGROUND_SUBTRACTION, min_area=100
-        )
+        detector = MotionDetector(method=MotionDetectionMethod.BACKGROUND_SUBTRACTION, min_area=100)
 
         # Process multiple frames with static background
         static_frame = create_test_frame()
@@ -191,10 +183,7 @@ class TestMotionDetector:
         assert len(result.bounding_boxes) > 0
 
         # Check metadata
-        assert (
-            result.metadata["method"]
-            == MotionDetectionMethod.BACKGROUND_SUBTRACTION.value
-        )
+        assert result.metadata["method"] == MotionDetectionMethod.BACKGROUND_SUBTRACTION.value
         assert result.metadata["learning_rate"] == detector.learning_rate
 
     def test_background_subtraction_learning_rate(self):
@@ -289,9 +278,7 @@ class TestMotionDetector:
         assert result2.metadata["num_tracked_points"] > 0
 
         # Motion mask should be binary
-        assert np.array_equal(
-            result2.motion_mask, result2.motion_mask.astype(bool) * 255
-        )
+        assert np.array_equal(result2.motion_mask, result2.motion_mask.astype(bool) * 255)
 
     def test_optical_flow_reset(self):
         """Test optical flow detector reset."""
@@ -317,9 +304,7 @@ class TestMotionDetector:
 
         # Create a mostly blank frame
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
-        cv2.rectangle(
-            frame, (10, 10), (30, 30), (255, 255, 255), -1
-        )  # Small white rectangle
+        cv2.rectangle(frame, (10, 10), (30, 30), (255, 255, 255), -1)  # Small white rectangle
 
         result = detector.detect_motion(frame)
         assert isinstance(result, MotionDetectionResult)

@@ -9,32 +9,36 @@ from ..core.hardware import HardwareTier
 
 class ModelSize(Enum):
     """Available model size configurations."""
-    NANO = "nano"      # For ultra-low-end systems
-    SMALL = "small"    # For low-end systems
+
+    NANO = "nano"  # For ultra-low-end systems
+    SMALL = "small"  # For low-end systems
     MEDIUM = "medium"  # For mid-range systems
-    LARGE = "large"    # For high-end systems
+    LARGE = "large"  # For high-end systems
 
 
 @dataclass
 class BackboneConfig:
     """Configuration for model backbone."""
+
     depth_multiple: float
     width_multiple: float
     input_channels: int = 3
-    input_size: Tuple[int, int] = (640, 640)
+    input_size: tuple[int, int] = (640, 640)
 
 
 @dataclass
 class HeadConfig:
     """Configuration for model detection head."""
+
     num_classes: int = 10  # Number of HUD element classes
-    anchors: int = 3      # Number of anchors per output
-    num_layers: int = 3   # Number of detection layers
+    anchors: int = 3  # Number of anchors per output
+    num_layers: int = 3  # Number of detection layers
 
 
 @dataclass
 class YOLO11Config:
     """Complete YOLO11 model configuration."""
+
     model_size: ModelSize
     backbone: BackboneConfig
     head: HeadConfig
@@ -46,63 +50,55 @@ class YOLO11Config:
     multi_scale: bool = False
 
     @classmethod
-    def from_hardware(cls, hardware_tier: HardwareTier) -> 'YOLO11Config':
+    def from_hardware(cls, hardware_tier: HardwareTier) -> "YOLO11Config":
         """Create configuration based on hardware tier."""
         configs = {
             HardwareTier.ULTRA_LOW: {
                 "model_size": ModelSize.NANO,
                 "backbone": BackboneConfig(
-                    depth_multiple=0.33,
-                    width_multiple=0.25,
-                    input_size=(416, 416)
+                    depth_multiple=0.33, width_multiple=0.25, input_size=(416, 416)
                 ),
                 "batch_size": 1,
                 "workers": 1,
                 "use_amp": False,
                 "cache_images": False,
-                "multi_scale": False
+                "multi_scale": False,
             },
             HardwareTier.LOW: {
                 "model_size": ModelSize.SMALL,
                 "backbone": BackboneConfig(
-                    depth_multiple=0.33,
-                    width_multiple=0.50,
-                    input_size=(512, 512)
+                    depth_multiple=0.33, width_multiple=0.50, input_size=(512, 512)
                 ),
                 "batch_size": 2,
                 "workers": 2,
                 "use_amp": True,
                 "cache_images": False,
-                "multi_scale": False
+                "multi_scale": False,
             },
             HardwareTier.MEDIUM: {
                 "model_size": ModelSize.MEDIUM,
                 "backbone": BackboneConfig(
-                    depth_multiple=0.67,
-                    width_multiple=0.75,
-                    input_size=(640, 640)
+                    depth_multiple=0.67, width_multiple=0.75, input_size=(640, 640)
                 ),
                 "batch_size": 4,
                 "workers": 4,
                 "use_amp": True,
                 "cache_images": True,
-                "multi_scale": True
+                "multi_scale": True,
             },
             HardwareTier.HIGH: {
                 "model_size": ModelSize.LARGE,
                 "backbone": BackboneConfig(
-                    depth_multiple=1.0,
-                    width_multiple=1.0,
-                    input_size=(640, 640)
+                    depth_multiple=1.0, width_multiple=1.0, input_size=(640, 640)
                 ),
                 "batch_size": 8,
                 "workers": 8,
                 "use_amp": True,
                 "cache_images": True,
-                "multi_scale": True
-            }
+                "multi_scale": True,
+            },
         }
-        
+
         config = configs[hardware_tier]
         return cls(
             model_size=config["model_size"],
@@ -113,16 +109,16 @@ class YOLO11Config:
             workers=config["workers"],
             use_amp=config["use_amp"],
             cache_images=config["cache_images"],
-            multi_scale=config["multi_scale"]
+            multi_scale=config["multi_scale"],
         )
 
-    def get_model_hyperparameters(self) -> Dict:
+    def get_model_hyperparameters(self) -> dict:
         """Get model hyperparameters based on configuration."""
         base_lr = {
             ModelSize.NANO: 0.001,
             ModelSize.SMALL: 0.001,
             ModelSize.MEDIUM: 0.01,
-            ModelSize.LARGE: 0.01
+            ModelSize.LARGE: 0.01,
         }[self.model_size]
 
         return {
@@ -147,17 +143,17 @@ class YOLO11Config:
             "degrees": 0.0,  # No rotation for HUD elements
             "translate": 0.1,
             "scale": 0.5,
-            "shear": 0.0
+            "shear": 0.0,
         }
 
-    def get_training_settings(self) -> Dict:
+    def get_training_settings(self) -> dict:
         """Get training settings based on configuration."""
         return {
             "epochs": {
                 ModelSize.NANO: 50,
                 ModelSize.SMALL: 100,
                 ModelSize.MEDIUM: 150,
-                ModelSize.LARGE: 200
+                ModelSize.LARGE: 200,
             }[self.model_size],
             "batch_size": self.batch_size,
             "num_workers": self.workers,
@@ -179,5 +175,5 @@ class YOLO11Config:
             "patience": 100,
             "freeze": [0],  # Freeze first layer
             "save_period": -1,
-            "local_rank": -1
-        } 
+            "local_rank": -1,
+        }

@@ -63,7 +63,7 @@ class Annotation:
     end_frame: Optional[int] = None  # For regions
     text: Optional[str] = None
     color: QColor = QColor(Qt.GlobalColor.yellow)
-    metadata: Optional[Dict] = None
+    metadata: Optional[dict] = None
 
     def is_region(self) -> bool:
         """Check if this is a region annotation."""
@@ -248,18 +248,14 @@ class VideoTimeline(QWidget):
         self.thumbnail_worker = ThumbnailWorker()
         self.thumbnail_worker.thumbnailReady.connect(self._on_thumbnail_ready)
         self.thumbnail_worker.error.connect(self._on_thumbnail_error)
-        self.thumbnail_worker.start(
-            QThread.Priority.LowPriority
-        )  # Lower priority for thumbnails
+        self.thumbnail_worker.start(QThread.Priority.LowPriority)  # Lower priority for thumbnails
 
         # Initialize playback worker
         self.playback_worker = VideoPlaybackWorker()
         self.playback_worker.frameReady.connect(self._on_frame_ready)
         self.playback_worker.error.connect(self._on_playback_error)
         self.playback_worker.finished.connect(self._on_playback_finished)
-        self.playback_worker.start(
-            QThread.Priority.HighPriority
-        )  # Higher priority for playback
+        self.playback_worker.start(QThread.Priority.HighPriority)  # Higher priority for playback
 
     def initUI(self):
         """Initialize the UI components."""
@@ -308,20 +304,12 @@ class VideoTimeline(QWidget):
         # Add annotation controls
         self.annotation_button = QToolButton()
         self.annotation_button.setText("Add")
-        self.annotation_button.setPopupMode(
-            QToolButton.ToolButtonPopupMode.InstantPopup
-        )
+        self.annotation_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
 
         annotation_menu = QMenu()
-        annotation_menu.addAction(
-            "Marker", lambda: self.startAnnotation(AnnotationType.MARKER)
-        )
-        annotation_menu.addAction(
-            "Region", lambda: self.startAnnotation(AnnotationType.REGION)
-        )
-        annotation_menu.addAction(
-            "Text", lambda: self.startAnnotation(AnnotationType.TEXT)
-        )
+        annotation_menu.addAction("Marker", lambda: self.startAnnotation(AnnotationType.MARKER))
+        annotation_menu.addAction("Region", lambda: self.startAnnotation(AnnotationType.REGION))
+        annotation_menu.addAction("Text", lambda: self.startAnnotation(AnnotationType.TEXT))
 
         self.annotation_button.setMenu(annotation_menu)
         controls_layout.addWidget(self.annotation_button)
@@ -387,15 +375,9 @@ class VideoTimeline(QWidget):
         QShortcut(QKeySequence("L"), self, self.toggleLoop)
 
         # Annotation shortcuts
-        QShortcut(
-            QKeySequence("M"), self, lambda: self.startAnnotation(AnnotationType.MARKER)
-        )
-        QShortcut(
-            QKeySequence("R"), self, lambda: self.startAnnotation(AnnotationType.REGION)
-        )
-        QShortcut(
-            QKeySequence("T"), self, lambda: self.startAnnotation(AnnotationType.TEXT)
-        )
+        QShortcut(QKeySequence("M"), self, lambda: self.startAnnotation(AnnotationType.MARKER))
+        QShortcut(QKeySequence("R"), self, lambda: self.startAnnotation(AnnotationType.REGION))
+        QShortcut(QKeySequence("T"), self, lambda: self.startAnnotation(AnnotationType.TEXT))
         QShortcut(QKeySequence(Qt.Key.Key_Escape), self, self.cancelAnnotation)
         QShortcut(QKeySequence(Qt.Key.Key_Delete), self, self.deleteSelectedAnnotation)
 
@@ -427,9 +409,7 @@ class VideoTimeline(QWidget):
         self.thumbnail_queue.clear()
 
         # Calculate thumbnail interval based on total frames and timeline width
-        interval = max(
-            1, self.total_frames // (self.timeline_width // self.thumbnail_size.width())
-        )
+        interval = max(1, self.total_frames // (self.timeline_width // self.thumbnail_size.width()))
 
         # Queue thumbnails for generation
         for frame in range(0, self.total_frames, interval):
@@ -477,14 +457,10 @@ class VideoTimeline(QWidget):
     def startAnnotation(self, annotation_type: AnnotationType):
         """Start creating a new annotation."""
         self.annotation_mode = True
-        self.current_annotation = Annotation(
-            type=annotation_type, start_frame=self.current_frame
-        )
+        self.current_annotation = Annotation(type=annotation_type, start_frame=self.current_frame)
 
         if annotation_type == AnnotationType.TEXT:
-            text, ok = QInputDialog.getText(
-                self, "Add Text Annotation", "Enter annotation text:"
-            )
+            text, ok = QInputDialog.getText(self, "Add Text Annotation", "Enter annotation text:")
             if ok and text:
                 self.current_annotation.text = text
                 self.finishAnnotation()
@@ -524,9 +500,7 @@ class VideoTimeline(QWidget):
         track_assigned = False
         for track_num, track in self.annotation_tracks.items():
             # Check if this annotation overlaps with any in this track
-            overlaps = any(
-                self._annotations_overlap(ann, self.current_annotation) for ann in track
-            )
+            overlaps = any(self._annotations_overlap(ann, self.current_annotation) for ann in track)
             if not overlaps:
                 track.append(self.current_annotation)
                 track_assigned = True
@@ -632,9 +606,7 @@ class VideoTimeline(QWidget):
             timeline_bottom = self.height() - self.TIMELINE_MARGIN
 
             for track_num, track in self.annotation_tracks.items():
-                track_y = (
-                    timeline_bottom - (track_num + 1) * self.ANNOTATION_TRACK_HEIGHT
-                )
+                track_y = timeline_bottom - (track_num + 1) * self.ANNOTATION_TRACK_HEIGHT
 
                 if track_y <= y <= track_y + self.ANNOTATION_TRACK_HEIGHT:
                     # Check each annotation in this track
@@ -728,9 +700,7 @@ class VideoTimeline(QWidget):
         hours = int(time_seconds // 3600)
         minutes = int((time_seconds % 3600) // 60)
         seconds = int(time_seconds % 60)
-        frames = int(
-            (time_seconds * self.fps_spinbox.value()) % self.fps_spinbox.value()
-        )
+        frames = int((time_seconds * self.fps_spinbox.value()) % self.fps_spinbox.value())
 
         # Format tooltip text
         tooltip = f"Time: {hours:02d}:{minutes:02d}:{seconds:02d}:{frames:02d}\nFrame: {frame}"
@@ -786,15 +756,11 @@ class VideoTimeline(QWidget):
         """Draw thumbnails efficiently."""
         thumb_width = self.thumbnail_size.width()
         timeline_width = timeline_rect.width()
-        frames_per_thumb = max(
-            1, self.total_frames // int(timeline_width / thumb_width)
-        )
+        frames_per_thumb = max(1, self.total_frames // int(timeline_width / thumb_width))
 
         # Only draw thumbnails in the visible area
         visible_start = max(0, self._x_to_frame(self.TIMELINE_MARGIN))
-        visible_end = min(
-            self.total_frames, self._x_to_frame(self.width() - self.TIMELINE_MARGIN)
-        )
+        visible_end = min(self.total_frames, self._x_to_frame(self.width() - self.TIMELINE_MARGIN))
 
         for frame_num in range(visible_start, visible_end, frames_per_thumb):
             if frame_num in self.thumbnails:
@@ -822,9 +788,7 @@ class VideoTimeline(QWidget):
 
                 if ann.type == AnnotationType.REGION:
                     x2 = self._frame_to_x(ann.end_frame)
-                    region_path.addRect(
-                        x1, track_y, x2 - x1, self.ANNOTATION_TRACK_HEIGHT
-                    )
+                    region_path.addRect(x1, track_y, x2 - x1, self.ANNOTATION_TRACK_HEIGHT)
                 elif ann.type == AnnotationType.MARKER:
                     marker_path.moveTo(x1, track_y)
                     marker_path.lineTo(x1, track_y + self.MARKER_HEIGHT)
@@ -940,9 +904,7 @@ class VideoTimeline(QWidget):
 
         # Calculate visible area
         visible_start = max(0, self._x_to_frame(self.TIMELINE_MARGIN))
-        visible_end = min(
-            self.total_frames, self._x_to_frame(self.width() - self.TIMELINE_MARGIN)
-        )
+        visible_end = min(self.total_frames, self._x_to_frame(self.width() - self.TIMELINE_MARGIN))
 
         # Ensure the frame is within the visible area
         if frame < visible_start or frame > visible_end:

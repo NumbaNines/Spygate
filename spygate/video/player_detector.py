@@ -78,7 +78,7 @@ class PlayerDetector:
 
     def detect_players(
         self, frame: np.ndarray, method: str = "auto"
-    ) -> List[Dict[str, Union[np.ndarray, float]]]:
+    ) -> list[dict[str, Union[np.ndarray, float]]]:
         """
         Detect players in a video frame.
 
@@ -119,9 +119,7 @@ class PlayerDetector:
         else:
             return "hog"
 
-    def _detect_hog(
-        self, frame: np.ndarray
-    ) -> List[Dict[str, Union[np.ndarray, float]]]:
+    def _detect_hog(self, frame: np.ndarray) -> list[dict[str, Union[np.ndarray, float]]]:
         """
         Detect players using HOG detector.
 
@@ -154,9 +152,7 @@ class PlayerDetector:
 
         return detections
 
-    def _detect_frcnn(
-        self, frame: np.ndarray
-    ) -> List[Dict[str, Union[np.ndarray, float]]]:
+    def _detect_frcnn(self, frame: np.ndarray) -> list[dict[str, Union[np.ndarray, float]]]:
         """
         Detect players using Faster R-CNN.
 
@@ -183,9 +179,7 @@ class PlayerDetector:
         for box, score, label in zip(
             predictions["boxes"], predictions["scores"], predictions["labels"]
         ):
-            if (
-                score > self.confidence_threshold and label == 1
-            ):  # 1 is person class in COCO
+            if score > self.confidence_threshold and label == 1:  # 1 is person class in COCO
                 if torch.cuda.is_available():
                     box = box.cpu()
                 detections.append(
@@ -194,9 +188,7 @@ class PlayerDetector:
 
         return detections
 
-    def _detect_yolo(
-        self, frame: np.ndarray
-    ) -> List[Dict[str, Union[np.ndarray, float]]]:
+    def _detect_yolo(self, frame: np.ndarray) -> list[dict[str, Union[np.ndarray, float]]]:
         """
         Detect players using YOLOv5.
 
@@ -215,9 +207,7 @@ class PlayerDetector:
         # Convert results to standard format
         detections = []
         for *box, conf, cls in results.xyxy[0]:
-            if (
-                conf > self.confidence_threshold and cls == 0
-            ):  # 0 is person class in COCO
+            if conf > self.confidence_threshold and cls == 0:  # 0 is person class in COCO
                 if torch.cuda.is_available():
                     box = [b.cpu() for b in box]
                 detections.append(
@@ -230,7 +220,7 @@ class PlayerDetector:
 
         return detections
 
-    def get_detection_info(self) -> Dict:
+    def get_detection_info(self) -> dict:
         """Get information about available detection methods."""
         return {
             "tracking_mode": self.tracking_mode,

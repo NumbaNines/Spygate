@@ -66,9 +66,7 @@ class PlayerNameDialog(QDialog):
         self.opponent_input.setVisible(False)
 
         # Connect radio buttons to toggle opponent name visibility
-        self.self_radio.toggled.connect(
-            lambda checked: self._toggle_opponent_input(not checked)
-        )
+        self.self_radio.toggled.connect(lambda checked: self._toggle_opponent_input(not checked))
 
         # Buttons
         button_layout = QHBoxLayout()
@@ -123,8 +121,7 @@ class PlayerNameDialog(QDialog):
     def _toggle_opponent_input(self, show: bool):
         """Toggle visibility of opponent name input."""
         for widget in [
-            self.opponent_layout.itemAt(i).widget()
-            for i in range(self.opponent_layout.count())
+            self.opponent_layout.itemAt(i).widget() for i in range(self.opponent_layout.count())
         ]:
             if widget:
                 widget.setVisible(show)

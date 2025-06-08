@@ -115,10 +115,7 @@ def test_validate_invalid_file(tmp_path, log_stream):
     is_valid, error_msg, metadata = CodecValidator.validate_video(str(invalid_file))
 
     assert not is_valid
-    assert (
-        "corrupted" in error_msg.lower()
-        or "failed to open video file" in error_msg.lower()
-    )
+    assert "corrupted" in error_msg.lower() or "failed to open video file" in error_msg.lower()
     assert metadata is None
     assert "Video validation failed" in log_stream.getvalue()
 

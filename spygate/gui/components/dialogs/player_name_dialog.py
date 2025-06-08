@@ -52,9 +52,7 @@ class PlayerNameDialog(QDialog):
         position_layout = QHBoxLayout()
         position_label = QLabel("Position:")
         self.position_combo = QComboBox()
-        self.position_combo.addItems(
-            ["Forward", "Midfielder", "Defender", "Goalkeeper"]
-        )
+        self.position_combo.addItems(["Forward", "Midfielder", "Defender", "Goalkeeper"])
         position_layout.addWidget(position_label)
         position_layout.addWidget(self.position_combo)
         layout.addLayout(position_layout)
@@ -76,15 +74,11 @@ class PlayerNameDialog(QDialog):
         position = self.position_combo.currentText()
 
         if not name:
-            QMessageBox.warning(
-                self, "Missing Information", "Please enter the player's name."
-            )
+            QMessageBox.warning(self, "Missing Information", "Please enter the player's name.")
             return
 
         if not team:
-            QMessageBox.warning(
-                self, "Missing Information", "Please enter the player's team."
-            )
+            QMessageBox.warning(self, "Missing Information", "Please enter the player's team.")
             return
 
         self.player_confirmed.emit(name, team, position)

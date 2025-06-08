@@ -36,7 +36,7 @@ class Database:
 
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super(Database, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
             cls._instance._initialize()
         return cls._instance
 
@@ -62,9 +62,7 @@ class Database:
                 )
 
             # Create session factory
-            self._SessionLocal = sessionmaker(
-                autocommit=False, autoflush=False, bind=self._engine
-            )
+            self._SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self._engine)
 
             # Create tables
             Base.metadata.create_all(bind=self._engine)

@@ -5,10 +5,11 @@ Enhanced frame extractor with parallel processing and advanced caching.
 import logging
 import os
 import threading
+from collections.abc import Iterator
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
 from queue import Queue
-from typing import Callable, Dict, Iterator, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -31,8 +32,8 @@ class FrameCache:
         if cache_dir:
             os.makedirs(cache_dir, exist_ok=True)
 
-        self.memory_cache: Dict[int, np.ndarray] = {}
-        self.frame_access_times: Dict[int, int] = {}
+        self.memory_cache: dict[int, np.ndarray] = {}
+        self.frame_access_times: dict[int, int] = {}
         self.access_count = 0
         self.lock = threading.Lock()
 
@@ -144,7 +145,7 @@ class FrameExtractor:
         self.processing = False
         self.stop_event = threading.Event()
 
-    def extract_frame(self, frame_number: int) -> Optional[Dict[str, np.ndarray]]:
+    def extract_frame(self, frame_number: int) -> Optional[dict[str, np.ndarray]]:
         """
         Extract and preprocess a specific frame.
 
@@ -177,9 +178,9 @@ class FrameExtractor:
         self,
         start_frame: int,
         end_frame: int,
-        callback: Optional[Callable[[int, Dict[str, np.ndarray]], None]] = None,
+        callback: Optional[Callable[[int, dict[str, np.ndarray]], None]] = None,
         progress_callback: Optional[Callable[[int, int], None]] = None,
-    ) -> Iterator[Tuple[int, Dict[str, np.ndarray]]]:
+    ) -> Iterator[tuple[int, dict[str, np.ndarray]]]:
         """
         Extract a range of frames with parallel processing.
 
@@ -274,7 +275,7 @@ class FrameExtractor:
                 self.frame_queue.put((None, None))
 
     def _process_frames(
-        self, callback: Optional[Callable[[int, Dict[str, np.ndarray]], None]] = None
+        self, callback: Optional[Callable[[int, dict[str, np.ndarray]], None]] = None
     ):
         """Process frames from queue."""
         try:

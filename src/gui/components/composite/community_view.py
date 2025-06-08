@@ -50,9 +50,7 @@ class SharedPlaybookCard(Card):
         title_layout.addWidget(author)
 
         rating_label = QLabel(f"{self.playbook_data.get('rating', 0.0):.1f}★")
-        rating_label.setStyleSheet(
-            "color: #ffd700; font-size: 16px; font-weight: bold;"
-        )
+        rating_label.setStyleSheet("color: #ffd700; font-size: 16px; font-weight: bold;")
 
         header_layout.addLayout(title_layout)
         header_layout.addStretch()
@@ -61,9 +59,7 @@ class SharedPlaybookCard(Card):
         self.content_layout.addLayout(header_layout)
 
         # Description
-        description = QLabel(
-            self.playbook_data.get("description", "No description available")
-        )
+        description = QLabel(self.playbook_data.get("description", "No description available"))
         description.setWordWrap(True)
         description.setStyleSheet("color: #888888;")
         self.content_layout.addWidget(description)
@@ -173,15 +169,11 @@ class StreamSetupDialog(QDialog):
         )
         legal_layout = QVBoxLayout(legal_frame)
 
-        self.attribution_check = QCheckBox(
-            "I will provide proper attribution to players"
-        )
+        self.attribution_check = QCheckBox("I will provide proper attribution to players")
         self.attribution_check.setStyleSheet("color: #ffffff;")
         legal_layout.addWidget(self.attribution_check)
 
-        self.fair_use_check = QCheckBox(
-            "I understand and will comply with fair use guidelines"
-        )
+        self.fair_use_check = QCheckBox("I understand and will comply with fair use guidelines")
         self.fair_use_check.setStyleSheet("color: #ffffff;")
         legal_layout.addWidget(self.fair_use_check)
 
@@ -240,9 +232,7 @@ class StreamSetupDialog(QDialog):
     def check_requirements(self):
         """Enable start button only when all requirements are met."""
         url_valid = bool(self.url_input.text().strip())
-        checks_valid = (
-            self.attribution_check.isChecked() and self.fair_use_check.isChecked()
-        )
+        checks_valid = self.attribution_check.isChecked() and self.fair_use_check.isChecked()
         self.start_button.setEnabled(url_valid and checks_valid)
 
     def validate_and_accept(self):
@@ -307,9 +297,7 @@ class CommunityView(QWidget):
         # Channel table
         self.channel_table = QTableWidget()
         self.channel_table.setColumnCount(4)
-        self.channel_table.setHorizontalHeaderLabels(
-            ["Channel", "Game", "Status", "Actions"]
-        )
+        self.channel_table.setHorizontalHeaderLabels(["Channel", "Game", "Status", "Actions"])
         self.channel_table.horizontalHeader().setSectionResizeMode(
             0, QHeaderView.ResizeMode.Stretch
         )

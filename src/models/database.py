@@ -1,16 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    Float,
-    ForeignKey,
-    Integer,
-    String,
-    Table,
-)
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import declarative_base, relationship
 
@@ -61,9 +52,7 @@ class Clip(Base, BaseModel):
 
     # Relationships
     tags = relationship("Tag", secondary=clip_tags, back_populates="clips")
-    collections = relationship(
-        "Collection", secondary=clip_collections, back_populates="clips"
-    )
+    collections = relationship("Collection", secondary=clip_collections, back_populates="clips")
     situations = relationship("Situation", back_populates="clip")
     formations = relationship("Formation", back_populates="clip")
 
@@ -86,9 +75,7 @@ class Collection(Base, BaseModel):
     is_playlist = Column(Boolean, default=False)
 
     # Relationships
-    clips = relationship(
-        "Clip", secondary=clip_collections, back_populates="collections"
-    )
+    clips = relationship("Clip", secondary=clip_collections, back_populates="collections")
 
 
 class Situation(Base, BaseModel):

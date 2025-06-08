@@ -122,9 +122,7 @@ class AnnotationTool(QWidget):
         self.color_button.setStyleSheet(
             f"background-color: {self.color.name()}; border: 1px solid #666;"
         )
-        self.color_button.setAccessibleDescription(
-            f"Current color: {self.color.name()}"
-        )
+        self.color_button.setAccessibleDescription(f"Current color: {self.color.name()}")
 
     def show_color_dialog(self):
         """Show the color picker dialog."""

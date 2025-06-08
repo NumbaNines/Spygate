@@ -1,3 +1,3 @@
 """
 Spygate Theme Management System
-""" 
+"""

@@ -4,14 +4,7 @@ from typing import Any, Dict, List, Literal, Optional
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import (
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
-)
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from ..base import BaseWidget
 
@@ -74,7 +67,7 @@ class NavigationBar(BaseWidget):
             parent: Optional parent widget
         """
         super().__init__(parent)
-        self._items: Dict[str, NavigationItem] = {}
+        self._items: dict[str, NavigationItem] = {}
         self._selected_item: Optional[str] = None
         self._orientation = "horizontal"
         self._style = "light"
@@ -87,9 +80,7 @@ class NavigationBar(BaseWidget):
         self.layout().setContentsMargins(8, 8, 8, 8)
         self.layout().setSpacing(8)
 
-    def add_item(
-        self, id_: str, text: str, icon_path: Optional[str] = None
-    ) -> NavigationItem:
+    def add_item(self, id_: str, text: str, icon_path: Optional[str] = None) -> NavigationItem:
         """Add an item to the navigation bar.
 
         Args:
@@ -106,7 +97,7 @@ class NavigationBar(BaseWidget):
         self.layout().addWidget(item)
         return item
 
-    def items(self) -> List[QWidget]:
+    def items(self) -> list[QWidget]:
         """Get all navigation items.
 
         Returns:
@@ -341,7 +332,7 @@ class NavigationBar(BaseWidget):
             raise ValueError(f"Item '{id_}' not found")
         return item.get_badge()
 
-    def update_theme(self, theme: Dict[str, Any]) -> None:
+    def update_theme(self, theme: dict[str, Any]) -> None:
         """Update the navigation bar's theme.
 
         Args:

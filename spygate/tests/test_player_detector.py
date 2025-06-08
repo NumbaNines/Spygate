@@ -163,9 +163,7 @@ def test_confidence_threshold():
         mock_hog.return_value = mock_detector
 
         detector = PlayerDetector(confidence_threshold=0.7)
-        detections = detector.detect_players(
-            np.zeros((480, 640, 3), dtype=np.uint8), method="hog"
-        )
+        detections = detector.detect_players(np.zeros((480, 640, 3), dtype=np.uint8), method="hog")
 
         assert len(detections) == 1  # Only one detection above threshold
         assert detections[0]["confidence"] >= 0.7

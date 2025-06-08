@@ -25,7 +25,7 @@ class Card(BaseWidget):
         self._expanded = True
         self._elevation = 1
         self._theme = {}
-        self.content_widgets: List[QWidget] = []
+        self.content_widgets: list[QWidget] = []
         self._toggle_button: Optional[QPushButton] = None
 
         # Now call super().__init__ which will call _setup_ui
@@ -150,7 +150,7 @@ class Card(BaseWidget):
         """
         return self._elevation
 
-    def update_theme(self, theme: Dict[str, Any]) -> None:
+    def update_theme(self, theme: dict[str, Any]) -> None:
         """Update the card's theme.
 
         Args:

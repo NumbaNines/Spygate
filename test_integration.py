@@ -80,9 +80,7 @@ class IntegrationDemo(QMainWindow):
             sys.exit(1)
 
         # Create video timeline
-        self.timeline = VideoTimeline(
-            video_path=test_video_path, player_name="Test Player"
-        )
+        self.timeline = VideoTimeline(video_path=test_video_path, player_name="Test Player")
         layout.addWidget(self.timeline)
 
         # Add test controls
@@ -178,9 +176,7 @@ class IntegrationDemo(QMainWindow):
             self.seek_index = (self.seek_index + 1) % len(self.seek_positions)
             position = self.seek_positions[self.seek_index]
             self.timeline.seek_to_position(position)
-            self.status_label.setText(
-                f"Seeking to: {self.timeline.format_time(position)}"
-            )
+            self.status_label.setText(f"Seeking to: {self.timeline.format_time(position)}")
 
             if self.seek_index == 0:
                 self.test_seeking()  # Stop test after full cycle

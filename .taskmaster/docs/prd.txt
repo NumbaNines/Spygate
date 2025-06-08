@@ -239,11 +239,22 @@ def analyze_any_football_game(video_input):
 
 #### **4.4 Technology Stack**
 
+- **Backend**: Django REST Framework for API services
+- **Frontend**: Modern SPA (React/Next.js) for dashboard UI
 - **Desktop**: PyQt6 with adaptive video processing
 - **AI/ML**: YOLOv10+ (or latest generation) + Enhanced OpenCV pipeline **with game-agnostic training**
 - **Database**: SQLite for local storage, PostgreSQL for cloud sync **with cross-game schema**
 - **Video Processing**: FFmpeg with GPU acceleration support
 - **Cloud**: Optional AWS integration for advanced processing
+- **Caching**: Redis/Memcached for API and data caching
+
+**Architecture Benefits**:
+- **Decoupled Frontend**: Static SPA served via CDN for optimal loading
+- **API Performance**: Django REST endpoints with heavy caching
+- **Real-time Updates**: WebSocket support for live analysis feedback
+- **Core Performance**: Python analysis engine remains unaffected
+- **Scalability**: Microservices architecture for independent scaling
+- **User Experience**: Modern, responsive UI with optimized data loading
 
 #### **4.5 AI/ML Task Delegation: YOLO vs. OpenCV**
 

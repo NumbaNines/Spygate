@@ -140,9 +140,7 @@ def test_process_frame(motion_system, test_frame):
     situations = {
         "frame_number": 1,
         "timestamp": 0.033,
-        "situations": [
-            {"type": "motion", "confidence": 0.9, "details": {"region": "center"}}
-        ],
+        "situations": [{"type": "motion", "confidence": 0.9, "details": {"region": "center"}}],
     }
     motion_system.situation_detector.detect_situations.return_value = situations
 
@@ -268,9 +266,7 @@ def test_invalid_frame(motion_system):
         motion_system.process_frame(frame=None, video_id=1, frame_number=1, fps=30.0)
 
     with pytest.raises(ValueError):
-        motion_system.process_frame(
-            frame=np.array([]), video_id=1, frame_number=1, fps=30.0
-        )
+        motion_system.process_frame(frame=np.array([]), video_id=1, frame_number=1, fps=30.0)
 
 
 def test_motion_system_initialization():
@@ -323,9 +319,7 @@ def test_motion_system_start_stop():
 def test_motion_detection_processing():
     """Test motion detection processing pipeline."""
     video_source = MockVideoSource()
-    system = MotionSystem(
-        video_source, detection_method=MotionDetectionMethod.FRAME_DIFF
-    )
+    system = MotionSystem(video_source, detection_method=MotionDetectionMethod.FRAME_DIFF)
 
     # Add mock alert callback
     alert_called = False

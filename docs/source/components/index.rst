@@ -9,4 +9,4 @@ This section documents the composite UI components used in the Spygate applicati
    form_group
    card
    dialog
-   navigation_bar 
+   navigation_bar

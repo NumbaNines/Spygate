@@ -1,6 +1,58 @@
-# Spygate
+# SpygateAI: ML-Powered Football Gameplay Analysis
 
-AI-Powered Football Gameplay Analysis Tool
+SpygateAI is an intelligent engine that automates the discovery and bookmarking of key game situations using HUD analysis in football games.
+
+## Project Structure
+
+```
+spygate/
+├── src/                    # Source code
+│   ├── core/              # Core detection and analysis
+│   ├── ui/                # User interface components
+│   └── utils/             # Utility functions
+├── tests/                 # Test suite
+├── data/                  # Data files
+│   ├── models/           # Trained models
+│   └── test_videos/      # Test video files
+└── docs/                 # Documentation
+```
+
+## Installation
+
+1. Create a virtual environment:
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate  # Windows
+```
+
+2. Install dependencies:
+
+```bash
+# For basic installation
+pip install -e .
+
+# For development
+pip install -e ".[dev,test,docs]"
+```
+
+## Development
+
+- Code formatting: `black src tests`
+- Type checking: `mypy src`
+- Run tests: `pytest`
+- Build docs: `cd docs && make html`
+
+## Features
+
+- HUD Detection
+- Game State Analysis
+- Tendency Tracking
+- Real-time Analysis
+
+## License
+
+See LICENSE file for details.
 
 ## Overview
 
@@ -199,3 +251,182 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### Environment Variables
 
 Default environment variables are set in `docker-compose.yml`. For local development, you can override them by creating a `.env` file.
+
+## Project Size Management
+
+To maintain a clean and efficient project:
+
+1. **Virtual Environments**
+
+   - Use a single virtual environment (`.venv`)
+   - Do not commit virtual environments to git
+   - Recreate virtual environments using `requirements.txt` or `pyproject.toml`
+
+2. **Large Files**
+
+   - Git LFS is configured for large files (videos, models, datasets)
+   - Install Git LFS: `git lfs install`
+   - Large files will be automatically tracked based on `.gitattributes`
+
+3. **Test Data**
+
+   - Keep minimal test data in the repository
+   - Store large datasets externally (e.g., cloud storage)
+   - Use small sample files for testing
+
+4. **Cleanup**
+
+   - Run `cleanup.ps1` periodically to remove:
+     - Build artifacts
+     - Cache files
+     - Temporary files
+     - Test artifacts
+
+5. **Best Practices**
+   - Remove unused model versions
+   - Keep only necessary video recordings
+   - Clean up after training sessions
+   - Use external storage for archival data
+
+# SpygateAI Web Interface
+
+A modern web interface for SpygateAI, built with Django and React.
+
+## Features
+
+- RESTful API for video analysis and processing
+- Real-time progress tracking via WebSockets
+- User authentication and authorization
+- File upload and management
+- Analytics dashboard
+- Secure file storage with AWS S3
+
+## Tech Stack
+
+- **Backend**: Django + Django REST Framework + Channels
+- **Frontend**: Next.js + React (separate repository)
+- **Database**: PostgreSQL
+- **Cache & WebSocket**: Redis
+- **Storage**: AWS S3
+- **Deployment**: Docker + Gunicorn + Nginx
+
+## Development Setup
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/yourusername/spygate.git
+   cd spygate
+   ```
+
+2. Create and activate a virtual environment:
+
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # Linux/macOS
+   .venv\Scripts\activate     # Windows
+   ```
+
+3. Install dependencies:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Set up environment variables:
+
+   ```bash
+   cp .env.example .env
+   # Edit .env with your settings
+   ```
+
+5. Run migrations:
+
+   ```bash
+   cd spygate_site
+   python manage.py migrate
+   ```
+
+6. Create a superuser:
+
+   ```bash
+   python manage.py createsuperuser
+   ```
+
+7. Run the development server:
+   ```bash
+   python manage.py runserver
+   ```
+
+## Docker Development Setup
+
+1. Build and start the containers:
+
+   ```bash
+   docker-compose up --build
+   ```
+
+2. Run migrations:
+
+   ```bash
+   docker-compose exec web python spygate_site/manage.py migrate
+   ```
+
+3. Create a superuser:
+   ```bash
+   docker-compose exec web python spygate_site/manage.py createsuperuser
+   ```
+
+## Production Deployment
+
+1. Set up environment variables:
+
+   ```bash
+   cp .env.example .env.prod
+   # Edit .env.prod with production settings
+   ```
+
+2. Build the production image:
+
+   ```bash
+   docker build -t spygate-web .
+   ```
+
+3. Run the container:
+   ```bash
+   docker run -d \
+     --env-file .env.prod \
+     -p 8000:8000 \
+     spygate-web
+   ```
+
+## API Documentation
+
+API documentation is available at `/api/docs/` when running the development server.
+
+## Testing
+
+Run the test suite:
+
+```bash
+pytest
+```
+
+Run with coverage:
+
+```bash
+coverage run -m pytest
+coverage report
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

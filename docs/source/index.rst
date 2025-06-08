@@ -13,11 +13,10 @@ Spygate is a powerful tool for analyzing Madden NFL 25 gameplay using PyQt6-base
    :caption: Contents:
 
    components/index
-   
+
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

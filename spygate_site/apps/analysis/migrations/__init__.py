@@ -1,0 +1,3 @@
+"""
+SpygateAI analysis app migrations.
+"""

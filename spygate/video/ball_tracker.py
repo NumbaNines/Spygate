@@ -67,6 +67,25 @@ class BallTracker:
         self.prev_positions = []
         self.max_positions_history = 5
 
+        # Initialize Kalman filter for motion prediction
+        self.kalman = cv2.KalmanFilter(
+            4, 2
+        )  # 4 state variables (x, y, dx, dy), 2 measurements (x, y)
+        self.kalman.measurementMatrix = np.array(
+            [[1, 0, 0, 0], [0, 1, 0, 0]], np.float32
+        )
+        self.kalman.transitionMatrix = np.array(
+            [[1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]], np.float32
+        )
+        self.kalman.processNoiseCov = (
+            np.array(
+                [[1e-4, 0, 0, 0], [0, 1e-4, 0, 0], [0, 0, 1e-2, 0], [0, 0, 0, 1e-2]],
+                np.float32,
+            )
+            * 0.03
+        )
+        self.kalman_initialized = False
+
     def _initialize_models(self):
         """Initialize detection models based on hardware capabilities."""
         try:
@@ -185,22 +204,24 @@ class BallTracker:
         return None
 
     def predict_next_position(self) -> Optional[Tuple[float, float, float, float]]:
-        """Predict the next ball position based on motion history."""
-        if len(self.prev_positions) < 2:
+        """
+        Predict the next ball position based on motion history using Kalman filtering.
+
+        Returns:
+            Tuple of (x, y, w, h) coordinates if prediction possible, None otherwise
+        """
+        if not self.kalman_initialized or len(self.prev_positions) < 2:
             return None
 
-        # Calculate velocity from last two positions
+        # Predict next state
+        prediction = self.kalman.predict()
+
+        # Get the last known size
         last_pos = self.prev_positions[-1]
-        prev_pos = self.prev_positions[-2]
+        w, h = last_pos[2], last_pos[3]
 
-        dx = last_pos[0] - prev_pos[0]
-        dy = last_pos[1] - prev_pos[1]
-
-        # Predict next position
-        next_x = last_pos[0] + dx
-        next_y = last_pos[1] + dy
-
-        return (next_x, next_y, last_pos[2], last_pos[3])
+        # Return predicted position with last known size
+        return (float(prediction[0]), float(prediction[1]), w, h)
 
     def update(
         self, frame: np.ndarray
@@ -221,6 +242,17 @@ class BallTracker:
             if ok:
                 self.lost_frames = 0
                 self._update_position_history(bbox)
+
+                # Update Kalman filter with new measurement
+                if not self.kalman_initialized:
+                    self.kalman.statePre = np.array(
+                        [[bbox[0]], [bbox[1]], [0], [0]], np.float32
+                    )
+                    self.kalman_initialized = True
+                else:
+                    measurement = np.array([[bbox[0]], [bbox[1]]], np.float32)
+                    self.kalman.correct(measurement)
+
                 return True, bbox
             else:
                 self.lost_frames += 1
@@ -228,6 +260,7 @@ class BallTracker:
         # If tracking is lost or not active
         if self.lost_frames >= self.max_lost_frames:
             self.tracking_active = False
+            self.kalman_initialized = False
 
         # Try to detect the ball
         predicted_bbox = self.predict_next_position() if self.tracking_active else None
@@ -241,6 +274,17 @@ class BallTracker:
                 self.tracking_active = True
                 self.lost_frames = 0
                 self._update_position_history(detection)
+
+                # Initialize or update Kalman filter
+                if not self.kalman_initialized:
+                    self.kalman.statePre = np.array(
+                        [[detection[0]], [detection[1]], [0], [0]], np.float32
+                    )
+                    self.kalman_initialized = True
+                else:
+                    measurement = np.array([[detection[0]], [detection[1]]], np.float32)
+                    self.kalman.correct(measurement)
+
                 return True, detection
         elif predicted_bbox is not None:
             # Use predicted position to help reacquire tracking
@@ -296,10 +340,20 @@ class BallTracker:
 
     def get_ball_stats(self) -> Dict[str, Any]:
         """
-        Get statistics about the ball's movement.
+        Get current ball tracking statistics.
 
         Returns:
-            Dictionary containing ball statistics (speed, direction, etc.)
+            Dictionary containing tracking status, motion statistics, and prediction confidence.
+            Keys include:
+            - tracking_active: Whether ball is currently being tracked
+            - lost_frames: Number of frames since last detection
+            - position_history: Number of tracked positions in history
+            - speed: Current ball speed (pixels/frame)
+            - direction: Movement direction in degrees
+            - in_motion: Whether ball is moving
+            - acceleration: Current acceleration (pixels/frame²)
+            - prediction_confidence: Confidence in motion prediction (0-1)
+            - trajectory_stability: How stable the ball's path is (0-1)
         """
         stats = {
             "tracking_active": self.tracking_active,
@@ -308,7 +362,7 @@ class BallTracker:
         }
 
         if len(self.prev_positions) >= 2:
-            # Calculate speed and direction
+            # Calculate current motion statistics
             last_pos = self.prev_positions[-1]
             prev_pos = self.prev_positions[-2]
 
@@ -318,11 +372,54 @@ class BallTracker:
             speed = np.sqrt(dx * dx + dy * dy)
             angle = np.degrees(np.arctan2(dy, dx))
 
+            # Calculate acceleration if we have enough history
+            acceleration = 0.0
+            if len(self.prev_positions) >= 3:
+                prev_prev_pos = self.prev_positions[-3]
+                prev_dx = prev_pos[0] - prev_prev_pos[0]
+                prev_dy = prev_pos[1] - prev_prev_pos[1]
+                prev_speed = np.sqrt(prev_dx * prev_dx + prev_dy * prev_dy)
+                acceleration = speed - prev_speed
+
+            # Calculate trajectory stability
+            trajectory_stability = 1.0
+            if len(self.prev_positions) >= 3:
+                angles = []
+                for i in range(len(self.prev_positions) - 2):
+                    p1 = self.prev_positions[i]
+                    p2 = self.prev_positions[i + 1]
+                    p3 = self.prev_positions[i + 2]
+                    v1 = (p2[0] - p1[0], p2[1] - p1[1])
+                    v2 = (p3[0] - p2[0], p3[1] - p2[1])
+                    dot_product = v1[0] * v2[0] + v1[1] * v2[1]
+                    v1_mag = np.sqrt(v1[0] * v1[0] + v1[1] * v1[1])
+                    v2_mag = np.sqrt(v2[0] * v2[0] + v2[1] * v2[1])
+                    if v1_mag * v2_mag != 0:
+                        cos_angle = dot_product / (v1_mag * v2_mag)
+                        cos_angle = min(1.0, max(-1.0, cos_angle))  # Clamp to [-1, 1]
+                        angles.append(abs(np.degrees(np.arccos(cos_angle))))
+
+                if angles:
+                    # More consistent angles (closer to 180°) indicate a stable trajectory
+                    avg_angle_diff = np.mean([abs(180 - angle) for angle in angles])
+                    trajectory_stability = max(0.0, 1.0 - (avg_angle_diff / 180.0))
+
+            # Calculate prediction confidence based on tracking status and stability
+            prediction_confidence = 0.0
+            if self.tracking_active:
+                base_confidence = max(
+                    0.0, 1.0 - (self.lost_frames / self.max_lost_frames)
+                )
+                prediction_confidence = base_confidence * trajectory_stability
+
             stats.update(
                 {
                     "speed": float(speed),
                     "direction": float(angle),
                     "in_motion": speed > 1.0,
+                    "acceleration": float(acceleration),
+                    "prediction_confidence": float(prediction_confidence),
+                    "trajectory_stability": float(trajectory_stability),
                 }
             )
 

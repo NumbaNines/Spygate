@@ -10,6 +10,7 @@ import numpy as np
 from ..core.hardware import HardwareDetector
 from ..core.optimizer import TierOptimizer
 from ..video.motion_detector import HardwareAwareMotionDetector
+from .hud_detector import HUDDetector
 
 logger = logging.getLogger(__name__)
 
@@ -17,15 +18,17 @@ logger = logging.getLogger(__name__)
 class SituationDetector:
     """Enhanced situation detector with hardware-aware motion detection."""
 
-    def __init__(self):
+    def __init__(self, model_path: Optional[str] = None):
         """Initialize the situation detector."""
         self.initialized = False
         self.hardware = HardwareDetector()
         self.optimizer = TierOptimizer(self.hardware)
         self.motion_detector = None
+        self.hud_detector = None
         self.motion_history = []
         self.situation_history = []
         self.min_situation_confidence = 0.6
+        self.model_path = model_path
 
     def initialize(self):
         """Initialize components with hardware-aware configuration."""
@@ -34,6 +37,10 @@ class SituationDetector:
             use_gpu=self.hardware.has_cuda,
             use_threading=self.optimizer.should_use_threading(),
         )
+
+        # Initialize HUD detector
+        self.hud_detector = HUDDetector(model_path=self.model_path)
+        self.hud_detector.initialize()
 
         # Configure ROIs for the football field
         field_rois = self._get_default_field_rois()
@@ -338,16 +345,14 @@ class SituationDetector:
         return patterns
 
     def extract_hud_info(self, frame: np.ndarray) -> Dict[str, Any]:
-        """Extract information from the game's HUD."""
-        # TODO: Implement HUD text extraction
-        # For now, return empty values
-        return {
-            "down": None,
-            "distance": None,
-            "score": {"home": None, "away": None},
-            "time": None,
-            "quarter": None,
-        }
+        """Extract HUD information from a frame using YOLO11-based detection."""
+        if not self.initialized:
+            raise RuntimeError("Situation detector not initialized")
+
+        # Use HUD detector to get game state
+        hud_info = self.hud_detector.get_game_state(frame)
+
+        return hud_info
 
     def detect_mistakes(
         self, situations: List[Dict[str, Any]], hud_info: Dict[str, Any]

@@ -1,416 +1,495 @@
-# SpygateAI: ML-Powered Football Gameplay Analysis Tool
+### **SpygateAI: ML-Powered Football Gameplay Analysis Tool**
 
-## Product Requirements Document (PRD)
-**Version**: 5.0
+#### **Product Requirements Document (PRD)**
+
+**Version**: 6.8 - Multi-Game Foundation Integration
 **Date**: June 7, 2025
-**Status**: Active Development - Enhanced Technical Implementation
+**Status**: Final Review
 
-## 1. Overview
-SpygateAI is an AI-powered football gameplay analysis tool designed to revolutionize how competitive players analyze Madden NFL 25 gameplay. Leveraging a **hybrid YOLO11 + Enhanced Computer Vision** approach with adaptive HUD detection, SpygateAI automates detection, categorization, and organization of game situations across diverse video sources (raw gameplay, streaming platforms, recordings with overlays).
+### **1. Executive Summary**
 
-**Current Status**: Enhanced PyQt6 prototype with adaptive HUD detection (90+ hours, $5,600+ invested) featuring production-ready computer vision pipeline and planned hybrid desktop-web architecture.
+SpygateAI is an AI-powered football analysis tool designed to give competitive players a definitive edge in high-stakes tournaments like the **Madden Championship Series (MCS)**. With over $1 million on the line in the MCS, the difference between winning and losing comes down to preparation, strategy, and exploiting opponent weaknesses—a process that is currently manual, tedious, and inefficient.
 
-**Architecture Strategy**: Desktop-first approach with intelligent video source adaptation, ensuring robust performance across streaming platforms, raw gameplay, and variable overlay configurations.
+**The Core Problem**: Players competing in the MCS open ladders and other tournaments spend countless hours manually reviewing gameplay to find specific situations and scout opponents, detracting from time that could be spent practicing and honing strategy.
 
-## 2. Enhanced Development Phases & Timeline
+**The SpygateAI Solution**: An intelligent engine that automates the discovery and bookmarking of key **game situations** using HUD analysis, and will later incorporate advanced on-field formation analysis. SpygateAI is purpose-built on a **multi-game architecture foundation** to be the essential preparation tool for any player serious about competing for real prize money across EA Sports football titles, transforming hours of manual work into automated, actionable insights that transfer between games.
 
-### Phase 0: Production Launch (June 7-14, 2025)
-**Status**: Current Phase - Enhanced Implementation
-**Estimated Effort**: ~25 hours ($1,250)
-**Objectives**: Deploy production-ready adaptive detection system
+### **2. User Research Foundation**
 
-**Key Deliverables**:
-- ✅ **Adaptive HUD Detection System**: Auto-detects stream overlays vs raw gameplay
-- 🔄 **Enhanced No Huddle Detection**: Multi-method approach (visual + temporal + text)
-- 🔄 **Two-Minute Drill Detection**: Play clock integration + urgency indicators
-- ✅ **Variable Team Support**: Dynamic team abbreviation recognition (WHY, ATL, RIP, etc.)
-- ✅ **Stream-Agnostic Processing**: Handles Twitch, YouTube, raw gameplay, webcam overlays
-- 🔄 **Performance Optimization**: 1 FPS analysis target with 30 FPS playback
-- 🔄 **Pro Player Integration**: Beta testing with 3-5 professional players
+#### **2.1 Primary User: The MCS Professional**
 
-**Technical Achievements**:
-- Adaptive region detection with 3 layout types (raw, minimal overlay, stream overlay)
-- Enhanced confidence scoring across all detection methods
-- Real-time layout adaptation for variable video sources
-- Improved OCR preprocessing with temporal stabilization
+**Profile**: Actively competes in the Madden Championship Series (MCS) and major tournaments on platforms like Players Lounge. Their livelihood or significant income is tied to their performance. Practices 8+ hours daily.
 
-### Phase 1: Hybrid Detection & Web Dashboard (June 15 - August 15, 2025)
-**Estimated Effort**: ~30 hours ($1,500) - **Increased for YOLO integration**
-**Objectives**: Implement YOLO11 + Deploy web collaboration platform
+**Current Pain Points**:
+- The pressure of a $1M+ prize pool demands flawless preparation
+- Manually scouting dozens of potential opponents in an open ladder is nearly impossible
+- Forgetting a specific counter to a niche strategy can cost tens of thousands of dollars
+- Needs to optimize every second of their preparation time
+- **NEW**: Strategies learned in previous game versions are lost when new releases launch
 
-**Key Deliverables**:
-- **YOLO11 Formation Detection**: Train model on 14 core football situations
-- **Hybrid Detection Pipeline**: YOLO for context + Enhanced CV for specifics
-- **Django Backend with REST API**: Results-only sync implementation
-- **Web Dashboard**: Mobile-responsive analysis viewing and collaboration
-- **Enhanced Detection Classes**: Goal line, formations, special teams scenarios
+**Success Definition**: "This tool is indispensable for my MCS tournament prep across all EA football games"
 
-**YOLO Integration Strategy**:
+#### **2.2 Secondary User: The Aspiring Competitor**
+
+**Profile**: A highly skilled player grinding in the MCS open ladders or weekly online tournaments. They are serious about improving and dream of qualifying for a live event and winning prize money.
+
+**Current Pain Points**:
+- Doesn't know how the pros prepare and feels at a strategic disadvantage
+- Struggles to identify their own patterns and weaknesses that prevent them from breaking into the top tier
+- Overwhelmed by the volume of games they need to play and review to climb the ladder
+- **NEW**: Loses all strategic knowledge when transitioning between EA football games
+
+**Success Definition**: "This tool helped me qualify for the MCS Elimination phase and stay competitive across game releases"
+
+#### **2.3 Current Workflow Analysis**
+
+**Opponent Preparation** (15 min assessment → hours finding solutions):
+1. Source footage from YouTube, Twitch, previous recordings
+2. Manually identify key formations and strategies
+3. Search for counters through mental recall, practice mode testing
+4. Organize solutions in folders (often forgotten or lost)
+5. Test solutions through 5-15 practice games
+6. **NEW**: Repeat entire process for each EA football game
+
+**Self-Analysis After Loss**:
+1. Review recorded gameplay manually
+2. Identify mistakes and missed opportunities
+3. Try to understand opponent's strategy
+4. Manually correlate mistakes with specific situations
+5. **NEW**: Cannot leverage learnings across different EA football titles
+
+#### **2.4 Competitive Landscape**
+
+While the market for football gaming analysis is emerging, it is currently fragmented into two main categories:
+
+- **Data-Heavy Tools (e.g., Fictional 'MaddenMetrics Pro'):** These tools provide massive spreadsheets of statistical data but lack intuitive interfaces and actionable insights. They tell you *what* happened but not *why* or *what to do next*. They are powerful but have a very steep learning curve. **Limited to single games.**
+
+- **Content-Driven Platforms (e.g., YouTube/Patreon Gurus):** These platforms provide excellent strategic advice but are not personalized. A user has to manually watch hours of content to find a solution to *their specific problem*. **Game-specific content doesn't transfer.**
+
+**SpygateAI's Unique Position:** SpygateAI fits directly between these two extremes. It offers the data-driven power of an analytics tool but delivers it with the context and actionable solutions of a strategy guru, all personalized to the user's own gameplay. The **multi-game intelligence foundation** provides a long-term competitive moat that neither of these alternatives can offer.
+
+### **3. Product Vision & Core Features**
+
+#### **3.0 Multi-Game Architecture Foundation**
+
+**Universal Football Intelligence**: SpygateAI is built on game-agnostic football concepts that transfer across EA Sports titles, creating compound intelligence value over time.
+
+##### **Game-Agnostic Data Model**
+
 ```python
-# Hybrid detection approach
-def analyze_frame_hybrid(self, frame):
-    # 1. YOLO provides context
-    yolo_detections = self.yolo_model.detect(frame)
-    formation_type = yolo_detections.get_primary_formation()
-
-    # 2. Adaptive CV extracts specifics
-    hud_data = self.enhanced_cv.analyze_frame(frame)
-
-    # 3. Cross-validation and confidence weighting
-    return self.fuse_detections(yolo_detections, hud_data)
-```
-
-### Phase 2: Advanced Analytics & Optional Video Sync (September - November 2025)
-**Estimated Effort**: ~20 hours ($1,000)
-**Objectives**: Professional-grade analytics and enhanced collaboration
-
-**Key Deliverables**:
-- **Advanced Pattern Recognition**: Multi-game trend analysis
-- **Formation Tendency Analytics**: Opponent scouting dashboard
-- **Real-time Collaboration**: Live analysis sharing during gameplay
-- **Mobile PWA**: Full-featured mobile companion app
-- **Optional Video Sync**: User-controlled clip synchronization
-
-### Phase 3: Enterprise & Scaling (December 2025 - 2026)
-**Estimated Effort**: ~25 hours ($1,250)
-**Objectives**: Enterprise features and market expansion
-
-**Key Deliverables**:
-- **Custom Model Training**: Team-specific detection optimization
-- **API Ecosystem**: Third-party integrations and white-labeling
-- **Advanced Team Management**: Professional esports organization tools
-- **International Expansion**: Multi-language support and regional optimization
-
-## 3. Enhanced Technical Architecture
-
-### Adaptive Detection Pipeline
-**Hardware-Aware Multi-Tier Processing**:
-```
-Video Input → Hardware Detection → Tier Classification → Adaptive Pipeline
-     ↓              ↓                    ↓                    ↓
-All Sources    CPU/GPU/RAM Profile   Processing Mode      Optimized Analysis
-Raw/Stream     Performance Monitor   Feature Selection    Quality Scaling
-Variable Res   Auto-Adjustment       Model Selection      Frame Management
-```
-
-**Tier-Specific Processing Modes**:
-- **Minimum Tier**: Enhanced CV only, optimized algorithms, ROI processing
-- **Standard Tier**: CV + YOLO Nano, basic formations, selective processing
-- **Premium Tier**: CV + YOLO Medium, full formations, comprehensive analysis
-- **Professional**: CV + YOLO Large, real-time everything, experimental features
-
-**Adaptive Feature Matrix**:
-```
-Feature Category        | Minimum | Standard | Premium | Professional
-------------------------|---------|----------|---------|-------------
-HUD Detection          | ✅ Full  | ✅ Full   | ✅ Full  | ✅ Full
-No Huddle/Two-Minute   | ✅ Full  | ✅ Full   | ✅ Full  | ✅ Full
-Basic Formations       | ❌      | ✅ Limited| ✅ Full  | ✅ Full
-Advanced Formations    | ❌      | ❌       | ✅ Full  | ✅ Full
-Real-time Analysis     | ❌      | ⚠️ Limited| ✅ Full  | ✅ Full
-Processing Speed (FPS) | 0.3-0.5 | 1.0      | 1.5-2.0 | 2.0+
-```
-
-**Universal Compatibility Framework**:
-- **Automatic hardware detection** on application startup
-- **Transparent performance feedback** with upgrade recommendations
-- **Smart auto-adjustment** when performance degrades
-- **Graceful feature degradation** with clear user communication
-- **Future-proof scaling** as users upgrade hardware
-
-### Adaptive Performance Specifications
-**Hardware Tier System** - Automatic detection and optimization:
-
-**Minimum Tier (80% of market)**:
-- RAM: 8GB minimum | CPU: 4-core | GPU: None/Integrated graphics
-- **Processing Mode**: CPU-optimized Enhanced CV pipeline
-- **Target Performance**: 0.3-0.5 FPS analysis, 30 FPS playback
-- **Features Available**: All core HUD detection, No Huddle, Two-Minute Drill
-- **Auto-adaptations**: Frame skipping (every 3rd), 75% resolution scaling
-
-**Standard Tier (15% of market)**:
-- RAM: 12GB+ | CPU: 4-6 core | GPU: GTX 1650/1660 class (4GB+ VRAM)
-- **Processing Mode**: GPU-Basic with YOLO Nano/Small models
-- **Target Performance**: 1.0 FPS analysis with basic formation detection
-- **Features Available**: Core features + basic formation recognition
-- **Auto-adaptations**: Every 2nd frame processing, 90% resolution scaling
-
-**Premium Tier (4% of market)**:
-- RAM: 16GB+ | CPU: 6+ core | GPU: RTX 3060+ class (8GB+ VRAM)
-- **Processing Mode**: GPU-Full with YOLO Medium/Large models
-- **Target Performance**: 1.5-2.0 FPS analysis with full feature set
-- **Features Available**: All features including advanced formations and real-time analysis
-- **Auto-adaptations**: Every frame processing, full resolution
-
-**Professional Tier (1% of market)**:
-- RAM: 32GB+ | CPU: 8+ core | GPU: RTX 4080+ class (12GB+ VRAM)
-- **Processing Mode**: GPU-Premium with multiple model inference
-- **Target Performance**: 2.0+ FPS analysis with maximum accuracy
-- **Features Available**: All features + experimental real-time streaming analysis
-- **Auto-adaptations**: No limitations, maximum quality processing
-
-**Universal Compatibility Promise**:
-- **100% feature availability** for core analysis (HUD detection, special situations)
-- **Graceful degradation** with transparent user feedback
-- **Auto-scaling performance** based on detected hardware capabilities
-- **No user left behind** - everyone gets value regardless of hardware
-
-### Technology Stack (Enhanced)
-**Desktop Application**:
-- PyQt6 for native UI performance with adaptive video handling
-- Python 3.9+ with OpenCV, YOLO11, and **Adaptive Performance System**
-- **Hardware-Aware Processing**: Auto-scales from CPU-only to GPU-accelerated
-- **Intelligent Model Loading**: YOLO Nano/Small/Medium/Large based on capabilities
-- SQLite for local data storage with enhanced metadata support
-- **Multi-threaded architecture**: Separate video, analysis, and UI threads
-- **Performance monitoring**: Real-time adjustment and user feedback
-
-**Adaptive AI/ML Pipeline**:
-- **Enhanced Computer Vision**: Universal compatibility, works on all hardware
-- **Tiered YOLO Integration**: Nano (GTX 1650+), Medium (RTX 3060+), Large (RTX 4080+)
-- **Automatic Model Selection**: Hardware detection determines optimal model size
-- **Graceful Degradation**: CV-only fallback ensures functionality on any system
-- **Performance Auto-Tuning**: Frame skipping, resolution scaling, feature selection
-- **Universal Feature Guarantee**: Core analysis available regardless of hardware tier
-
-## 4. Advanced Feature Implementation
-
-### P1 Features (Production Ready - June 14, 2025)
-**Universal Core Detection** (Available on ALL hardware tiers):
-- ✅ **Adaptive Layout Detection**: Auto-handles raw gameplay, stream overlays, webcam setups
-- ✅ **Enhanced Sack Detection**: Multi-method validation with confidence scoring
-- 🔄 **Robust No Huddle Detection**: Visual indicators + temporal analysis + text recognition
-- 🔄 **Advanced Two-Minute Drill**: Play clock integration + game clock urgency + context awareness
-- ✅ **Variable Team Support**: Dynamic recognition of any team abbreviations
-- ✅ **Stream Platform Agnostic**: Works with Twitch, YouTube, raw recordings, OBS captures
-- ✅ **Hardware Auto-Detection**: Automatic tier classification and performance optimization
-
-**Tier-Specific Enhancements**:
-- **Standard Tier+**: Basic formation recognition (shotgun, under center, special teams)
-- **Premium Tier+**: Advanced formation analysis and real-time processing capabilities
-- **Professional Tier**: Experimental features and maximum performance optimization
-
-### P2 Features (Phase 1 - August 15, 2025)
-**Adaptive YOLO Integration** (Hardware-dependent feature rollout):
-- **Formation Recognition**: Deployed based on detected GPU capabilities
-  - Standard Tier: Basic formations (YOLO Nano)
-  - Premium Tier: Advanced formations (YOLO Medium)
-  - Professional Tier: Comprehensive formation analysis (YOLO Large)
-- **Hybrid Validation**: YOLO context + CV specifics for maximum accuracy
-- **Performance Monitoring**: Real-time adjustment based on actual system performance
-- **Smart Upgrade Prompts**: Transparent recommendations for hardware improvements
-
-### P3 Features (Phase 2 - November 2025)
-**Professional Analytics** (Scaled by hardware tier):
-- **Tendency Analysis**: Formation usage patterns (complexity scales with tier)
-- **Opponent Scouting**: Automated trend detection (depth varies by processing power)
-- **Performance Metrics**: Success rates and analytics (real-time for Premium+)
-- **Predictive Analytics**: Pattern recognition (advanced models for Professional tier)
-
-## 5. Implementation Strategy
-
-### Phase 0 Technical Priorities
-**Week 1 (June 7-14)**:
-1. **Complete Adaptive HUD System**: Finalize layout detection and region mapping
-2. **Enhanced No Huddle Detection**: Implement multi-method approach with confidence scoring
-3. **Two-Minute Drill Integration**: Add play clock detection and urgency analysis
-4. **Cross-Platform Testing**: Validate across different video sources and qualities
-5. **Performance Optimization**: Achieve 1+ FPS sustained analysis with 30 FPS playback
-
-**Production Readiness Checklist**:
-- [ ] Adaptive regions work across 10+ different stream setups
-- [ ] No Huddle detection achieves 80%+ accuracy on test footage
-- [ ] Two-Minute Drill detection integrates play clock and game context
-- [ ] Performance targets met on minimum hardware specifications
-- [ ] Pro player beta feedback incorporated
-
-### Phase 1 YOLO Integration
-**YOLO Training Dataset Requirements**:
-- **5,000+ labeled frames** across different formations and situations
-- **Diverse video sources**: Raw gameplay, streams, different overlays
-- **Situational coverage**: All game phases and special circumstances
-- **Quality variance**: Handle compression artifacts and resolution differences
-
-**YOLO Classes for Training**:
-```python
-FORMATION_CLASSES = [
-    'qb_under_center', 'qb_shotgun', 'qb_pistol',
-    'goal_line_offense', 'goal_line_defense',
-    'kickoff_formation', 'punt_formation', 'field_goal_formation',
-    'red_zone_formation', 'two_minute_drill_formation',
-    'no_huddle_setup', 'timeout_formation',
-    'defensive_3_4', 'defensive_4_3', 'nickel_defense', 'dime_defense'
-]
-```
-
-## 6. Risk Mitigation & Contingency Planning
-
-### Technical Risk Assessment with Hardware Adaptation
-**Hardware Compatibility Risk**:
-- *Risk*: Users with very old hardware unable to run application
-- *Mitigation*: CPU-only mode supports systems back to 2015, minimum 4GB RAM
-- *Success Criteria*: 95%+ compatibility across target hardware range
-
-**Performance Scaling Risk**:
-- *Risk*: Auto-adjustment may degrade experience too much on low-end hardware
-- *Mitigation*: Careful tier thresholds, transparent communication, graceful limits
-- *Monitoring*: Real-time performance telemetry and user satisfaction tracking
-
-**YOLO Training Efficiency Risk**:
-- *Risk*: Multiple model sizes increase training complexity and storage requirements
-- *Mitigation*: Phased rollout starting with single model, progressive enhancement
-- *Fallback*: Enhanced CV provides full functionality if YOLO deployment fails
-
-**Market Positioning Risk**:
-- *Risk*: Free tier cannibalizes paid subscriptions
-- *Mitigation*: Clear feature differentiation, upgrade motivation, time-limited free tier
-- *Strategy*: Focus on professional users who need advanced features and performance
-
-### Enhanced Competitive Strategy
-**Universal Compatibility Advantage**:
-1. **Inclusive Market Approach**: Only tool that works well on any hardware configuration
-2. **Progressive Enhancement**: Natural upgrade path creates user stickiness
-3. **Professional Validation**: High-end features attract pros, credibility helps entire market
-4. **Community Building**: Diverse user base creates stronger ecosystem and feedback loop
-
-## 7. Success Metrics & Validation
-
-### Enhanced Technical KPIs with Hardware Adaptation
-- **Universal Compatibility**: 100% of users can access core features regardless of hardware
-- **Tier-Specific Accuracy**:
-  - Core features (HUD/situations): 85%+ across all tiers
-  - Formation detection: 75%+ (Standard), 85%+ (Premium), 90%+ (Professional)
-- **Adaptive Performance**: Each tier meets its target FPS 95%+ of the time
-- **Hardware Detection Accuracy**: 98%+ correct tier classification
-- **Auto-Adjustment Success**: Performance recovery within 30 seconds of degradation
-- **Upgrade Conversion**: 15%+ of Standard users upgrade hardware within 6 months
-
-### User Experience Metrics with Inclusive Design
-- **Setup Success Rate**: >99% across all hardware configurations
-- **Feature Satisfaction**: 85%+ satisfaction even on Minimum tier
-- **Performance Transparency**: 90%+ users understand their tier and benefits
-- **Upgrade Interest**: 60%+ express interest in hardware improvements after using app
-- **Cross-Tier Retention**: 80%+ monthly active users across all tiers
-
-### Market Expansion Impact
-- **Addressable Market**: 80% larger due to minimum hardware support (vs GPU-only requirement)
-- **Professional Adoption**: 5+ verified pros using across different hardware tiers
-- **Community Growth**: 500+ Discord members with diverse hardware configurations
-- **Feature Accessibility**: 100% core feature availability regardless of budget constraints
-
-## 8. Financial Impact & ROI Analysis
-
-### Revised Investment Summary
-**Phase 0 (Enhanced)**: $1,250 (25 hours) - Production-ready adaptive system
-**Phase 1 (YOLO + Web)**: $1,500 (30 hours) - Hybrid detection + web platform
-**Phase 2 (Analytics)**: $1,000 (20 hours) - Advanced features and collaboration
-**Phase 3 (Enterprise)**: $1,250 (25 hours) - Scaling and enterprise features
-**Total Projected Investment**: $5,000 (100 hours) - **33% increase for enhanced capability**
-
-### Enhanced Value Proposition
-**Technical Differentiation ROI**:
-- **Adaptive processing** = 40% larger addressable market (all video sources)
-- **Hybrid detection** = 15% accuracy improvement = higher user retention
-- **Professional focus** = Premium pricing capability ($19.99+ vs $9.99 competitors)
-- **Desktop performance** = Competitive moat against web-only solutions
-
-### Revenue Projections (Updated)
-**Year 1 (2025)**: $40K - $80K revenue (enhanced value proposition)
-**Year 2 (2026)**: $150K - $350K revenue (professional market penetration)
-**Year 3 (2027)**: $350K - $700K revenue (enterprise and team adoption)
-**Year 4 (2028)**: $700K - $1.5M revenue (market leadership position)
-
-## 9. Implementation Roadmap
-
-### Immediate Next Steps with Universal Compatibility (Next 7 Days)
-1. **Complete Adaptive Performance System**: Finalize hardware detection and tier classification
-2. **Implement Universal Core Features**: Ensure No Huddle + Two-Minute work on all hardware tiers
-3. **Cross-Hardware Validation**: Test on minimum, standard, and premium configurations
-4. **Performance Calibration**: Establish accurate FPS targets for each tier
-5. **Professional Beta Deployment**: Deploy to pros with diverse hardware setups for feedback
-
-### Phase 1 Preparation with Tiered Approach (Next 45 Days)
-1. **Multi-Model YOLO Pipeline**: Establish Nano/Small/Medium/Large training workflow
-2. **Hardware-Aware Backend**: Design API endpoints that understand user hardware tiers
-3. **Adaptive Feature Deployment**: Plan progressive feature rollout based on capabilities
-4. **Performance Telemetry**: Implement real-time monitoring across all hardware tiers
-5. **Upgrade Funnel Design**: Create compelling but non-intrusive upgrade motivation system
-
-### Long-term Technical Evolution with Inclusive Growth
-1. **Hardware Partnership Strategy**: Collaborate with GPU manufacturers for optimization
-2. **Tier-Specific Optimization**: Custom algorithms for each hardware class
-3. **Progressive Enhancement**: Continuous feature upgrades that scale with hardware
-4. **Community-Driven Development**: Feature prioritization based on diverse user feedback
-5. **Accessibility Leadership**: Become the standard for inclusive gaming tool design
-
----
-
-## 10. Version History
-
-| Version | Date | Changes | Author |
-|---------|------|---------|--------|
-| 1.0 | May 15, 2025 | Initial PRD concept | Development Team |
-| 2.0 | June 1, 2025 | Added realistic targets and risk mitigation | Senior Developer |
-| 3.0 | June 7, 2025 | Django transition plan, PWA architecture | Development Team |
-| 4.0 | June 7, 2025 | Simplified hybrid approach, privacy-first design | Development Team |
-| **5.0** | **June 7, 2025** | **Enhanced technical implementation, adaptive detection system, YOLO integration strategy, professional-grade architecture** | **Senior Development Team** |
-
----
-
-## 11. Technical Appendix
-
-### Universal Compatibility Algorithm Overview
-```python
-class UniversalSpygateAI:
-    def __init__(self):
-        self.hardware_detector = HardwareDetector()
-        self.performance_tier = None
-        self.adaptive_processor = AdaptiveProcessor()
-        self.enhanced_cv = EnhancedHUDDetector()  # Works on ALL hardware
-        self.yolo_models = {}  # Loaded based on tier
-
-    def initialize_for_user(self):
-        # 1. Detect hardware automatically
-        self.performance_tier = self.hardware_detector.classify_system()
-
-        # 2. Load appropriate models for tier
-        self.load_tier_appropriate_models()
-
-        # 3. Configure processing parameters
-        self.configure_adaptive_processing()
-
-        # 4. Provide transparent feedback to user
-        self.show_tier_capabilities()
-
-    def analyze_gameplay(self, video_frame):
-        # Universal core features (work on ANY hardware)
-        core_analysis = self.enhanced_cv.analyze_frame(video_frame)
-
-        # Tier-specific enhancements (when hardware supports)
-        if self.performance_tier.supports_yolo:
-            enhanced_analysis = self.yolo_models[self.performance_tier].detect(video_frame)
-            return self.fuse_analysis(core_analysis, enhanced_analysis)
-
-        return core_analysis  # Still provides full value
-
-    def show_tier_capabilities(self):
-        # Transparent user communication
-        tier_info = {
-            'current_tier': self.performance_tier.name,
-            'available_features': self.performance_tier.feature_list,
-            'target_performance': f"{self.performance_tier.target_fps} FPS",
-            'upgrade_benefits': self.performance_tier.next_tier_benefits
+# Universal football concepts that work across all games
+universal_concepts = {
+    "formation_families": {
+        "trips_concept": {
+            "madden_25": "Shotgun Trips TE",
+            "cfb_25": "Spread Trips Right",
+            "madden_26": "TBD - auto-mapped on release"
         }
-        return tier_info
+    },
+    "strategic_concepts": {
+        "cover_2_defense": {
+            "core_principle": "2_safeties_deep_coverage",
+            "game_implementations": {
+                "madden_25": "Cover 2 Man/Zone",
+                "cfb_25": "Cover 2 Match",
+                "effectiveness_data": "cross_game_comparison"
+            }
+        }
+    }
+}
 ```
 
-### Adaptive Processing Framework
-- **Hardware-Agnostic Core**: Enhanced CV pipeline works universally
-- **Progressive Enhancement**: YOLO layers add value when hardware supports
-- **Intelligent Degradation**: Performance automatically scales down gracefully
-- **User Transparency**: Clear communication about current capabilities and upgrade benefits
-- **Future-Proof Design**: Easy addition of new tiers as hardware evolves
+##### **Cross-Game Intelligence Benefits**
+- **Day-1 Advantage**: Strategy migration for new game releases
+- **Historical Pattern Recognition**: Multi-year meta evolution analysis
+- **Cross-Platform Insights**: NFL concepts applied to college football
+- **Compound Data Value**: Intelligence improves with each game version
+
+#### **3.1 The Unified Adaptive Interface Philosophy**
+
+**Design Principle**: "One interface that naturally adapts to user engagement level through progressive disclosure"
+
+#### **3.2 P1: The Situational Analysis MVP**
+
+The primary goal of the initial launch is to deliver immediate value by solving the most time-consuming aspect of game review: finding specific situations. The MVP will focus exclusively on high-accuracy, HUD-based analysis to automatically tag and organize gameplay footage **with multi-game support from day one**.
+
+##### **A. Unified Analysis Engine (MVP Focus)**
+
+**The "Analyze Any Footage" Workflow**:
+
+1. **Effortless Video Import**: Users can get footage into the system via multiple paths:
+   - **Drag-and-Drop**: For existing video files on their computer
+   - **Built-in Recorder**: A simple, one-click gameplay recorder
+   - **API Integration**: Connect to Twitch/YouTube to pull recent VODs or clips
+   - **Folder Monitoring**: Point the app to a local folder for automatic import of new recordings
+
+2. **Smart Upload Context Detection with Game Auto-Detection**:
+
+```
+[User initiates import]
+
+Auto-detected: Madden NFL 25
+
+"What's this clip?" (One-click selection)
+├── 🎮 My gameplay     [Default selection]
+├── 👁️ Studying opponent
+├── 📚 Learning from pros
+```
+
+3. **Universal Situational Data Extraction (MVP)**:
+
+```
+Analysis Complete. Found 12 key situations.
+
+Clip 1 (01:32): 3rd & 8, 4th QTR, Down by 4
+├── 🏷️ [Click] Tag as "Clutch Moment"
+├── 📋 [Click] Add to "4th Quarter Comeback" Gameplan
+├── 🔄 [Click] Apply to CFB 25 Strategy
+├── ▶️ [Click] Play Clip
+└── 🗑️ [Click] Ignore
+
+Clip 2 (04:15): 1st & 10, Red Zone (Opp 15 YL)
+├── 🏷️ [Click] Tag as "Red Zone Offense"
+├── 📋 [Click] Add to "Red Zone" Gameplan
+├── 🔄 [Click] Cross-Game Compatible
+└── ▶️ [Click] Play Clip
+```
+
+*(Note: Advanced formation analysis like "Shotgun Bunch" is planned for Phase 2, but will include cross-game mapping).*
+
+##### **B. Solution Database & Gameplan Builder**
+
+**The Strategic Memory System for Tournament Play**:
+
+1. **Opponent-Specific Gameplans**: A key feature will be the ability to create gameplans tailored to a specific opponent's username, consolidating all analysis and effective counters for an upcoming tournament match **across multiple EA football games**.
+
+2. **Situation-Centric Library with Cross-Game Intelligence**:
+
+```
+Solutions/
+├── Opponent: ProPlayer123/
+│   ├── Tendencies on 3rd & Long (Madden 25)
+│   ├── Go-to Red Zone Plays (CFB 25)
+│   ├── Cross-Game Patterns
+│   └── Counters that worked
+├── By Situation/
+│   ├── 3rd & Long/
+│   │   ├── Madden 25 Solutions
+│   │   ├── CFB 25 Solutions
+│   │   └── Universal Concepts
+│   ├── Red Zone Offense/
+│       ├── Game-Specific Strategies
+│       └── Transferable Concepts
+```
+
+#### **3.4 Community Intelligence System (Phase 2 Feature)**
+
+**Value Proposition**: User uploads create anonymized community data that powers personalized recommendations for casual players, creating a competitive moat through network effects **across all supported EA football games**.
+
+#### **3.5 Advanced Features (P2/P3)**
+
+- Real-time formation usage trending **within the current MCS meta across games**
+- "Formation X usage increased 40% this week in Madden, stable in CFB" alerts
+- **Tournament Prep Mode**: A dedicated workflow to analyze 3-5 gameplay files from a single opponent to generate a pre-match scouting report
+- **Cross-Game Strategy Migration**: Automatic strategy porting between EA football titles
+- Pro player strategy adoption tracking across games
+
+### **4. Technical Architecture**
+
+#### **4.1 Initial Data Seeding & Day-1 Value**
+
+To ensure SpygateAI provides immediate value, the system's initial intelligence will be built on a "Genesis Database" **with multi-game annotation**.
+
+- **Manual Annotation**: As confirmed, this process will involve the manual annotation of a large library of existing Madden **and College Football** clips. The initial focus will be on tagging clips with their game situation (down, distance, score, etc.) to train and validate the HUD analysis models **across both games**.
+- **Cross-Game Validation**: Universal concepts will be validated across both Madden 25 and CFB 25 to ensure transferability.
+- **Handling Data Scarcity**: We acknowledge that clips for rare situations (e.g., 2-point conversions, Hail Marys) will be limited. This will be addressed by focusing initial model training on common, high-impact situations (e.g., 3rd downs, red zone plays) and by being transparent with the user about the confidence level of analysis on rare events (see Risk Mitigation 8.2).
+
+#### **4.2 Adaptive Performance System**
+
+**Hardware Tier Auto-Detection** ensuring universal compatibility **across all supported games**:
+
+| Tier | Hardware Requirements | Pro Features | Learning Features | Supported Games | Target Performance |
+|------|----------------------|--------------|-------------------|-----------------|-------------------|
+| **Minimum** | 8GB RAM, 4-core CPU, Integrated GPU | Core analysis, strategy database | Full learning mode, simple explanations | All games, basic detection | 0.3-0.5 FPS analysis |
+| **Standard** | 12GB+ RAM, GTX 1650+, 4-6 core CPU | + Formation detection | + Visual formation guides | All games, enhanced detection | 1.0 FPS analysis |
+| **Premium** | 16GB+ RAM, RTX 3060+, 6+ core CPU | + Advanced formations, real-time | + Pro strategy learning | All games, full analysis | 1.5-2.0 FPS analysis |
+| **Professional** | 32GB+ RAM, RTX 4080+, 8+ core CPU | + Cross-game intelligence | + Historical meta analysis | All games, experimental features | 2.0+ FPS analysis |
+
+#### **4.3 Universal Detection Pipeline**
+
+```python
+def analyze_any_football_game(video_input):
+    # 1. Auto-detect game version
+    game_version = detect_game_type(video_input)  # madden_25, cfb_25, madden_26
+
+    # 2. Hardware-adapted processing
+    performance_tier = detect_hardware_capabilities()
+
+    # 3. Universal concept extraction
+    football_concepts = extract_universal_concepts(video_input)
+
+    # 4. Game-specific mapping
+    game_analysis = map_to_game_context(football_concepts, game_version)
+
+    # 5. Cross-game intelligence application
+    enhanced_insights = apply_historical_intelligence(game_analysis, all_games_data)
+
+    return create_intelligent_recommendations(enhanced_insights)
+```
+
+#### **4.4 Technology Stack**
+
+- **Desktop**: PyQt6 with adaptive video processing
+- **AI/ML**: YOLOv10+ (or latest generation) + Enhanced OpenCV pipeline **with game-agnostic training**
+- **Database**: SQLite for local storage, PostgreSQL for cloud sync **with cross-game schema**
+- **Video Processing**: FFmpeg with GPU acceleration support
+- **Cloud**: Optional AWS integration for advanced processing
+
+#### **4.5 AI/ML Task Delegation: YOLO vs. OpenCV**
+
+To achieve our analytical goals, YOLO and OpenCV will perform distinct but complementary tasks. They work as a team: YOLO is the robust "spotter" that finds where to look, and OpenCV is the efficient "analyst" that interprets what's there.
+
+**YOLO's Role: The 'What & Where' Detector** YOLO's core responsibility is high-speed, robust object detection. It is used for tasks where the object's appearance or position might vary.
+
+- **Primary Player Detection**: Identify the location (via bounding boxes) of all 22 players on the field. This is its main task, as players are constantly moving and changing shape.
+- **Initial HUD Localization**: On the first frame of a clip or when the scene changes (e.g., after a replay), YOLO will robustly find the *regions* of interest on the screen, such as the score bug and the play-art box. It is resilient to changes from game patches or different modes.
+- **Game Detection**: Identify which EA football game is being analyzed for proper context mapping.
+
+**OpenCV's Role: The 'How & Why' Analyzer** OpenCV is a versatile computer vision library that will execute a series of targeted, highly efficient tasks, often using the locations provided by YOLO.
+
+- **Preprocessing**: Before analysis, OpenCV will handle tasks like resizing frames and converting color spaces to optimize them for the YOLO model.
+- **Efficient HUD Analysis (Post-YOLO)**: Instead of re-running YOLO on every frame, we use OpenCV for continuous, lightweight analysis of the static HUD regions that YOLO found.
+  - **HUD Data Extraction (OCR)**: On every frame, OpenCV will run fast Optical Character Recognition (OCR) *only on the small score bug region* to read the game clock, score, and down.
+  - **Play Art Identification (Template Matching)**: Similarly, it will use efficient Template Matching *only on the play-art region* to identify the specific play being run.
+- **Contextual Player Analysis**:
+  - **Formation Recognition**: After YOLO returns the coordinates of all players, OpenCV will analyze their *spatial relationships* and geometry to classify the offensive and defensive formations.
+  - **Player Tracking & Route Analysis**: Using the bounding boxes from YOLO as a starting point, OpenCV algorithms will follow players from frame to frame to identify routes and play concepts.
+
+#### **4.6 Non-Functional Requirements**
+
+Beyond the core features, the system must adhere to the following principles:
+
+- **Security:** All user data, especially for cloud-synced accounts, must be encrypted both in transit (TLS 1.2+) and at rest (AES-256). User authentication will be handled via secure, standard protocols (e.g., OAuth 2.0).
+- **Reliability:** The core analysis engine must have a success rate of over 99%. In the event of a processing failure, the application must fail gracefully, notify the user with a clear error message, and not lose the original video file.
+- **Scalability:** The cloud infrastructure (for Phase 2+ features) will be designed on a serverless architecture (e.g., AWS Lambda, S3, PostgreSQL Aurora Serverless) to automatically scale with user load, ensuring consistent performance for 100 users or 100,000 users.
+
+**For the detailed mapping of in-game data to the variables used in this PRD, please see Appendix A: Technical Data Mapping.**
+
+### **5. User Experience Design**
+
+#### **5.1 Critical User Journeys**
+
+##### **Journey 1: Multi-Game Strategy Migration**
+
+```
+User Scenario: "Madden 26 just released, I want to use my Madden 25 strategies"
+│
+├── SpygateAI: "Analyzing your Madden 25 gameplan for Madden 26 compatibility..."
+└── Output: "Day-1 gameplan ready with 12 transferred strategies"
+```
+
+##### **Journey 2: Cross-Game Intelligence**
+
+```
+User Scenario: "I want to use NFL strategies in College Football 25"
+│
+├── Upload College Football 25 gameplay
+└── Output: "NFL-informed college strategy with game-specific adjustments"
+```
+
+##### **Journey 3: Opponent Preparation**
+
+```
+User Action: "I'm playing ProPlayer123 tomorrow"
+│
+├── SpygateAI: "Found 3 recent games, analyzing..."
+└── Output: "Ready to practice these 5 key counters"
+```
+
+##### **Journey 4: New Player Improvement**
+
+```
+User Scenario: "I keep losing to my friend who always runs the same plays"
+│
+├── Upload recent loss footage
+└── Track improvement: "You stopped 60% more runs last game!"
+```
+
+##### **Journey 5: First-Time User Onboarding**
+
+```
+User Scenario: "I just downloaded SpygateAI to get better. What do I do now?"
+│
+├── App Launch: Clean interface with a clear call to action.
+└── Output: User immediately understands the core value proposition without needing to play another game first.
+```
 
 ---
 
-*This enhanced PRD represents a production-ready technical implementation strategy that leverages both cutting-edge computer vision and proven software engineering practices to deliver a market-leading Madden analysis tool. The adaptive architecture ensures compatibility across all video sources while maintaining the performance and accuracy demanded by professional players.*
+### **6. Success Metrics & Validation**
+
+#### **6.1 User Success Metrics by Type**
+
+**Pro Player Success Metrics**:
+- **Time Savings**: 70% reduction in opponent prep time
+- **Win Rate Improvement**: Measurable increase in competitive success
+- **Cross-Game Value**: Successful strategy migration between EA football games
+
+**Casual Player Success Metrics**:
+- **Skill Improvement**: 30%+ win rate increase against similar opponents
+- **Understanding**: "I finally understand why I was losing"
+- **Multi-Game Competency**: Success across multiple EA football titles
+
+#### **6.2 Technical Performance Metrics**
+
+**Phase 1 (MVP) Metrics**:
+- **HUD Detection Accuracy**: 95%+ accuracy for situational data (down, distance, clock, score) **across Madden 25 and CFB 25**
+- **Game Detection Accuracy**: 99%+ accuracy in identifying which EA football game is being analyzed
+- **Processing Speed**: Meet tier-specific FPS targets for HUD analysis
+- **User Adoption**: 50+ active users using the situational tagging feature
+
+**Phase 2 Metrics**:
+- **Formation Detection Accuracy**: 85%+ formation recognition across all tiers **and games**
+- **Cross-Game Mapping Accuracy**: 90%+ accuracy in translating concepts between games
+- **Retention**: 80%+ of Phase 1 users adopt formation analysis features
+
+---
+
+### **7. Development Roadmap (Revised for Multi-Game)**
+
+This roadmap is revised to prioritize a high-value, low-risk MVP first **with multi-game architecture from day one**.
+
+#### **Phase 0: Multi-Game Foundation (June 7-14, 2025)**
+**Goal**: Establish universal architecture supporting multiple EA football games
+**Investment**: 45 hours ($2,250)
+**Deliverables**:
+- ✅ Game-agnostic data architecture
+- ✅ Adaptive HUD detection (Madden 25 primary, CFB 25 compatible)
+- ✅ Universal game detection pipeline
+- ✅ Cross-game strategy mapping framework
+- ✅ Multi-game Genesis Database annotation tools
+
+#### **Phase 1: Situational Analysis MVP (Current Focus)**
+**Goal**: Launch a tool that saves users time by automatically finding and organizing key game situations **across EA football games**
+**Investment**: 40 hours ($2,000)
+**Deliverables**:
+- ✅ High-accuracy **HUD Analysis Pipeline** (OpenCV for OCR/Template Matching) **with multi-game support**
+- ✅ Core application infrastructure: video import, timeline UI, clip bookmarking
+- ✅ **Situational Gameplan Builder** with cross-game strategy organization
+- ✅ Manual annotation tools for building the Genesis Database **across games**
+- ❌ **Deferred**: On-field player tracking and formation recognition AI
+
+#### **Phase 2: Advanced Formation Intelligence**
+**Goal**: Introduce AI-driven formation recognition to provide deeper strategic insights **with cross-game mapping**
+**Investment**: 45 hours ($2,250)
+**Deliverables**:
+- ✅ **YOLOv10+ On-Field Player Detection** pipeline **with game-agnostic training**
+- ✅ OpenCV logic for formation classification based on player positions
+- ✅ Integration of formation data into the UI, analysis, and recommendations
+- ✅ **Cross-game intelligence and strategy migration tools**
+
+#### **Phase 3: Predictive & Community Analytics**
+**Goal**: Leverage aggregated data to provide predictive insights and build a community-powered strategic moat **across all EA football games**
+**Investment**: 30 hours ($1,500)
+**Deliverables**:
+- ✅ Opt-in community intelligence system **with cross-game analytics**
+- ✅ Historical meta-evolution analysis **across game versions**
+- ✅ Predictive insights for new game releases
+
+---
+
+### **8. Risk Mitigation**
+
+#### **8.1 User Adoption Risks**
+**Risk**: Pro players resistant to new tools
+**Mitigation**: Beta program with respected pros, proven time savings demonstration
+
+#### **8.2 Technical Risks**
+**Risk**: Formation detection accuracy insufficient (Moved to Phase 2)
+**Mitigation**: Hybrid CV + YOLO approach, continuous model improvement.
+
+**Risk**: Performance issues on lower-end hardware
+**Mitigation**: Adaptive tier system ensures functionality. Phase 1's focus on HUD analysis is less computationally intensive, reducing this risk for the MVP.
+
+**Risk**: **Multi-Game Complexity**
+**Mitigation**: Universal architecture designed from day one, incremental game addition, shared concept validation.
+
+**Risk (NEW): Data Scarcity for Rare Events**
+- **Risk**: The accuracy of analysis for infrequent situations (e.g., 2-point conversions, specific trick plays) may be low due to a lack of sufficient training data from annotated clips.
+- **Mitigation**:
+  1. **Prioritization**: Focus model development and training on the most common and strategically important situations (3rd downs, red zone, 2-minute drill) first.
+  2. **UI Transparency**: The interface will clearly display a confidence score for its analysis. For rare events, it may state "Experimental analysis due to limited data" to manage user expectations.
+  3. **Rule-Based Fallbacks**: For events too rare for a reliable AI model, we can use simpler, rule-based heuristics to provide general strategic advice.
+
+---
+
+### **9. Financial Projections**
+
+#### **9.1 Multi-Game Revenue Model**
+**Tier-Based Subscription with Cross-Game Value**:
+
+**Free Tier** (Entry point): Basic situational analysis for aspiring players **in one chosen game**.
+
+**Premium Tier** ($19.99/month - For the Serious Grinder): Unlimited analysis, gameplan builder, and opponent analysis tools for players climbing the MCS ladder **across all supported EA football games**.
+
+**Professional Tier** ($39.99/month - For the MCS Pro): All features plus advanced analytics, historical meta-data, priority access, and **cross-game strategy migration**. The investment is minimal compared to the potential winnings in the MCS and other cash prize tournaments, making this a clear value proposition.
+
+#### **9.2 Updated Investment Summary**
+
+**Core Development** (Phases 0-1):
+- **Phase 0**: $2,250 (45 hours) - Multi-game foundation
+- **Phase 1**: $2,000 (40 hours) - Multi-game MVP
+- **Core Platform Total**: $4,250 (85 hours)
+
+**Advanced Features** (Phase 2-3):
+- **Phase 2**: $2,250 (45 hours) - Cross-game formation intelligence
+- **Phase 3**: $1,500 (30 hours) - Predictive analytics across games
+- **Advanced Total**: $3,750 (75 hours)
+
+**Total Investment**: $8,000 (160 hours) - includes full multi-game architecture
+
+---
+
+### **10. Conclusion**
+
+SpygateAI represents the first **multi-game football intelligence platform** built specifically for competitive players across EA Sports titles. By solving core pain points of strategy development and opponent preparation while creating **transferable intelligence across game versions**, SpygateAI transforms from a single-game tool into an essential long-term competitive advantage.
+
+**Key Differentiators**:
+- **Universal Football Intelligence**: Strategies transfer across Madden NFL, College Football, and future releases
+- **Day-1 Advantage**: Immediate competitive advantage for every new game release
+- **Cross-Game Strategy Migration**: Never lose strategic knowledge when games update
+- **Compound Intelligence Value**: Each game analysis improves insights across all games
+
+---
+
+### **11. Go-to-Market Strategy**
+
+Our launch strategy will be laser-focused on the competitive ecosystem to maximize impact and credibility **across EA football games**.
+
+1. **Phase 1 (MVP Launch - The MCS Beachhead):**
+   - **Closed Beta**: Seed the initial user base with a hand-picked group of 10-15 trusted MCS competitors and streamers. Their feedback will be crucial, and their testimonials and on-stream usage will serve as powerful social proof.
+   - **Content Marketing**: Create high-quality YouTube content titled "How to Prep for MCS with SpygateAI" and "Analyzing Your Ladder Opponent in 5 Minutes **Across All EA Football Games**."
+
+2. **Phase 2 (Growth & Community Dominance):**
+   - **Tournament Partnerships**: Form official partnerships with third-party tournament organizers like Players Lounge, offering SpygateAI as a perk for their premium members or integrating it into their broadcasts.
+   - **Community Hub**: Establish the official Discord as *the* place for data-driven strategic discussion, separate from more casual communities. Host "Strategy Sessions" with pros **covering multiple EA football games**.
+
+3. **Phase 3 (Scaling):**
+   - **Hyper-Targeted Advertising**: Run ad campaigns during major MCS broadcast events on Twitch and YouTube, targeting viewers of official Madden streams.
+   - **Pro Affiliate Program**: Create a lucrative affiliate program for MCS-level pros who use the tool to create content, giving them a new revenue stream and driving adoption.
+
+---
+
+### **Appendix A: Technical Data Mapping**
+
+| PRD Variable / Concept                      | Data Source                     | Extraction Method / Definition                                                                                             | Example Value                                |
+| ------------------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `clip_duration`                             | Video File Metadata             | Use FFmpeg/FFprobe to read the duration from the video file's header data upon import.                                     | `135` (seconds)                              |
+| `Formation Detected` ('Shotgun Bunch')      | AI Vision Pipeline              | YOLO detects player bounding boxes. OpenCV analyzes the spatial geometry and counts players on each side of the center.    | `"Shotgun Bunch"`                            |
+| `Game Situation` ('3rd & Long')             | HUD Analysis (OCR)              | OpenCV performs OCR on the down & distance text box identified by YOLO. `Down == 3`, `Distance >= 7`.                       | `"3rd & 12"`                                 |
+| `Play Result` ('Struggle' / 'Success')      | Combined Field & HUD Analysis   | Track ball carrier's starting and ending yard line. Compare `yards_gained` to `Distance` from HUD. `Struggle` if unsuccessful. | `Struggle`                                   |
+| `Solution Success Rate` ('73%')             | Aggregated Anonymous Database   | `(SUM(successful_plays) / COUNT(total_plays)) * 100` for a specific counter-play vs a specific formation.                   | `73.4`                                       |
+| `user.clicks_for_details` (in `user_behavior`) | Local User Profile Database     | An event listener on UI buttons (e.g., "[Click] Why it failed") increments a counter in the user's local SQLite database.   | `true` or `8` (count)                        |
+| `user.saves_strategies_frequently`          | Local User Profile Database     | A derived metric. `COUNT(strategies WHERE user_id = X)` is checked against a predefined threshold.                           | `true`                                       |
+| `analysis_result` (object)                  | AI Analysis Engine              | A structured object/dictionary containing the output of a clip analysis.                                                   | `{ formation: "...", situation: "...", ... }` |
+| `Game Version` ('madden_25')                | HUD Analysis                    | Analyze the unique visual elements of the score bug or menu logos to classify the game title and version.                  | `"madden_25"` or `"cfb_25"`                  |

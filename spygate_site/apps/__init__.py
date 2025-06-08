@@ -1,0 +1,3 @@
+"""
+SpygateAI Django apps package.
+""" 

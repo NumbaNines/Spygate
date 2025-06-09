@@ -15,7 +15,7 @@ from torch.optim.lr_scheduler import OneCycleLR
 from ultralytics import YOLO
 
 from ..core.hardware import HardwareDetector, HardwareTier
-from .yolo11_model import CustomYOLO11
+from .yolov8_model import EnhancedYOLOv8 as CustomYOLO11  # Using YOLOv8 as specified in PRD
 
 logger = logging.getLogger(__name__)
 

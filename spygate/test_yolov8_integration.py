@@ -43,7 +43,7 @@ def test_basic_imports():
         return False
 
     try:
-        from ml.yolo8_model import UI_CLASSES
+        from ml.yolov8_model import UI_CLASSES
 
         logger.info("✅ Enhanced YOLOv8 model components available")
         logger.info(f"✅ UI Classes defined: {len(UI_CLASSES)} classes")

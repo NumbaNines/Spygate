@@ -37,7 +37,7 @@ except ImportError:
     logger.warning("PyTorch not available - CPU fallback mode")
 
 from spygate.core.hardware import HardwareDetector, HardwareTier
-from spygate.ml.yolo8_model import (
+from spygate.ml.yolov8_model import (
     MODEL_CONFIGS,
     EnhancedYOLOv8,
     OptimizationConfig,

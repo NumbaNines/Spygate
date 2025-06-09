@@ -71,7 +71,7 @@ Proposed: Hybrid Desktop-Web
 # services/yolo_service.py
 from abc import ABC, abstractmethod
 from typing import Union, Dict, Any
-from ml.yolo8_model import EnhancedYOLOv8, DetectionResult
+from ml.yolov8_model import EnhancedYOLOv8, DetectionResult
 
 class YOLOServiceInterface(ABC):
     @abstractmethod

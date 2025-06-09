@@ -25,10 +25,7 @@ class TestDocumentationGenerator:
 
         # Set up Jinja2 environment
         self.template_dir = Path(__file__).parent / "templates"
-        self.env = Environment(
-            loader=FileSystemLoader(str(self.template_dir)),
-            autoescape=True
-        )
+        self.env = Environment(loader=FileSystemLoader(str(self.template_dir)), autoescape=True)
 
         # Create necessary directories
         (self.output_dir / "html").mkdir(exist_ok=True)

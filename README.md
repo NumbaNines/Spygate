@@ -56,7 +56,7 @@ See LICENSE file for details.
 
 ## Overview
 
-Spygate is a Python-based desktop application that uses advanced computer vision (YOLO11) and machine learning to analyze football gameplay, starting with Madden NFL 25. It helps competitive players improve by automatically detecting, categorizing, and organizing game situations for analysis.
+Spygate is a Python-based desktop application that uses advanced computer vision (YOLOv8 ultralytics) and machine learning to analyze football gameplay, starting with Madden NFL 25. It helps competitive players improve by automatically detecting, categorizing, and organizing game situations for analysis.
 
 ## Features
 
@@ -169,7 +169,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- YOLO11 for object detection
+- YOLOv8 (ultralytics) for object detection
 - OpenCV for video processing
 - PyQt6 for the GUI framework
 - The Madden NFL community for support and feedback

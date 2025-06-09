@@ -25,7 +25,7 @@ except ImportError:
 
 from ..core.hardware import HardwareDetector
 from ..core.optimizer import TierOptimizer
-from .yolo8_model import UI_CLASSES, EnhancedYOLOv8, OptimizationConfig
+from .yolov8_model import UI_CLASSES, EnhancedYOLOv8, OptimizationConfig
 
 logger = logging.getLogger(__name__)
 

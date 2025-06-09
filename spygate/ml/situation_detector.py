@@ -846,10 +846,16 @@ class SituationDetector:
         if not yards_to_goal or not territory_indicator:
             return "unknown"
         
-        # Combine yards_to_goal and territory_indicator
-        if territory_indicator == "▲":
-            return f"OPP {yards_to_goal}"
-        elif territory_indicator == "▼":
-            return f"OWN {yards_to_goal}"
+        # Handle numeric yards_to_goal (should be integer)
+        try:
+            yards = int(str(yards_to_goal))
+        except (ValueError, TypeError):
+            return "unknown"
+        
+        # Combine yards_to_goal and territory_indicator 
+        if territory_indicator == "▲" or "OPP" in str(territory_indicator).upper():
+            return f"OPP {yards}"
+        elif territory_indicator == "▼" or "OWN" in str(territory_indicator).upper():
+            return f"OWN {yards}"
         else:
             return "unknown"

@@ -339,10 +339,20 @@ class HUDDetector:
                 if play_clock:
                     game_state["play_clock"] = play_clock
 
+            elif element_type == "yards_to_goal" and text:
+                yards = self._parse_yards_to_goal(text)
+                if yards:
+                    game_state["yards_to_goal"] = yards
+
             elif element_type == "field_position" and text:
                 yard_line = self._parse_field_position(text)
                 if yard_line:
                     game_state["yard_line"] = yard_line
+
+            elif element_type == "territory_indicator" and text:
+                territory = self._parse_territory_indicator(text)
+                if territory:
+                    game_state["territory_indicator"] = territory
 
         # Calculate overall confidence
         if detection_count > 0:
@@ -402,14 +412,15 @@ class HUDDetector:
         return None
 
     def _parse_play_clock(self, text: str) -> Optional[int]:
-        """Parse play clock from text."""
+        """Parse play clock from text - expects format with colon like ':23', ':15'."""
         import re
 
-        # Look for single or double digit numbers
-        numbers = re.findall(r"\d+", text)
+        # Look for colon-prefixed numbers (play clock format)
+        pattern = r":(\d{1,2})"
+        match = re.search(pattern, text)
 
-        if numbers:
-            play_clock = int(numbers[0])
+        if match:
+            play_clock = int(match.group(1))
             # Play clock is typically 0-40
             if 0 <= play_clock <= 40:
                 return play_clock
@@ -428,5 +439,37 @@ class HUDDetector:
             side = match.group(1).upper()
             yard_line = int(match.group(2))
             return f"{side} {yard_line}"
+
+        return None
+
+    def _parse_yards_to_goal(self, text: str) -> Optional[int]:
+        """Parse yards to goal from text."""
+        import re
+
+        # Look for numeric patterns
+        numbers = re.findall(r"\d+", text)
+
+        if numbers:
+            return int(numbers[0])
+
+        return None
+
+    def _parse_territory_indicator(self, text: str) -> Optional[str]:
+        """Parse territory indicator from text - looks for triangle symbols or OWN/OPP."""
+        import re
+
+        # Look for triangle symbols first
+        if "▲" in text:
+            return "▲"  # Opponent territory
+        elif "▼" in text:
+            return "▼"  # Own territory
+        
+        # Fallback to text patterns: "OWN", "OPP"
+        pattern = r"(OWN|OPP)"
+        match = re.search(pattern, text, re.IGNORECASE)
+
+        if match:
+            territory = match.group(1).upper()
+            return "▲" if territory == "OPP" else "▼"
 
         return None

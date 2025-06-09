@@ -743,7 +743,7 @@ class SituationDetector:
             return None
             
         try:
-            # Handle special situations
+            # Handle special situations (these would come from other field overlays, not yards_to_goal)
             if "2-PT" in yard_line or "XP" in yard_line:
                 return {
                     "zone": "conversion_attempt",

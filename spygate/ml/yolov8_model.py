@@ -62,7 +62,6 @@ UI_CLASSES = [
     "field_position",  # Yard line or special situation marker (e.g., "2-PT")
     "possession_indicator",  # Triangle on LEFT side between team abbreviations (shows ball possession)
     "territory_indicator",  # Triangle on FAR RIGHT side (▲ = opponent territory, ▼ = own territory)
-    "game_state_indicator",  # Visual elements showing pre-snap, during play, or post-play state
 ]
 
 # Enhanced hardware-tier specific model configurations with optimization features
@@ -355,11 +354,10 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
 
         try:
             # Model compilation optimization
-            if self.config.get("compile", False) and hasattr(torch, "compile"):
-                if self.device == "cuda":
-                    self.model = torch.compile(self.model)
-                    optimizations_applied.append("torch_compile")
-                    logger.info("Applied torch.compile optimization")
+            if self.config.get("compile", False) and hasattr(torch, "compile") and self.device == "cuda":
+                self.model = torch.compile(self.model)
+                optimizations_applied.append("torch_compile")
+                logger.info("Applied torch.compile optimization")
 
             # Half precision optimization
             if self.config.get("half", False) and self.device == "cuda":
@@ -523,7 +521,7 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
                     # Process in optimal batch sizes
                     results = []
                     for i in range(0, len(source), self.optimal_batch_size):
-                        batch = source[i : i + self.optimal_batch_size]
+                        batch = source[i:i + self.optimal_batch_size]
                         batch_results = super().predict(
                             source=batch,
                             conf=conf,
@@ -794,7 +792,7 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
             "model_config": self.config.copy(),
         }
 
-        for iteration in range(iterations):
+        for _iteration in range(iterations):
             iteration_times = []
             iteration_memory = []
             iteration_detections = []

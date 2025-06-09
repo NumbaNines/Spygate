@@ -443,14 +443,18 @@ class HUDDetector:
         return None
 
     def _parse_yards_to_goal(self, text: str) -> Optional[int]:
-        """Parse yards to goal from text."""
+        """Parse yards to goal from text - expects pure numeric values like '21', '26', '3'."""
         import re
 
-        # Look for numeric patterns
-        numbers = re.findall(r"\d+", text)
+        # Look for standalone numbers (yards to goal)
+        pattern = r"\b(\d{1,2})\b"
+        match = re.search(pattern, text)
 
-        if numbers:
-            return int(numbers[0])
+        if match:
+            yards = int(match.group(1))
+            # Yards to goal should be 1-99 (0 would be touchdown)
+            if 1 <= yards <= 99:
+                return yards
 
         return None
 

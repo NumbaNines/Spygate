@@ -517,39 +517,98 @@ class SituationDetector:
 
     def _detect_game_state(self, hud_info: dict[str, Any]) -> Optional[str]:
         """
-        Detect current game state based on HUD elements.
+        Detect current game state with multiple fallback methods.
+        Handles cases where HUD elements or overlays might be missing.
         
         Returns:
             str: One of 'pre_snap', 'during_play', 'post_play', or None
         """
+        # Method 1: Play clock visibility (primary indicator)
         play_clock = hud_info.get("play_clock")
-        
-        # Primary indicator: Play clock visibility
         if play_clock is not None:
-            # Play clock visible = pre-snap
             try:
-                # Additional validation: play clock should be counting down
+                # Play clock visible = pre-snap
                 play_clock_value = int(str(play_clock).replace(":", ""))
                 if 1 <= play_clock_value <= 40:  # Valid play clock range
                     return "pre_snap"
             except (ValueError, TypeError):
-                # If we can't parse the play clock, still assume pre-snap if visible
+                # If we can't parse but it exists, still likely pre-snap
                 return "pre_snap"
-        else:
-            # Play clock not visible - could be during play or post-play
-            # We need additional logic to distinguish these states
-            
-            # Check for other indicators
-            down = hud_info.get("down")
-            distance = hud_info.get("distance")
-            
-            # If we have down/distance info, likely during active play
-            if down is not None and distance is not None:
-                return "during_play"
-            else:
-                # Limited info available, could be post-play or transition
-                return "post_play"
         
+        # Method 2: Check for explicit game state overlays
+        explicit_state = self._detect_explicit_game_state_overlays(hud_info)
+        if explicit_state:
+            return explicit_state
+            
+        # Method 3: Motion-based detection (fallback for clips without HUD)
+        motion_state = self._detect_game_state_from_motion(hud_info)
+        if motion_state:
+            return motion_state
+            
+        # Method 4: Formation-based detection
+        formation_state = self._detect_game_state_from_formation(hud_info)
+        if formation_state:
+            return formation_state
+            
+        # Method 5: Context clues from available HUD elements
+        context_state = self._detect_game_state_from_context(hud_info)
+        if context_state:
+            return context_state
+            
+        return None
+
+    def _detect_explicit_game_state_overlays(self, hud_info: dict[str, Any]) -> Optional[str]:
+        """Detect explicit game state from text overlays like 'Pre-play'."""
+        # Check for explicit text overlays (when available)
+        overlays = hud_info.get("text_overlays", [])
+        if isinstance(overlays, list):
+            overlay_text = " ".join(str(overlay).lower() for overlay in overlays)
+        else:
+            overlay_text = str(overlays).lower()
+            
+        if "pre-play" in overlay_text or "pre play" in overlay_text:
+            return "pre_snap"
+        elif "during play" in overlay_text or "live" in overlay_text:
+            return "during_play"
+        elif "post-play" in overlay_text or "after play" in overlay_text:
+            return "post_play"
+            
+        return None
+
+    def _detect_game_state_from_motion(self, hud_info: dict[str, Any]) -> Optional[str]:
+        """Detect game state based on motion patterns (for clips without HUD)."""
+        # This would analyze motion vectors, but for now return None
+        # In full implementation, this would:
+        # - Analyze player movement patterns
+        # - Detect ball movement
+        # - Identify formation changes
+        return None
+
+    def _detect_game_state_from_formation(self, hud_info: dict[str, Any]) -> Optional[str]:
+        """Detect game state from player formations and positioning."""
+        # This would analyze player positions, but for now return None
+        # In full implementation, this would:
+        # - Detect set formations (pre-snap)
+        # - Identify players in motion (during play)
+        # - Recognize celebration/huddle patterns (post-play)
+        return None
+
+    def _detect_game_state_from_context(self, hud_info: dict[str, Any]) -> Optional[str]:
+        """Use context clues from available HUD elements to infer game state."""
+        down = hud_info.get("down")
+        distance = hud_info.get("distance")
+        game_clock = hud_info.get("game_clock")
+        
+        # If we have detailed down/distance info, likely pre-snap or post-play
+        if down is not None and distance is not None:
+            # Check if this looks like a fresh situation (likely pre-snap)
+            if isinstance(distance, int) and distance > 0:
+                return "pre_snap"  # Fresh down with yards to go
+        
+        # If no specific indicators but we have game clock, assume during play
+        if game_clock and not any([down, distance]):
+            return "during_play"
+            
         return None
 
     def _analyze_motion_situations(
@@ -859,3 +918,233 @@ class SituationDetector:
             return f"OWN {yards}"
         else:
             return "unknown"
+
+    def detect_situation_from_partial_clip(
+        self, 
+        hud_info: dict[str, Any], 
+        frame_number: int = 0, 
+        timestamp: float = 0.0
+    ) -> dict[str, Any]:
+        """
+        Detect game situation from potentially incomplete clips.
+        Handles cases where HUD elements might be missing or partially visible.
+        
+        Args:
+            hud_info: Detected HUD elements (may be incomplete)
+            frame_number: Frame number in the clip
+            timestamp: Timestamp in the clip
+            
+        Returns:
+            dict: Situation analysis with confidence levels and fallback methods used
+        """
+        situation_result = {
+            "detected_elements": {},
+            "missing_elements": [],
+            "confidence": 0.0,
+            "fallback_methods_used": [],
+            "game_state": None,
+            "field_position": None,
+            "down_distance": None,
+            "time_context": None,
+            "strategic_context": None
+        }
+        
+        # Assess what HUD elements are available
+        available_elements = self._assess_available_elements(hud_info)
+        situation_result["detected_elements"] = available_elements["found"]
+        situation_result["missing_elements"] = available_elements["missing"]
+        
+        # Base confidence on available elements
+        base_confidence = len(available_elements["found"]) / len(UI_CLASSES) * 0.8
+        
+        # Game State Detection (with fallbacks)
+        game_state = self._detect_game_state(hud_info)
+        if game_state:
+            situation_result["game_state"] = game_state
+            base_confidence += 0.1
+        else:
+            # Try alternative methods for clips without clear indicators
+            game_state = self._infer_game_state_from_clip_characteristics(hud_info)
+            if game_state:
+                situation_result["game_state"] = game_state
+                situation_result["fallback_methods_used"].append("clip_characteristics")
+        
+        # Field Position (with fallbacks)
+        field_position = self._extract_field_position_with_fallbacks(hud_info)
+        if field_position:
+            situation_result["field_position"] = field_position
+            base_confidence += 0.1
+        
+        # Down and Distance (with fallbacks) 
+        down_distance = self._extract_down_distance_with_fallbacks(hud_info)
+        if down_distance:
+            situation_result["down_distance"] = down_distance
+            base_confidence += 0.1
+            
+        # Time Context
+        time_context = self._extract_time_context(hud_info)
+        if time_context:
+            situation_result["time_context"] = time_context
+            
+        # Strategic Context (even with limited info)
+        strategic_context = self._analyze_strategic_context_partial(
+            situation_result["field_position"],
+            situation_result["down_distance"], 
+            situation_result["time_context"]
+        )
+        if strategic_context:
+            situation_result["strategic_context"] = strategic_context
+            
+        situation_result["confidence"] = min(base_confidence, 0.95)
+        return situation_result
+
+    def _assess_available_elements(self, hud_info: dict[str, Any]) -> dict[str, list]:
+        """Assess which HUD elements are available vs missing."""
+        found = []
+        missing = []
+        
+        for element in UI_CLASSES:
+            if element in hud_info and hud_info[element] is not None:
+                found.append(element)
+            else:
+                missing.append(element)
+                
+        return {"found": found, "missing": missing}
+
+    def _infer_game_state_from_clip_characteristics(self, hud_info: dict[str, Any]) -> Optional[str]:
+        """Infer game state from clip characteristics when primary indicators missing."""
+        # Check if we have any movement/action indicators
+        # This is a simplified version - full implementation would analyze actual video frames
+        
+        # If we have detailed HUD info, likely pre-snap or post-play
+        detailed_elements = ["down_distance", "yards_to_goal", "territory_indicator"]
+        if any(elem in hud_info for elem in detailed_elements):
+            return "pre_snap"  # Detailed info usually shown pre-snap
+            
+        # If only basic elements, might be during action
+        basic_elements = ["game_clock", "score_bug"]
+        if any(elem in hud_info for elem in basic_elements) and len(hud_info) <= 3:
+            return "during_play"  # Minimal HUD during action
+            
+        return None
+
+    def _extract_field_position_with_fallbacks(self, hud_info: dict[str, Any]) -> Optional[str]:
+        """Extract field position with multiple fallback methods."""
+        # Primary method: yards_to_goal + territory_indicator
+        yards_to_goal = hud_info.get("yards_to_goal")
+        territory_indicator = hud_info.get("territory_indicator")
+        
+        if yards_to_goal and territory_indicator:
+            return self._construct_field_position(yards_to_goal, territory_indicator)
+            
+        # Fallback 1: Check for any field position text
+        field_pos = hud_info.get("field_position")
+        if field_pos:
+            return str(field_pos)
+            
+        # Fallback 2: Infer from other context
+        down_distance = hud_info.get("down_distance", "")
+        if "Goal" in str(down_distance):
+            return "RED_ZONE"  # "1st & Goal" indicates red zone
+            
+        return None
+
+    def _extract_down_distance_with_fallbacks(self, hud_info: dict[str, Any]) -> Optional[dict]:
+        """Extract down and distance with fallback parsing."""
+        down_distance = hud_info.get("down_distance")
+        if not down_distance:
+            return None
+            
+        # Parse standard format
+        import re
+        # Try patterns like "1st & 10", "4th & Goal", "2nd & 3"
+        pattern = r"(\d+)(?:st|nd|rd|th)?\s*&\s*(.+)"
+        match = re.search(pattern, str(down_distance), re.IGNORECASE)
+        
+        if match:
+            down = int(match.group(1))
+            distance_text = match.group(2).strip()
+            
+            # Parse distance
+            if distance_text.lower() == "goal":
+                return {"down": down, "distance": "goal", "yards_to_go": 0}
+            else:
+                try:
+                    yards = int(distance_text)
+                    return {"down": down, "distance": yards, "yards_to_go": yards}
+                except ValueError:
+                    return {"down": down, "distance": distance_text, "yards_to_go": None}
+                    
+        return None
+
+    def _extract_time_context(self, hud_info: dict[str, Any]) -> Optional[dict]:
+        """Extract time context from available clock information."""
+        game_clock = hud_info.get("game_clock")
+        play_clock = hud_info.get("play_clock")
+        
+        time_context = {}
+        
+        if game_clock:
+            time_context["game_clock"] = game_clock
+            # Parse quarter/time if available
+            if ":" in str(game_clock):
+                time_context["time_urgency"] = "normal"
+            elif any(urgent in str(game_clock).lower() for urgent in ["2:00", "1:00", ":30"]):
+                time_context["time_urgency"] = "high"
+                
+        if play_clock:
+            time_context["play_clock"] = play_clock
+            # Assess play clock urgency
+            try:
+                clock_value = int(str(play_clock).replace(":", ""))
+                if clock_value <= 10:
+                    time_context["play_urgency"] = "high"
+                elif clock_value <= 20:
+                    time_context["play_urgency"] = "medium" 
+                else:
+                    time_context["play_urgency"] = "low"
+            except (ValueError, TypeError):
+                time_context["play_urgency"] = "unknown"
+                
+        return time_context if time_context else None
+
+    def _analyze_strategic_context_partial(
+        self, 
+        field_position: Optional[str], 
+        down_distance: Optional[dict], 
+        time_context: Optional[dict]
+    ) -> Optional[dict]:
+        """Analyze strategic context even with partial information."""
+        if not any([field_position, down_distance, time_context]):
+            return None
+            
+        context = {"implications": [], "urgency": "normal"}
+        
+        # Field position implications
+        if field_position:
+            if "RED_ZONE" in field_position or "Goal" in str(field_position):
+                context["implications"].append("red_zone_scoring_opportunity")
+                context["urgency"] = "high"
+            elif "OWN" in field_position and any(num in field_position for num in ["1", "2", "3", "4", "5"]):
+                context["implications"].append("safety_risk")
+                context["urgency"] = "high"
+                
+        # Down implications
+        if down_distance:
+            down = down_distance.get("down")
+            if down == 4:
+                context["implications"].append("critical_down")
+                context["urgency"] = "high"
+            elif down_distance.get("distance") == "goal":
+                context["implications"].append("goal_line_stand")
+                context["urgency"] = "high"
+                
+        # Time implications
+        if time_context:
+            if time_context.get("time_urgency") == "high":
+                context["implications"].append("time_pressure")
+                context["urgency"] = "high"
+            elif time_context.get("play_urgency") == "high":
+                context["implications"].append("play_clock_pressure")
+                
+        return context if context["implications"] else None

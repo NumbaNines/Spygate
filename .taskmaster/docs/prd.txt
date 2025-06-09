@@ -210,10 +210,11 @@ To ensure SpygateAI provides immediate value, the system's initial intelligence 
 
 | Tier | Hardware Requirements | Pro Features | Learning Features | Supported Games | Target Performance |
 |------|----------------------|--------------|-------------------|-----------------|-------------------|
-| **Minimum** | 8GB RAM, 4-core CPU, Integrated GPU | Core analysis, strategy database | Full learning mode, simple explanations | All games, basic detection | 0.3-0.5 FPS analysis |
-| **Standard** | 12GB+ RAM, GTX 1650+, 4-6 core CPU | + Formation detection | + Visual formation guides | All games, enhanced detection | 1.0 FPS analysis |
-| **Premium** | 16GB+ RAM, RTX 3060+, 6+ core CPU | + Advanced formations, real-time | + Pro strategy learning | All games, full analysis | 1.5-2.0 FPS analysis |
-| **Professional** | 32GB+ RAM, RTX 4080+, 8+ core CPU | + Cross-game intelligence | + Historical meta analysis | All games, experimental features | 2.0+ FPS analysis |
+| **Ultra-Low** | 4-6GB RAM, 2-core CPU, Integrated GPU | Basic HUD analysis only | Simple explanations, offline mode | Single game, limited detection | 0.2-0.3 FPS analysis |
+| **Low** | 8GB RAM, 4-core CPU, Integrated GPU | Core analysis, strategy database | Full learning mode, simple explanations | All games, basic detection | 0.3-0.5 FPS analysis |
+| **Medium** | 12GB+ RAM, GTX 1650+, 4-6 core CPU | + Formation detection | + Visual formation guides | All games, enhanced detection | 1.0 FPS analysis |
+| **High** | 16GB+ RAM, RTX 3060+, 6+ core CPU | + Advanced formations, real-time | + Pro strategy learning | All games, full analysis | 1.5-2.0 FPS analysis |
+| **Ultra** | 32GB+ RAM, RTX 4080+, 8+ core CPU | + Cross-game intelligence | + Historical meta analysis | All games, experimental features | 2.0+ FPS analysis |
 
 #### **4.3 Universal Detection Pipeline**
 

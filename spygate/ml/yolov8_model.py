@@ -58,10 +58,11 @@ UI_CLASSES = [
     "home_team",  # Home team abbreviation and score (rightmost team abbreviation on screen)
     "down_distance",  # Down and distance indicator (e.g., "1st & 10", "4th")
     "game_clock",  # Game time remaining (e.g., "1:57")
-    "play_clock",  # Play clock countdown (e.g., ":04")
+    "play_clock",  # Play clock countdown (e.g., ":04") - visible PRE-SNAP only
     "field_position",  # Yard line or special situation marker (e.g., "2-PT")
     "possession_indicator",  # Triangle on LEFT side between team abbreviations (shows ball possession)
     "territory_indicator",  # Triangle on FAR RIGHT side (▲ = opponent territory, ▼ = own territory)
+    "game_state_indicator",  # Visual elements showing pre-snap, during play, or post-play state
 ]
 
 # Enhanced hardware-tier specific model configurations with optimization features

@@ -333,6 +333,23 @@ class SituationDetector:
         if hud_confidence < self.min_situation_confidence:
             return situations
 
+        # Detect game state (pre-snap, during play, post-play)
+        game_state = self._detect_game_state(hud_info)
+        
+        # Add game state as a situation for tracking
+        if game_state:
+            situations.append({
+                "type": f"game_state_{game_state}",
+                "confidence": min(hud_confidence * 1.0, 0.95),
+                "frame": frame_number,
+                "timestamp": timestamp,
+                "details": {
+                    "game_state": game_state,
+                    "play_clock_visible": hud_info.get("play_clock") is not None,
+                    "source": "hud_analysis",
+                },
+            })
+
         # Detect critical game situations based on HUD data
         down = hud_info.get("down")
         distance = hud_info.get("distance")
@@ -448,6 +465,43 @@ class SituationDetector:
                 )
 
         return situations
+
+    def _detect_game_state(self, hud_info: dict[str, Any]) -> Optional[str]:
+        """
+        Detect current game state based on HUD elements.
+        
+        Returns:
+            str: One of 'pre_snap', 'during_play', 'post_play', or None
+        """
+        play_clock = hud_info.get("play_clock")
+        
+        # Primary indicator: Play clock visibility
+        if play_clock is not None:
+            # Play clock visible = pre-snap
+            try:
+                # Additional validation: play clock should be counting down
+                play_clock_value = int(str(play_clock).replace(":", ""))
+                if 1 <= play_clock_value <= 40:  # Valid play clock range
+                    return "pre_snap"
+            except (ValueError, TypeError):
+                # If we can't parse the play clock, still assume pre-snap if visible
+                return "pre_snap"
+        else:
+            # Play clock not visible - could be during play or post-play
+            # We need additional logic to distinguish these states
+            
+            # Check for other indicators
+            down = hud_info.get("down")
+            distance = hud_info.get("distance")
+            
+            # If we have down/distance info, likely during active play
+            if down is not None and distance is not None:
+                return "during_play"
+            else:
+                # Limited info available, could be post-play or transition
+                return "post_play"
+        
+        return None
 
     def _analyze_motion_situations(
         self, motion_features: dict[str, Any], frame_number: int, timestamp: float

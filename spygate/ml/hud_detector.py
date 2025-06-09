@@ -467,7 +467,7 @@ class HUDDetector:
             return "▲"  # Opponent territory
         elif "▼" in text:
             return "▼"  # Own territory
-        
+
         # Fallback to text patterns: "OWN", "OPP"
         pattern = r"(OWN|OPP)"
         match = re.search(pattern, text, re.IGNORECASE)

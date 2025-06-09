@@ -76,37 +76,41 @@ class AutoClipDetector(QObject):
         """Configure optimization settings based on hardware tier."""
         optimization_configs = {
             "low": {
-                "frame_skip": 90,        # Skip 90 frames (3 seconds at 30fps)
+                "frame_skip": 90,  # Skip 90 frames (3 seconds at 30fps)
                 "scene_check_interval": 30,  # Check scene changes every 30 frames
                 "analysis_resolution": (640, 360),  # Lower resolution for faster processing
                 "confidence_threshold": 0.8,  # Higher threshold to reduce false positives
-                "max_clips_per_minute": 2,    # Limit clips to reduce processing
+                "max_clips_per_minute": 2,  # Limit clips to reduce processing
             },
             "medium": {
-                "frame_skip": 60,        # Skip 60 frames (2 seconds at 30fps)
+                "frame_skip": 60,  # Skip 60 frames (2 seconds at 30fps)
                 "scene_check_interval": 20,
                 "analysis_resolution": (854, 480),
                 "confidence_threshold": 0.7,
                 "max_clips_per_minute": 3,
             },
             "high": {
-                "frame_skip": 30,        # Skip 30 frames (1 second at 30fps)
+                "frame_skip": 30,  # Skip 30 frames (1 second at 30fps)
                 "scene_check_interval": 15,
                 "analysis_resolution": (1280, 720),
                 "confidence_threshold": 0.6,
                 "max_clips_per_minute": 5,
             },
             "ultra": {
-                "frame_skip": 15,        # Skip 15 frames (0.5 seconds at 30fps)
+                "frame_skip": 15,  # Skip 15 frames (0.5 seconds at 30fps)
                 "scene_check_interval": 10,
                 "analysis_resolution": (1920, 1080),
                 "confidence_threshold": 0.5,
                 "max_clips_per_minute": 8,
-            }
+            },
         }
 
-        self.config = optimization_configs.get(hardware_tier.lower(), optimization_configs["medium"])
-        print(f"🚀 Auto-clip detection optimized for {hardware_tier} tier: frame skip {self.config['frame_skip']}, max clips/min {self.config['max_clips_per_minute']}")
+        self.config = optimization_configs.get(
+            hardware_tier.lower(), optimization_configs["medium"]
+        )
+        print(
+            f"🚀 Auto-clip detection optimized for {hardware_tier} tier: frame skip {self.config['frame_skip']}, max clips/min {self.config['max_clips_per_minute']}"
+        )
 
     def detect_scene_change(self, frame1: np.ndarray, frame2: np.ndarray) -> bool:
         """
@@ -169,10 +173,13 @@ class AutoClipDetector(QObject):
             fps = cap.get(cv2.CAP_PROP_FPS)
 
             print(f"🎬 Starting optimized analysis: {total_frames} frames at {fps} FPS")
-            print(f"⚡ Frame skip: {self.config['frame_skip']}, Scene check: {self.config['scene_check_interval']}")
+            print(
+                f"⚡ Frame skip: {self.config['frame_skip']}, Scene check: {self.config['scene_check_interval']}"
+            )
 
             # Optimization tracking
             import time
+
             start_time = time.time()
             frames_processed = 0
             frames_skipped = 0
@@ -219,18 +226,25 @@ class AutoClipDetector(QObject):
                     # Update progress
                     progress = int((frame_count / total_frames) * 100)
                     self.analysis_progress.emit(
-                            progress, f"Analyzing frame {frame_count}/{total_frames} (processed: {frames_processed}, skipped: {frames_skipped})"
+                        progress,
+                        f"Analyzing frame {frame_count}/{total_frames} (processed: {frames_processed}, skipped: {frames_skipped})",
                     )
 
                     # Simulate enhanced situation detection (replace with actual YOLOv8 logic)
-                    situation = self._simulate_enhanced_situation_detection(frame_count, fps, processed_frame)
+                    situation = self._simulate_enhanced_situation_detection(
+                        frame_count, fps, processed_frame
+                    )
                     if situation and self._is_significant_situation(situation):
                         # Check clips per minute limit
                         timestamp = frame_count / fps
-                        clips_in_last_minute = len([
-                            clip for clip in self.detected_clips
-                            if hasattr(clip, 'start_frame') and clip.start_frame > (frame_count - 60 * fps)
-                        ])
+                        clips_in_last_minute = len(
+                            [
+                                clip
+                                for clip in self.detected_clips
+                                if hasattr(clip, "start_frame")
+                                and clip.start_frame > (frame_count - 60 * fps)
+                            ]
+                        )
 
                         if clips_in_last_minute < self.config["max_clips_per_minute"]:
                             clip_data = ClipData(
@@ -257,7 +271,9 @@ class AutoClipDetector(QObject):
 
             print(f"🎯 Optimization Results:")
             print(f"  Total time: {total_time:.2f}s")
-            print(f"  Frames processed: {frames_processed}/{total_frames} ({frames_processed/total_frames*100:.1f}%)")
+            print(
+                f"  Frames processed: {frames_processed}/{total_frames} ({frames_processed/total_frames*100:.1f}%)"
+            )
             print(f"  Frames skipped: {frames_skipped} ({frames_skipped/total_frames*100:.1f}%)")
             print(f"  Scene changes detected: {scene_changes_detected}")
             print(f"  Clips detected: {clips_detected}")
@@ -270,7 +286,9 @@ class AutoClipDetector(QObject):
         finally:
             self.is_analyzing = False
 
-    def _simulate_enhanced_situation_detection(self, frame_count: int, fps: float, frame: np.ndarray) -> Optional[str]:
+    def _simulate_enhanced_situation_detection(
+        self, frame_count: int, fps: float, frame: np.ndarray
+    ) -> Optional[str]:
         """Enhanced situation detection with frame analysis."""
         # Calculate frame variance for action detection
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -302,7 +320,9 @@ class AutoClipDetector(QObject):
 
     def _simulate_situation_detection(self, frame_count: int, fps: float) -> Optional[str]:
         """Legacy method for compatibility."""
-        return self._simulate_enhanced_situation_detection(frame_count, fps, np.zeros((100, 100, 3), dtype=np.uint8))
+        return self._simulate_enhanced_situation_detection(
+            frame_count, fps, np.zeros((100, 100, 3), dtype=np.uint8)
+        )
 
     def _frame_to_timestamp(self, frame: int, fps: float) -> str:
         """Convert frame number to timestamp."""

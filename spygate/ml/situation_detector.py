@@ -550,7 +550,12 @@ class SituationDetector:
         if formation_state:
             return formation_state
             
-        # Method 5: Context clues from available HUD elements
+        # Method 5: Down/Distance change analysis
+        down_distance_state = self._detect_game_state_from_down_distance_changes(hud_info)
+        if down_distance_state:
+            return down_distance_state
+            
+        # Method 6: Context clues from available HUD elements
         context_state = self._detect_game_state_from_context(hud_info)
         if context_state:
             return context_state
@@ -591,6 +596,55 @@ class SituationDetector:
         # - Detect set formations (pre-snap)
         # - Identify players in motion (during play)
         # - Recognize celebration/huddle patterns (post-play)
+        return None
+
+    def _detect_game_state_from_down_distance_changes(self, hud_info: dict[str, Any]) -> Optional[str]:
+        """
+        Detect game state based on down and distance patterns and changes.
+        
+        Args:
+            hud_info: Current HUD information
+            
+        Returns:
+            str: Inferred game state or None
+        """
+        down_distance = hud_info.get("down_distance", "")
+        if not down_distance:
+            return None
+            
+        # Parse current down and distance
+        parsed = self._extract_down_distance_with_fallbacks(hud_info)
+        if not parsed:
+            return None
+            
+        down = parsed.get("down")
+        distance = parsed.get("distance")
+        
+        # Analyze down/distance patterns for game state clues
+        
+        # Pattern 1: Fresh first down (likely pre-snap of new drive/play)
+        if down == 1 and isinstance(distance, int) and distance >= 10:
+            return "pre_snap"  # New drive, fresh down
+            
+        # Pattern 2: Goal line situations (high detail = pre-snap)
+        if distance == "goal":
+            return "pre_snap"  # Goal line stands are typically shown pre-snap
+            
+        # Pattern 3: 4th down situations (critical - usually shown with detail pre-snap)
+        if down == 4:
+            return "pre_snap"  # 4th down decisions shown pre-snap
+            
+        # Pattern 4: Short yardage situations (2 yards or less - high detail pre-snap)
+        if isinstance(distance, int) and distance <= 2:
+            return "pre_snap"  # Short yardage situations get detailed pre-snap display
+            
+        # Pattern 5: Standard down situations with clean display
+        if down in [1, 2, 3] and isinstance(distance, int) and 3 <= distance <= 20:
+            # Clean, detailed down/distance usually indicates pre-snap
+            return "pre_snap"
+            
+        # Pattern 6: Unclear or partial down/distance (during play)
+        # If we can't parse clearly, might be during action when HUD is minimal
         return None
 
     def _detect_game_state_from_context(self, hud_info: dict[str, Any]) -> Optional[str]:
@@ -923,7 +977,8 @@ class SituationDetector:
         self, 
         hud_info: dict[str, Any], 
         frame_number: int = 0, 
-        timestamp: float = 0.0
+        timestamp: float = 0.0,
+        previous_hud_info: Optional[dict[str, Any]] = None
     ) -> dict[str, Any]:
         """
         Detect game situation from potentially incomplete clips.
@@ -933,6 +988,7 @@ class SituationDetector:
             hud_info: Detected HUD elements (may be incomplete)
             frame_number: Frame number in the clip
             timestamp: Timestamp in the clip
+            previous_hud_info: Previous frame HUD information (if available)
             
         Returns:
             dict: Situation analysis with confidence levels and fallback methods used
@@ -946,7 +1002,8 @@ class SituationDetector:
             "field_position": None,
             "down_distance": None,
             "time_context": None,
-            "strategic_context": None
+            "strategic_context": None,
+            "down_distance_changes": None
         }
         
         # Assess what HUD elements are available
@@ -968,6 +1025,17 @@ class SituationDetector:
             if game_state:
                 situation_result["game_state"] = game_state
                 situation_result["fallback_methods_used"].append("clip_characteristics")
+        
+        # Down/Distance Change Analysis (if previous frame available)
+        if previous_hud_info:
+            dd_changes = self._track_down_distance_changes(hud_info, previous_hud_info)
+            situation_result["down_distance_changes"] = dd_changes
+            
+            # Use change analysis to improve game state detection
+            if not game_state and dd_changes.get("game_state_inference"):
+                situation_result["game_state"] = dd_changes["game_state_inference"]
+                situation_result["fallback_methods_used"].append("down_distance_changes")
+                base_confidence += dd_changes.get("confidence", 0.0) * 0.1
         
         # Field Position (with fallbacks)
         field_position = self._extract_field_position_with_fallbacks(hud_info)
@@ -1148,3 +1216,91 @@ class SituationDetector:
                 context["implications"].append("play_clock_pressure")
                 
         return context if context["implications"] else None
+
+    def _track_down_distance_changes(self, current_hud: dict[str, Any], previous_hud: Optional[dict[str, Any]]) -> dict[str, Any]:
+        """
+        Track changes in down and distance between frames to detect game state transitions.
+        
+        Args:
+            current_hud: Current frame HUD data
+            previous_hud: Previous frame HUD data (if available)
+            
+        Returns:
+            dict: Change analysis with transition indicators
+        """
+        if not previous_hud:
+            return {"change_type": "no_previous_data", "confidence": 0.0}
+            
+        # Extract current and previous down/distance
+        current_dd = self._extract_down_distance_with_fallbacks(current_hud)
+        previous_dd = self._extract_down_distance_with_fallbacks(previous_hud)
+        
+        if not current_dd or not previous_dd:
+            return {"change_type": "incomplete_data", "confidence": 0.0}
+            
+        current_down = current_dd.get("down")
+        current_dist = current_dd.get("distance")
+        previous_down = previous_dd.get("down")
+        previous_dist = previous_dd.get("distance")
+        
+        # Analyze change patterns
+        change_analysis = {
+            "change_type": "no_change",
+            "confidence": 0.0,
+            "game_state_inference": None,
+            "details": {}
+        }
+        
+        # Pattern 1: Down advancement (successful play completion)
+        if current_down == 1 and previous_down in [2, 3, 4]:
+            change_analysis.update({
+                "change_type": "first_down_conversion",
+                "confidence": 0.9,
+                "game_state_inference": "pre_snap",  # New drive setup
+                "details": {"previous_down": previous_down, "result": "conversion"}
+            })
+            
+        # Pattern 2: Down increment (incomplete pass, failed rush)
+        elif current_down == previous_down + 1:
+            change_analysis.update({
+                "change_type": "down_increment",
+                "confidence": 0.8,
+                "game_state_inference": "pre_snap",  # Setting up next play
+                "details": {"down_change": f"{previous_down} to {current_down}"}
+            })
+            
+        # Pattern 3: Distance reduction (successful rushing/passing yards)
+        elif (isinstance(current_dist, int) and isinstance(previous_dist, int) and 
+              current_down == previous_down and current_dist < previous_dist):
+            yards_gained = previous_dist - current_dist
+            change_analysis.update({
+                "change_type": "yards_gained",
+                "confidence": 0.7,
+                "game_state_inference": "pre_snap",  # Post-play, setting up next
+                "details": {"yards_gained": yards_gained, "down": current_down}
+            })
+            
+        # Pattern 4: Distance increase (penalty)
+        elif (isinstance(current_dist, int) and isinstance(previous_dist, int) and 
+              current_down == previous_down and current_dist > previous_dist):
+            penalty_yards = current_dist - previous_dist
+            change_analysis.update({
+                "change_type": "penalty",
+                "confidence": 0.8,
+                "game_state_inference": "pre_snap",  # Post-penalty setup
+                "details": {"penalty_yards": penalty_yards, "down": current_down}
+            })
+            
+        # Pattern 5: Complete change in down/distance (new drive)
+        elif current_down != previous_down or current_dist != previous_dist:
+            change_analysis.update({
+                "change_type": "significant_change",
+                "confidence": 0.6,
+                "game_state_inference": "pre_snap",  # Major transition
+                "details": {
+                    "from": f"{previous_down} & {previous_dist}",
+                    "to": f"{current_down} & {current_dist}"
+                }
+            })
+            
+        return change_analysis

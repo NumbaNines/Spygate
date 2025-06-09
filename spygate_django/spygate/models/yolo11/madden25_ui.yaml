@@ -1,0 +1,56 @@
+# Madden 25 UI Element Detection Dataset Configuration
+path: spygate/models/yolo11/data # dataset root dir
+train: train/images # train images (relative to 'path')
+val: val/images # val images (relative to 'path')
+test: test/images # test images (relative to 'path')
+
+# Classes for Madden 25 UI Elements
+names:
+  # Game State Elements (from PRD)
+  0: score_bug # Main score display area
+  1: down_distance # Down and yards to go
+  2: game_clock # Game time remaining
+  3: play_clock # Play clock countdown
+  4: score_home # Home team score
+  5: score_away # Away team score
+  6: possession # Ball possession indicator
+  7: yard_line # Current yard line
+  8: timeout_indicator # Timeout indicators
+  9: penalty_indicator # Penalty notification area
+
+  # UI Interface Elements (user-specified)
+  10: hud # Main HUD interface
+  11: gamertag # In-game Xbox/PlayStation gamertag
+  12: user_name # Community/competitive scene name
+  13: preplay # Pre-play interface elements
+  14: playcall # Play selection interface
+  15: no_huddle # No huddle option indicators
+  16: audible # Audible selection interface
+
+# Training parameters optimized for UI detection
+epochs: 100
+batch: 16
+imgsz: 640
+device: 0 # cuda device, i.e. 0 or 0,1,2,3 or cpu
+workers: 8 # maximum number of dataloader workers
+patience: 50 # epochs to wait for no observable improvement for early stopping
+
+# Augmentation parameters tuned for UI detection
+hsv_h: 0.015 # image HSV-Hue augmentation (fraction)
+hsv_s: 0.3 # image HSV-Saturation augmentation (fraction) - reduced for UI
+hsv_v: 0.3 # image HSV-Value augmentation (fraction) - reduced for UI
+degrees: 0 # image rotation (+/- deg) - disabled for UI
+translate: 0.1 # image translation (+/- fraction)
+scale: 0.3 # image scale (+/- gain) - reduced for UI
+shear: 0.0 # image shear (+/- deg) - disabled for UI
+perspective: 0.0 # image perspective (+/- fraction) - disabled for UI
+flipud: 0.0 # image flip up-down (probability) - disabled for UI
+fliplr: 0.0 # image flip left-right (probability) - disabled for UI
+mosaic: 0.5 # image mosaic (probability) - reduced for UI
+mixup: 0.0 # image mixup (probability) - disabled for UI
+copy_paste: 0.0 # segment copy-paste (probability) - disabled for UI
+
+# Optimizer configuration
+optimizer: AdamW # Optimizer (SGD, Adam, AdamW)
+lr0: 0.001 # Initial learning rate
+weight_decay: 0.05 # Weight decay

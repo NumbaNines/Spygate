@@ -1,0 +1,112 @@
+{
+  "summary": {
+    "total_tests": 7,
+    "passed": 5,
+    "failed": 2,
+    "timestamp": 1749463566.778164
+  },
+  "tests": [
+    {
+      "test": "Health Check",
+      "success": true,
+      "message": "Service status: healthy",
+      "timestamp": 1749463566.7664528,
+      "data": {
+        "success": true,
+        "data": {
+          "service": "SpygateAI Django API",
+          "status": "healthy",
+          "engine_initialized": true,
+          "version": "1.0.0"
+        },
+        "message": "Health check completed"
+      }
+    },
+    {
+      "test": "API Info",
+      "success": true,
+      "message": "Found 5 endpoint categories",
+      "timestamp": 1749463566.768746,
+      "data": {
+        "endpoints": [
+          "engine",
+          "analysis",
+          "tournament",
+          "library",
+          "system"
+        ]
+      }
+    },
+    {
+      "test": "YOLOv8 Model Availability",
+      "success": true,
+      "message": "Found 4 model file(s)",
+      "timestamp": 1749463566.7690916,
+      "data": {
+        "models": [
+          "yolov8m.pt",
+          "spygate\\yolov8m.pt",
+          "..\\yolov8m.pt",
+          "..\\yolov8n.pt"
+        ]
+      }
+    },
+    {
+      "test": "Engine Status",
+      "success": true,
+      "message": "Engine initialized: True",
+      "timestamp": 1749463566.7710433,
+      "data": {
+        "initialized": true,
+        "error": "'HardwareDetector' object has no attribute 'get_system_info'",
+        "message": "Error retrieving engine status"
+      }
+    },
+    {
+      "test": "Hardware Optimization",
+      "success": true,
+      "message": "Hardware optimization data retrieved",
+      "timestamp": 1749463566.773092,
+      "data": {
+        "success": true,
+        "optimization_status": {
+          "detected_hardware": {
+            "gpu_memory": 8192,
+            "cpu_cores": 8,
+            "has_cuda": true,
+            "gpu_name": "Demo GPU"
+          },
+          "recommended_settings": {
+            "batch_size": 4,
+            "model_size": "yolov8m",
+            "analysis_fps": 1.0
+          },
+          "performance_tier": "Ultra",
+          "gpu_memory_gb": 8.0,
+          "optimizations_applied": [
+            "Hardware-adaptive batch sizing",
+            "Dynamic model selection",
+            "Memory-efficient inference"
+          ]
+        },
+        "hardware_tier": "HIGH",
+        "gpu_available": false,
+        "message": "Hardware optimization status retrieved"
+      }
+    },
+    {
+      "test": "Video Analysis Structure",
+      "success": false,
+      "message": "Unexpected error: No video file provided",
+      "timestamp": 1749463566.7760844,
+      "data": {}
+    },
+    {
+      "test": "HUD Detection Structure",
+      "success": false,
+      "message": "Unexpected error: No video file provided",
+      "timestamp": 1749463566.7777472,
+      "data": {}
+    }
+  ]
+}

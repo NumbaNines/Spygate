@@ -1,4 +1,3 @@
-
 # Task ID: 26
 # Title: Create Integrated Production Desktop Application
 # Status: pending

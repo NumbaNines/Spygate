@@ -1,0 +1,130 @@
+{
+  "summary": {
+    "total_tests": 4,
+    "passed": 4,
+    "failed": 0,
+    "timestamp": 1749463685.1106873
+  },
+  "tests": [
+    {
+      "test": "Test Video Creation",
+      "success": true,
+      "message": "Created 3s test video with 90 frames",
+      "timestamp": 1749463684.9491403,
+      "data": {}
+    },
+    {
+      "test": "Video Analysis",
+      "success": true,
+      "message": "Analysis completed for tmp66vuj7wm.mp4",
+      "timestamp": 1749463685.1023936,
+      "data": {
+        "success": true,
+        "analysis": {
+          "video_file": "C:\\Users\\Nines\\AppData\\Local\\Temp\\tmpypwa5muk.mp4",
+          "context": "test_analysis",
+          "analysis_timestamp": "2025-06-09T06:08:05.101082",
+          "detected_clips": [],
+          "game_version": "madden_25",
+          "actionable_insights": [],
+          "export_results": []
+        },
+        "video_name": "tmp66vuj7wm.mp4",
+        "video_size": 374697,
+        "message": "Video analysis completed successfully"
+      }
+    },
+    {
+      "test": "HUD Detection",
+      "success": true,
+      "message": "HUD detection completed for frame 10",
+      "timestamp": 1749463685.1066487,
+      "data": {
+        "success": true,
+        "hud_elements": {
+          "video_file": "C:\\Users\\Nines\\AppData\\Local\\Temp\\tmp4fxor339.mp4",
+          "detected_situations": [
+            "3rd & Long",
+            "Red Zone",
+            "Two Minute Drill"
+          ],
+          "recommended_actions": [
+            "Review 3rd down efficiency",
+            "Practice red zone execution",
+            "Study clock management"
+          ],
+          "analysis_time": "< 30 seconds",
+          "confidence": "85%",
+          "filtered_for": "hud_analysis"
+        },
+        "frame_number": 10,
+        "video_name": "tmp66vuj7wm.mp4",
+        "message": "HUD detection completed successfully"
+      }
+    },
+    {
+      "test": "Situational Library",
+      "success": true,
+      "message": "Library built for 3rd_long situations",
+      "timestamp": 1749463685.1099641,
+      "data": {
+        "success": true,
+        "situational_library": {
+          "situation_type": "3rd_long",
+          "total_clips": 0,
+          "clips_by_game": {},
+          "effectiveness_analysis": {
+            "situation_type": "3rd_long",
+            "cross_game_analysis": {
+              "madden_25": [
+                {
+                  "concept": "Trips Formation Family",
+                  "implementation": "Shotgun Trips TE",
+                  "effectiveness": 0.65
+                },
+                {
+                  "concept": "Cover 2 Defense Family",
+                  "implementation": "Cover 2 Man/Zone",
+                  "effectiveness": 0.58
+                }
+              ],
+              "cfb_25": [
+                {
+                  "concept": "Trips Formation Family",
+                  "implementation": "Spread Trips Right",
+                  "effectiveness": 0.65
+                },
+                {
+                  "concept": "Cover 2 Defense Family",
+                  "implementation": "Cover 2 Match",
+                  "effectiveness": 0.58
+                }
+              ]
+            },
+            "effectiveness_scores": {
+              "madden_25": {
+                "avg_effectiveness": 0.615,
+                "concept_count": 2
+              },
+              "cfb_25": {
+                "avg_effectiveness": 0.615,
+                "concept_count": 2
+              }
+            },
+            "recommended_adaptations": [
+              "Consider adapting madden_25 implementations for 3rd_long"
+            ]
+          },
+          "recommended_strategies": [
+            "4 Verticals",
+            "Stick Concept",
+            "Deep Comeback"
+          ],
+          "generated_at": "2025-06-09T06:08:05.109558"
+        },
+        "situation_type": "3rd_long",
+        "message": "Situational library built for 3rd_long"
+      }
+    }
+  ]
+}

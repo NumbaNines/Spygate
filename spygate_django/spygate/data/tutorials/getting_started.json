@@ -1,0 +1,50 @@
+{
+  "id": "getting_started",
+  "title": "Welcome to SpygateAI",
+  "description": "Learn the basics of using SpygateAI to analyze your Madden NFL gameplay.",
+  "skill_level": "beginner",
+  "required_features": [],
+  "completion_reward": "Unlock video import tutorial",
+  "steps": [
+    {
+      "title": "Welcome!",
+      "description": "Welcome to SpygateAI! This tutorial will guide you through the basic features of the application. Click 'Next' to continue.",
+      "target_widget": null
+    },
+    {
+      "title": "Main Interface",
+      "description": "This is the main interface of SpygateAI. The toolbar at the top contains quick access to all major features. The main area will display your video clips and analysis results.",
+      "target_widget": "main_toolbar"
+    },
+    {
+      "title": "Video Import",
+      "description": "Click the 'Import' button to add your first gameplay video. You can drag and drop files here or use the file picker.",
+      "target_widget": "import_button"
+    },
+    {
+      "title": "Timeline View",
+      "description": "The timeline shows your imported clips. You can scrub through videos, add markers, and see detected formations and plays.",
+      "target_widget": "timeline_view"
+    },
+    {
+      "title": "Analysis Panel",
+      "description": "The analysis panel shows detailed information about the current frame, including detected formations, plays, and player positions.",
+      "target_widget": "analysis_panel"
+    },
+    {
+      "title": "Keyboard Shortcuts",
+      "description": "SpygateAI supports keyboard shortcuts for quick access:\n- Space: Play/Pause\n- Left/Right: Seek 5 seconds\n- Up/Down: Seek 30 seconds\n- Ctrl+A: Add annotation\n- Ctrl+[/]: Change speed",
+      "target_widget": null
+    },
+    {
+      "title": "Getting Help",
+      "description": "Click the '?' icon in the toolbar to access help at any time. You can also press F1 to open the help window.",
+      "target_widget": "help_button"
+    },
+    {
+      "title": "Ready to Start!",
+      "description": "You've completed the basic tutorial! Click 'Finish' to start using SpygateAI, or explore other tutorials in the Help menu.",
+      "target_widget": null
+    }
+  ]
+}

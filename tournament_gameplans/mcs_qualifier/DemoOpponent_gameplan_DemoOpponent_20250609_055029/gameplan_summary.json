@@ -1,0 +1,84 @@
+{
+  "gameplan_id": "gameplan_DemoOpponent_20250609_055029",
+  "opponent_username": "DemoOpponent",
+  "tournament_type": "mcs_qualifier",
+  "game_version": "madden_25",
+  "opponent_profile": {
+    "username": "DemoOpponent",
+    "game_version": "madden_25",
+    "tournament_type": "mcs_qualifier",
+    "analysis_status": "in_progress",
+    "formation_usage": {
+      "Shotgun Trips TE": 33.33333333333333,
+      "I-Form Pro": 33.33333333333333,
+      "Singleback Ace": 33.33333333333333
+    },
+    "situational_tendencies": {},
+    "success_patterns": {},
+    "clips_analyzed": 5,
+    "last_analysis_date": "2025-06-09 05:50:29.881249",
+    "confidence_score": 0.25,
+    "tournament_name": null,
+    "created_at": "2025-06-09 05:50:29.881255"
+  },
+  "counter_strategies": [
+    {
+      "counter_id": "counter_Shotgun Trips TE_33",
+      "target_formation": "Shotgun Trips TE",
+      "target_situation": "general",
+      "recommended_counter": "Recommended counter for Shotgun Trips TE",
+      "success_rate": 0.75,
+      "usage_difficulty": "medium",
+      "notes": [
+        "Used 33.3% of the time"
+      ],
+      "clip_references": [],
+      "cross_game_compatible": true
+    },
+    {
+      "counter_id": "counter_I-Form Pro_33",
+      "target_formation": "I-Form Pro",
+      "target_situation": "general",
+      "recommended_counter": "Recommended counter for I-Form Pro",
+      "success_rate": 0.75,
+      "usage_difficulty": "medium",
+      "notes": [
+        "Used 33.3% of the time"
+      ],
+      "clip_references": [],
+      "cross_game_compatible": true
+    },
+    {
+      "counter_id": "counter_Singleback Ace_33",
+      "target_formation": "Singleback Ace",
+      "target_situation": "general",
+      "recommended_counter": "Recommended counter for Singleback Ace",
+      "success_rate": 0.75,
+      "usage_difficulty": "medium",
+      "notes": [
+        "Used 33.3% of the time"
+      ],
+      "clip_references": [],
+      "cross_game_compatible": true
+    }
+  ],
+  "key_situations": {
+    "high_priority": [
+      "Counter Shotgun Trips TE",
+      "3rd down situations"
+    ],
+    "medium_priority": [
+      "Red zone defense"
+    ],
+    "low_priority": []
+  },
+  "practice_priorities": [
+    "Counter Shotgun Trips TE",
+    "3rd down situations",
+    "Red zone defense"
+  ],
+  "preparation_status": "generated",
+  "estimated_prep_time": 105,
+  "completion_percentage": 0.0,
+  "generated_at": "2025-06-09 05:50:29.888954"
+}

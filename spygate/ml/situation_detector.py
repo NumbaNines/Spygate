@@ -11,6 +11,7 @@ from ..core.hardware import HardwareDetector
 from ..core.optimizer import TierOptimizer
 from ..video.motion_detector import MotionDetector
 from .hud_detector import HUDDetector
+from .yolov8_model import UI_CLASSES
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,8 @@ class SituationDetector:
         self.situation_history = []
         self.min_situation_confidence = 0.6
         self.model_path = model_path
+        self._previous_hud_info = {}
+        self._previous_yard_line = None
 
     def initialize(self):
         """Initialize components with hardware-aware configuration."""
@@ -333,80 +336,235 @@ class SituationDetector:
         if hud_confidence < self.min_situation_confidence:
             return situations
 
+        # =============================================================================
+        # COMMERCIAL BREAK DETECTION - Auto-pause analysis during non-gameplay
+        # =============================================================================
+        critical_hud_elements = ["hud", "score_bug", "down_distance"]
+        missing_elements = [elem for elem in critical_hud_elements if hud_info.get(elem) is None]
+
+        if len(missing_elements) >= len(critical_hud_elements):
+            # All critical HUD elements missing - likely commercial break
+            situations.append(
+                {
+                    "type": "commercial_break",
+                    "confidence": 0.95,
+                    "frame": frame_number,
+                    "timestamp": timestamp,
+                    "details": {
+                        "missing_elements": missing_elements,
+                        "action": "pause_analysis",
+                        "reason": "no_gameplay_detected",
+                        "source": "hud_absence_detection",
+                    },
+                }
+            )
+            return situations  # Return early, no gameplay analysis needed
+
+        # =============================================================================
+        # HUD STATE TRANSITION DETECTION - Advanced event detection
+        # =============================================================================
+
+        # INTERCEPTION DETECTION: Possession indicator ONLY moving element
+        possession_indicator = hud_info.get("possession_indicator")
+        if possession_indicator and hasattr(self, "_previous_hud_info"):
+            prev_possession = self._previous_hud_info.get("possession_indicator")
+            if prev_possession and possession_indicator != prev_possession:
+                # Check if other HUD elements remained static (interception signature)
+                static_elements = [
+                    "down_distance",
+                    "game_clock",
+                    "yards_to_goal",
+                    "territory_indicator",
+                ]
+                elements_changed = 0
+                for elem in static_elements:
+                    if (
+                        hud_info.get(elem) != self._previous_hud_info.get(elem)
+                        and hud_info.get(elem) is not None
+                        and self._previous_hud_info.get(elem) is not None
+                    ):
+                        elements_changed += 1
+
+                if elements_changed == 0:  # Only possession changed = INTERCEPTION
+                    situations.append(
+                        {
+                            "type": "turnover_interception",
+                            "confidence": 0.95,
+                            "frame": frame_number,
+                            "timestamp": timestamp,
+                            "details": {
+                                "turnover_type": "interception",
+                                "performance_tier": "turnover_play",  # Tier 6: 0-39 points
+                                "performance_score": 20,  # Critical negative outcome
+                                "possession_change": f"{prev_possession} → {possession_indicator}",
+                                "static_elements_confirmed": True,
+                                "source": "hud_state_transition",
+                            },
+                        }
+                    )
+
+        # FUMBLE DETECTION: RED BOX with "FUMBLE" text above score_bug
+        red_box_text = hud_info.get("red_box_text", "")  # This would come from OCR
+        if "FUMBLE" in str(red_box_text).upper():
+            situations.append(
+                {
+                    "type": "turnover_fumble",
+                    "confidence": 0.90,
+                    "frame": frame_number,
+                    "timestamp": timestamp,
+                    "details": {
+                        "turnover_type": "fumble",
+                        "performance_tier": "turnover_play",  # Tier 6: 0-39 points
+                        "performance_score": 15,  # Critical negative outcome
+                        "fumble_text_detected": True,
+                        "source": "red_box_detection",
+                    },
+                }
+            )
+
+        # NO HUDDLE DETECTION: RED BOX with "No Huddle" text + fast play clock
+        if "NO HUDDLE" in str(red_box_text).upper() or "NO-HUDDLE" in str(red_box_text).upper():
+            play_clock = hud_info.get("play_clock")
+            situations.append(
+                {
+                    "type": "no_huddle_offense",
+                    "confidence": 0.85,
+                    "frame": frame_number,
+                    "timestamp": timestamp,
+                    "details": {
+                        "tempo": "accelerated",
+                        "play_clock": play_clock,
+                        "no_huddle_confirmed": True,
+                        "strategic_context": "tempo_control",
+                        "source": "red_box_detection",
+                    },
+                }
+            )
+
+        # Store current HUD info for next frame comparison
+        self._previous_hud_info = hud_info.copy()
+
+        # =============================================================================
+        # 7-TIER PERFORMANCE ANALYSIS SYSTEM
+        # =============================================================================
+
         # Extract key elements for analysis
         down_distance = hud_info.get("down_distance", "")
         game_clock = hud_info.get("game_clock", "")
         play_clock = hud_info.get("play_clock", "")
-        yards_to_goal = hud_info.get("yards_to_goal", "")  # Numeric value (e.g., "25", "3", "GL")
-        territory_indicator = hud_info.get("territory_indicator", "")  # ▲ = opponent territory, ▼ = own territory
-        
+        yards_to_goal = hud_info.get("yards_to_goal", "")
+        territory_indicator = hud_info.get("territory_indicator", "")
+
         # Determine field position from yards_to_goal + territory_indicator
         yard_line = self._construct_field_position(yards_to_goal, territory_indicator)
 
+        # Analyze performance tier based on field position changes and context
+        if hasattr(self, "_previous_yard_line") and self._previous_yard_line and yard_line:
+            performance_analysis = self._analyze_performance_tier(
+                previous_yard_line=self._previous_yard_line,
+                current_yard_line=yard_line,
+                down_distance=down_distance,
+                game_clock=game_clock,
+                hud_info=hud_info,
+            )
+
+            if performance_analysis:
+                situations.append(
+                    {
+                        "type": f"performance_{performance_analysis['tier']}",
+                        "confidence": performance_analysis["confidence"],
+                        "frame": frame_number,
+                        "timestamp": timestamp,
+                        "details": {
+                            "performance_tier": performance_analysis["tier"],
+                            "performance_score": performance_analysis["score"],
+                            "yards_gained": performance_analysis["yards_gained"],
+                            "tier_reasoning": performance_analysis["reasoning"],
+                            "situational_context": performance_analysis.get("context", {}),
+                            "source": "7_tier_analysis",
+                        },
+                    }
+                )
+
+        # Store current yard line for next frame comparison
+        self._previous_yard_line = yard_line
+
+        # =============================================================================
+        # EXISTING SITUATION DETECTION (ENHANCED)
+        # =============================================================================
+
         # Detect game state (pre-snap, during play, post-play)
         game_state = self._detect_game_state(hud_info)
-        
+
         # Add game state as a situation for tracking
         if game_state:
-            situations.append({
-                "type": f"game_state_{game_state}",
-                "confidence": min(hud_confidence * 1.0, 0.95),
-                "frame": frame_number,
-                "timestamp": timestamp,
-                "details": {
-                    "game_state": game_state,
-                    "play_clock_visible": hud_info.get("play_clock") is not None,
-                    "source": "hud_analysis",
-                },
-            })
-
-        # Detect critical game situations based on HUD data
-        down = hud_info.get("down")
-        distance = hud_info.get("distance")
-        score_home = hud_info.get("score_home")
-        score_away = hud_info.get("score_away")
-
-        # 3rd Down situations
-        if down == 3:
-            situation_type = "3rd_down"
-            if distance and distance >= 7:
-                situation_type = "3rd_and_long"
-            elif distance and distance <= 3:
-                situation_type = "3rd_and_short"
-
             situations.append(
                 {
-                    "type": situation_type,
-                    "confidence": min(hud_confidence * 1.2, 0.95),
+                    "type": f"game_state_{game_state}",
+                    "confidence": min(hud_confidence * 1.0, 0.95),
                     "frame": frame_number,
                     "timestamp": timestamp,
                     "details": {
-                        "down": down,
-                        "distance": distance,
-                        "yard_line": yard_line,
+                        "game_state": game_state,
+                        "play_clock_visible": hud_info.get("play_clock") is not None,
                         "source": "hud_analysis",
                     },
                 }
             )
 
-        # 4th Down situations
-        if down == 4:
-            situations.append(
-                {
-                    "type": "4th_down",
-                    "confidence": min(hud_confidence * 1.1, 0.95),
-                    "frame": frame_number,
-                    "timestamp": timestamp,
-                    "details": {
-                        "down": down,
-                        "distance": distance,
-                        "yard_line": yard_line,
-                        "source": "hud_analysis",
-                    },
-                }
-            )
+        # Detect critical game situations based on down & distance
+        if down_distance:
+            down, distance = self._parse_down_distance(down_distance)
 
-        # Red Zone situations
+            if down and distance:
+                # Third down situations with enhanced context
+                if down == 3:
+                    situation_type = "third_and_long" if distance >= 7 else "third_and_short"
+
+                    # Enhanced third down analysis with professional context
+                    third_down_context = self._analyze_third_down_context(
+                        distance, yard_line, game_clock
+                    )
+
+                    situations.append(
+                        {
+                            "type": situation_type,
+                            "confidence": min(hud_confidence * 1.2, 0.95),
+                            "frame": frame_number,
+                            "timestamp": timestamp,
+                            "details": {
+                                "down": down,
+                                "distance": distance,
+                                "yard_line": yard_line,
+                                "professional_context": third_down_context,
+                                "source": "hud_analysis",
+                            },
+                        }
+                    )
+
+                # Fourth down with enhanced decision analysis
+                elif down == 4:
+                    fourth_down_context = self._analyze_fourth_down_context(
+                        distance, yard_line, game_clock
+                    )
+
+                    situations.append(
+                        {
+                            "type": "fourth_down",
+                            "confidence": min(hud_confidence * 1.3, 0.95),
+                            "frame": frame_number,
+                            "timestamp": timestamp,
+                            "details": {
+                                "down": down,
+                                "distance": distance,
+                                "yard_line": yard_line,
+                                "decision_context": fourth_down_context,
+                                "source": "hud_analysis",
+                            },
+                        }
+                    )
+
+        # Red Zone situations with enhanced hash mark analysis
         if yard_line and "OPP" in str(yard_line):
             try:
                 yard_num = int(str(yard_line).split()[-1])
@@ -424,7 +582,7 @@ class SituationDetector:
                             },
                         }
                     )
-                    
+
                     # Goal line situations (hash marks strategy)
                     if yard_num <= 5:
                         situations.append(
@@ -445,55 +603,61 @@ class SituationDetector:
             except (ValueError, IndexError):
                 pass
 
-        # Two-minute warning situations
+        # Two-minute warning with enhanced pressure context
         if game_clock:
             try:
-                # Parse clock format like "2:00" or "1:30"
-                if ":" in game_clock:
-                    minutes, seconds = game_clock.split(":")
-                    total_seconds = int(minutes) * 60 + int(seconds)
+                if "2:0" in game_clock or game_clock in ["2:00", "1:59", "1:58", "1:57"]:
+                    pressure_context = self._analyze_two_minute_pressure(game_clock, hud_info)
 
-                    if total_seconds <= 120:  # 2 minutes or less
-                        situations.append(
-                            {
-                                "type": "two_minute_warning",
-                                "confidence": min(hud_confidence * 1.0, 0.95),
-                                "frame": frame_number,
-                                "timestamp": timestamp,
-                                "details": {
-                                    "game_clock": game_clock,
-                                    "time_remaining": total_seconds,
-                                    "source": "hud_analysis",
-                                },
-                            }
-                        )
-            except (ValueError, IndexError):
+                    situations.append(
+                        {
+                            "type": "two_minute_warning",
+                            "confidence": min(hud_confidence * 1.1, 0.95),
+                            "frame": frame_number,
+                            "timestamp": timestamp,
+                            "details": {
+                                "game_clock": game_clock,
+                                "pressure_context": pressure_context,
+                                "source": "hud_analysis",
+                            },
+                        }
+                    )
+            except (ValueError, TypeError):
                 pass
 
-        # Score differential situations
-        if score_home is not None and score_away is not None:
-            score_diff = abs(score_home - score_away)
+        # Close game analysis with enhanced context
+        score_home = hud_info.get("score_home")
+        score_away = hud_info.get("score_away")
 
-            if score_diff <= 3:
-                situations.append(
-                    {
-                        "type": "close_game",
-                        "confidence": min(hud_confidence * 1.0, 0.95),
-                        "frame": frame_number,
-                        "timestamp": timestamp,
-                        "details": {
-                            "score_home": score_home,
-                            "score_away": score_away,
-                            "score_difference": score_diff,
-                            "source": "hud_analysis",
-                        },
-                    }
-                )
+        if score_home is not None and score_away is not None:
+            try:
+                score_diff = abs(int(score_home) - int(score_away))
+                if score_diff <= 7:  # One possession game
+                    situations.append(
+                        {
+                            "type": "close_game",
+                            "confidence": min(hud_confidence * 1.0, 0.95),
+                            "frame": frame_number,
+                            "timestamp": timestamp,
+                            "details": {
+                                "score_home": score_home,
+                                "score_away": score_away,
+                                "score_difference": score_diff,
+                                "source": "hud_analysis",
+                            },
+                        }
+                    )
+            except (ValueError, TypeError):
+                pass
 
         # Hash marks strategic analysis for field position
         if yard_line:
             qb_position = hud_info.get("qb_position")  # Get QB position for hash mark analysis
-            hash_marks_context = self._analyze_hash_marks_position(yard_line, qb_position)
+            left_hash_detected = hud_info.get("left_hash_mark") is not None
+            right_hash_detected = hud_info.get("right_hash_mark") is not None
+            hash_marks_context = self._analyze_hash_marks_position(
+                yard_line, qb_position, left_hash_detected, right_hash_detected
+            )
             if hash_marks_context:
                 situations.append(
                     {
@@ -519,7 +683,7 @@ class SituationDetector:
         """
         Detect current game state with multiple fallback methods.
         Handles cases where HUD elements or overlays might be missing.
-        
+
         Returns:
             str: One of 'pre_snap', 'during_play', 'post_play', or None
         """
@@ -534,32 +698,32 @@ class SituationDetector:
             except (ValueError, TypeError):
                 # If we can't parse but it exists, still likely pre-snap
                 return "pre_snap"
-        
+
         # Method 2: Check for explicit game state overlays
         explicit_state = self._detect_explicit_game_state_overlays(hud_info)
         if explicit_state:
             return explicit_state
-            
+
         # Method 3: Motion-based detection (fallback for clips without HUD)
         motion_state = self._detect_game_state_from_motion(hud_info)
         if motion_state:
             return motion_state
-            
+
         # Method 4: Formation-based detection
         formation_state = self._detect_game_state_from_formation(hud_info)
         if formation_state:
             return formation_state
-            
+
         # Method 5: Down/Distance change analysis
         down_distance_state = self._detect_game_state_from_down_distance_changes(hud_info)
         if down_distance_state:
             return down_distance_state
-            
+
         # Method 6: Context clues from available HUD elements
         context_state = self._detect_game_state_from_context(hud_info)
         if context_state:
             return context_state
-            
+
         return None
 
     def _detect_explicit_game_state_overlays(self, hud_info: dict[str, Any]) -> Optional[str]:
@@ -570,14 +734,14 @@ class SituationDetector:
             overlay_text = " ".join(str(overlay).lower() for overlay in overlays)
         else:
             overlay_text = str(overlays).lower()
-            
+
         if "pre-play" in overlay_text or "pre play" in overlay_text:
             return "pre_snap"
         elif "during play" in overlay_text or "live" in overlay_text:
             return "during_play"
         elif "post-play" in overlay_text or "after play" in overlay_text:
             return "post_play"
-            
+
         return None
 
     def _detect_game_state_from_motion(self, hud_info: dict[str, Any]) -> Optional[str]:
@@ -598,16 +762,18 @@ class SituationDetector:
         # - Recognize celebration/huddle patterns (post-play)
         return None
 
-    def _detect_game_state_from_down_distance_changes(self, hud_info: dict[str, Any]) -> Optional[str]:
+    def _detect_game_state_from_down_distance_changes(
+        self, hud_info: dict[str, Any]
+    ) -> Optional[str]:
         """
         Detect game state based on down and distance changes between frames.
-        
+
         The down_distance indicator is always visible in HUD, even during play.
         A change in down_distance indicates we're now pre-snap of a new play.
-        
+
         Args:
             hud_info: Current HUD information
-            
+
         Returns:
             str: Inferred game state or None if can't determine
         """
@@ -620,17 +786,17 @@ class SituationDetector:
         down = hud_info.get("down")
         distance = hud_info.get("distance")
         game_clock = hud_info.get("game_clock")
-        
+
         # If we have detailed down/distance info, likely pre-snap or post-play
         if down is not None and distance is not None:
             # Check if this looks like a fresh situation (likely pre-snap)
             if isinstance(distance, int) and distance > 0:
                 return "pre_snap"  # Fresh down with yards to go
-        
+
         # If no specific indicators but we have game clock, assume during play
         if game_clock and not any([down, distance]):
             return "during_play"
-            
+
         return None
 
     def _analyze_motion_situations(
@@ -809,20 +975,28 @@ class SituationDetector:
 
         return mistakes
 
-    def _analyze_hash_marks_position(self, yard_line: str, qb_position: str) -> Optional[dict[str, Any]]:
+    def _analyze_hash_marks_position(
+        self,
+        yard_line: str,
+        qb_position: str,
+        left_hash_detected: bool = False,
+        right_hash_detected: bool = False,
+    ) -> Optional[dict[str, Any]]:
         """
         Analyze field position relative to hash marks for strategic implications.
-        
+
         Args:
             yard_line: Field position string (e.g., "OPP 25", "OWN 35", "2-PT")
             qb_position: QB position string (e.g., "left", "right", "center")
-            
+            left_hash_detected: Whether left hash mark was detected in frame
+            right_hash_detected: Whether right hash mark was detected in frame
+
         Returns:
             Dict with hash marks analysis or None if not applicable
         """
         if not yard_line:
             return None
-            
+
         try:
             # Handle special situations (these would come from other field overlays, not yards_to_goal)
             if "2-PT" in yard_line or "XP" in yard_line:
@@ -830,28 +1004,61 @@ class SituationDetector:
                     "zone": "conversion_attempt",
                     "hash_mark_side": "center",  # Conversions typically start at center
                     "implications": ["short_yardage", "high_pressure"],
-                    "kicking_angle": "center"
+                    "kicking_angle": "center",
                 }
-            
-            # Determine hash mark side based on QB position
+
+            # Determine hash mark side based on QB position and hash mark detection
             hash_mark_side = "unknown"
-            if qb_position:
+            hash_mark_confidence = 0.5  # Base confidence
+
+            # Enhanced hash mark detection using both QB position and visual hash marks
+            if qb_position and (left_hash_detected or right_hash_detected):
+                if "left" in str(qb_position).lower() and left_hash_detected:
+                    hash_mark_side = "left_hash"
+                    hash_mark_confidence = (
+                        0.9  # High confidence - QB position + visual confirmation
+                    )
+                elif "right" in str(qb_position).lower() and right_hash_detected:
+                    hash_mark_side = "right_hash"
+                    hash_mark_confidence = (
+                        0.9  # High confidence - QB position + visual confirmation
+                    )
+                elif (
+                    "center" in str(qb_position).lower()
+                    and left_hash_detected
+                    and right_hash_detected
+                ):
+                    hash_mark_side = "between_hashes"
+                    hash_mark_confidence = (
+                        0.95  # Very high confidence - center position with both hashes visible
+                    )
+                elif left_hash_detected and not right_hash_detected:
+                    hash_mark_side = "near_left_hash"
+                    hash_mark_confidence = 0.7  # Medium confidence - only left hash visible
+                elif right_hash_detected and not left_hash_detected:
+                    hash_mark_side = "near_right_hash"
+                    hash_mark_confidence = 0.7  # Medium confidence - only right hash visible
+            elif qb_position:
+                # Fallback to QB position only (original logic)
                 if "left" in str(qb_position).lower():
                     hash_mark_side = "left_hash"
+                    hash_mark_confidence = 0.6  # Lower confidence without visual confirmation
                 elif "right" in str(qb_position).lower():
                     hash_mark_side = "right_hash"
+                    hash_mark_confidence = 0.6
                 elif "center" in str(qb_position).lower():
                     hash_mark_side = "between_hashes"
-            
+                    hash_mark_confidence = 0.6
+
             # Parse yard line for strategic analysis
             if "OPP" in yard_line:
                 try:
                     yard_num = int(yard_line.split()[-1])
-                    
+
                     # Determine strategic implications based on hash mark position
                     implications = []
                     kicking_angle = "unknown"
-                    
+
                     if hash_mark_side == "left_hash":
                         implications.extend(["left_hash_tendency", "right_side_field_advantage"])
                         kicking_angle = "angled_right"
@@ -861,7 +1068,7 @@ class SituationDetector:
                     elif hash_mark_side == "between_hashes":
                         implications.extend(["center_field", "optimal_kicking_angle"])
                         kicking_angle = "straight"
-                    
+
                     # Add distance-based implications
                     if yard_num <= 5:
                         implications.append("goal_line_stand")
@@ -874,29 +1081,29 @@ class SituationDetector:
                         zone = "scoring_territory"
                     else:
                         zone = "opponent_territory"
-                    
+
                     return {
                         "zone": zone,
                         "hash_mark_side": hash_mark_side,
                         "implications": implications,
                         "kicking_angle": kicking_angle,
-                        "yards_to_goal": yard_num
+                        "yards_to_goal": yard_num,
                     }
-                    
+
                 except (ValueError, IndexError):
                     pass
-                    
+
             elif "OWN" in yard_line:
                 # Own territory - different strategic considerations
                 try:
                     yard_num = int(yard_line.split()[-1])
                     implications = ["own_territory"]
-                    
+
                     if hash_mark_side == "left_hash":
                         implications.append("left_hash_own_territory")
                     elif hash_mark_side == "right_hash":
                         implications.append("right_hash_own_territory")
-                    
+
                     if yard_num <= 10:
                         implications.append("deep_own_territory")
                         zone = "deep_own_territory"
@@ -905,35 +1112,427 @@ class SituationDetector:
                         zone = "own_red_zone"
                     else:
                         zone = "own_territory"
-                        
+
                     return {
                         "zone": zone,
                         "hash_mark_side": hash_mark_side,
                         "implications": implications,
                         "kicking_angle": "punt_consideration",
-                        "yards_to_own_goal": yard_num
+                        "yards_to_own_goal": yard_num,
                     }
-                    
+
                 except (ValueError, IndexError):
                     pass
-                    
+
         except Exception as e:
             logger.warning(f"Error analyzing hash marks position: {e}")
-            
+
         return None
+
+    def _analyze_performance_tier(
+        self,
+        previous_yard_line: str,
+        current_yard_line: str,
+        down_distance: str,
+        game_clock: str,
+        hud_info: dict[str, Any],
+    ) -> Optional[dict]:
+        """
+        Analyze performance tier based on field position changes and context.
+
+        7-Tier Performance Analysis System:
+        1. Clutch Play (85-100 points): 4th down conversions, game-winning scores in final 2:00
+        2. Big Play (85-100 points): 20+ yards OR 10+ yards on 3rd/4th down with first down
+        3. Good Play (75-84 points): 10-19 yards OR 5-9 yards on 3rd/4th down with first down
+        4. Average Play (60-74 points): 0-9 yards, normal progression
+        5. Poor Play (40-59 points): Backward movement, zero gains with pressure
+        6. Turnover Play (0-39 points): Interceptions, fumbles, safeties
+        7. Defensive Stand (0-20 points): Major loss (-10 to -6 yards) or turnover on downs
+        """
+        try:
+            # Parse field positions
+            prev_territory = "OPP" if "OPP" in previous_yard_line else "OWN"
+            curr_territory = "OPP" if "OPP" in current_yard_line else "OWN"
+
+            prev_yard_num = int(previous_yard_line.split()[-1])
+            curr_yard_num = int(current_yard_line.split()[-1])
+
+            # Calculate yards gained (handle territory crossovers)
+            if prev_territory == curr_territory:
+                if prev_territory == "OPP":
+                    yards_gained = prev_yard_num - curr_yard_num  # Moving toward goal
+                else:
+                    yards_gained = curr_yard_num - prev_yard_num  # Moving away from own goal
+            else:
+                # Territory crossover - major gain
+                yards_gained = prev_yard_num + curr_yard_num  # Cross 50-yard line
+
+            # Parse down and distance
+            down, distance = (
+                self._parse_down_distance(down_distance) if down_distance else (None, None)
+            )
+
+            # Check for first down achievement
+            first_down_achieved = self._check_first_down_achieved(hud_info, down_distance)
+
+            # Determine performance tier
+            tier_analysis = self._determine_performance_tier(
+                yards_gained, down, distance, first_down_achieved, game_clock, hud_info
+            )
+
+            return {
+                "tier": tier_analysis["tier"],
+                "score": tier_analysis["score"],
+                "confidence": tier_analysis["confidence"],
+                "yards_gained": yards_gained,
+                "reasoning": tier_analysis["reasoning"],
+                "context": {
+                    "down": down,
+                    "distance": distance,
+                    "first_down_achieved": first_down_achieved,
+                    "field_position_change": f"{previous_yard_line} → {current_yard_line}",
+                    "territory_crossover": prev_territory != curr_territory,
+                },
+            }
+
+        except Exception as e:
+            logger.warning(f"Error analyzing performance tier: {e}")
+            return None
+
+    def _determine_performance_tier(
+        self,
+        yards_gained: int,
+        down: Optional[int],
+        distance: Optional[int],
+        first_down_achieved: bool,
+        game_clock: str,
+        hud_info: dict[str, Any],
+    ) -> dict:
+        """Determine the specific performance tier and score."""
+
+        # TIER 1: CLUTCH PLAY (85-100 points)
+        if self._is_clutch_play(
+            yards_gained, down, distance, first_down_achieved, game_clock, hud_info
+        ):
+            return {
+                "tier": "clutch_play",
+                "score": 90 + min(yards_gained, 10),  # 90-100 points
+                "confidence": 0.95,
+                "reasoning": "4th down conversion or game-winning score in final 2:00",
+            }
+
+        # TIER 2: BIG PLAY (85-100 points)
+        if yards_gained >= 20 or (yards_gained >= 10 and down in [3, 4] and first_down_achieved):
+            return {
+                "tier": "big_play",
+                "score": 85 + min(yards_gained // 2, 15),  # 85-100 points
+                "confidence": 0.90,
+                "reasoning": (
+                    f"{yards_gained} yard explosive gain"
+                    if yards_gained >= 20
+                    else f"{yards_gained} yard conversion on {down}{'nd' if down == 2 else 'rd' if down == 3 else 'th'} down"
+                ),
+            }
+
+        # TIER 3: GOOD PLAY (75-84 points)
+        if (10 <= yards_gained <= 19) or (
+            5 <= yards_gained <= 9 and down in [3, 4] and first_down_achieved
+        ):
+            return {
+                "tier": "good_play",
+                "score": 75 + min(yards_gained, 9),  # 75-84 points
+                "confidence": 0.85,
+                "reasoning": (
+                    f"{yards_gained} yard solid gain"
+                    if yards_gained >= 10
+                    else f"{yards_gained} yard conversion on critical down"
+                ),
+            }
+
+        # TIER 4: AVERAGE PLAY (60-74 points)
+        if 0 <= yards_gained <= 9 and not (down in [3, 4] and first_down_achieved):
+            # Special case: 4th & 1 conversion is still Average despite success
+            if down == 4 and distance == 1 and first_down_achieved:
+                return {
+                    "tier": "average_play",
+                    "score": 70,  # Special case scoring
+                    "confidence": 0.80,
+                    "reasoning": "Critical short yardage conversion (4th & 1)",
+                }
+            return {
+                "tier": "average_play",
+                "score": 60 + min(yards_gained, 9),  # 60-69 points (+ yards gained)
+                "confidence": 0.75,
+                "reasoning": f"{yards_gained} yard moderate gain, normal progression",
+            }
+
+        # TIER 5: POOR PLAY (40-59 points)
+        if -5 <= yards_gained <= -1 or (
+            yards_gained == 0 and self._detect_pressure_indicators(hud_info)
+        ):
+            return {
+                "tier": "poor_play",
+                "score": 40 + max(5 + yards_gained, 0),  # 40-49 points (less for bigger losses)
+                "confidence": 0.80,
+                "reasoning": (
+                    f"{abs(yards_gained)} yard loss"
+                    if yards_gained < 0
+                    else "Zero gain under pressure"
+                ),
+            }
+
+        # TIER 7: DEFENSIVE STAND (0-20 points) - Major losses
+        if yards_gained <= -6:
+            return {
+                "tier": "defensive_stand",
+                "score": max(20 + yards_gained, 0),  # 0-20 points (worse for bigger losses)
+                "confidence": 0.85,
+                "reasoning": f"{abs(yards_gained)} yard major loss (sack/TFL)",
+            }
+
+        # Default fallback
+        return {
+            "tier": "unclassified",
+            "score": 50,
+            "confidence": 0.50,
+            "reasoning": "Unable to classify play",
+        }
+
+    def _is_clutch_play(
+        self,
+        yards_gained: int,
+        down: Optional[int],
+        distance: Optional[int],
+        first_down_achieved: bool,
+        game_clock: str,
+        hud_info: dict[str, Any],
+    ) -> bool:
+        """Check if this qualifies as a clutch play."""
+
+        # 4th down conversion
+        if down == 4 and yards_gained >= 1 and first_down_achieved:
+            return True
+
+        # Game-winning/tie-breaking score in final 2:00
+        if game_clock and self._is_final_two_minutes(game_clock):
+            score_change = self._detect_score_change(hud_info)
+            if score_change and self._is_game_changing_score(score_change):
+                return True
+
+        return False
+
+    def _check_first_down_achieved(
+        self, hud_info: dict[str, Any], current_down_distance: str
+    ) -> bool:
+        """Check if a first down was achieved by comparing down progression."""
+        # This would compare current frame to next frame to see if down reset to 1st & 10
+        # For now, simplified logic
+        if "1st" in str(current_down_distance) and "10" in str(current_down_distance):
+            return True
+        return False
+
+    def _detect_pressure_indicators(self, hud_info: dict[str, Any]) -> bool:
+        """Detect indicators of pressure on zero-gain plays."""
+        # This would be enhanced with more sophisticated detection
+        # For now, simplified logic
+        play_clock = hud_info.get("play_clock")
+        if play_clock and int(str(play_clock).replace(":", "")) <= 3:
+            return True  # Low play clock = pressure
+        return False
+
+    def _is_final_two_minutes(self, game_clock: str) -> bool:
+        """Check if we're in the final 2 minutes of a half."""
+        try:
+            if ":" in game_clock:
+                minutes, seconds = game_clock.split(":")
+                total_seconds = int(minutes) * 60 + int(seconds)
+                return total_seconds <= 120
+        except:
+            pass
+        return False
+
+    def _detect_score_change(self, hud_info: dict[str, Any]) -> Optional[dict]:
+        """Detect if score changed from previous frame."""
+        if hasattr(self, "_previous_hud_info"):
+            prev_home = self._previous_hud_info.get("score_home")
+            prev_away = self._previous_hud_info.get("score_away")
+            curr_home = hud_info.get("score_home")
+            curr_away = hud_info.get("score_away")
+
+            if prev_home != curr_home or prev_away != curr_away:
+                return {
+                    "home_change": (curr_home or 0) - (prev_home or 0),
+                    "away_change": (curr_away or 0) - (prev_away or 0),
+                }
+        return None
+
+    def _is_game_changing_score(self, score_change: dict) -> bool:
+        """Check if score change is game-changing (tie-breaker or lead change)."""
+        # Simplified logic - would need more context about game state
+        total_change = abs(score_change.get("home_change", 0)) + abs(
+            score_change.get("away_change", 0)
+        )
+        return total_change >= 3  # TD or FG
+
+    def _analyze_third_down_context(self, distance: int, yard_line: str, game_clock: str) -> dict:
+        """Analyze third down context for professional comparison."""
+        context = {
+            "conversion_difficulty": "medium",
+            "professional_success_rate": 0.45,  # Default professional 3rd down %
+            "strategic_priority": "high",
+        }
+
+        if distance <= 3:
+            context.update(
+                {
+                    "conversion_difficulty": "short",
+                    "professional_success_rate": 0.68,
+                    "recommended_strategy": "power_run_or_quick_pass",
+                }
+            )
+        elif distance >= 10:
+            context.update(
+                {
+                    "conversion_difficulty": "long",
+                    "professional_success_rate": 0.34,
+                    "recommended_strategy": "deep_passing_concepts",
+                }
+            )
+        else:
+            context.update(
+                {
+                    "conversion_difficulty": "medium",
+                    "professional_success_rate": 0.52,
+                    "recommended_strategy": "intermediate_routes",
+                }
+            )
+
+        # Add field position context
+        if yard_line and "OPP" in yard_line:
+            try:
+                yard_num = int(yard_line.split()[-1])
+                if yard_num <= 20:
+                    context["red_zone_context"] = True
+                    context["professional_success_rate"] += 0.10  # Higher success in red zone
+            except:
+                pass
+
+        return context
+
+    def _analyze_fourth_down_context(self, distance: int, yard_line: str, game_clock: str) -> dict:
+        """Analyze fourth down context for decision-making."""
+        context = {
+            "decision_difficulty": "critical",
+            "go_probability": 0.30,  # Default professional 4th down go %
+            "recommended_action": "punt",
+        }
+
+        if distance <= 2:
+            context.update(
+                {
+                    "decision_difficulty": "short_yardage",
+                    "go_probability": 0.70,
+                    "recommended_action": "go_for_it",
+                }
+            )
+        elif distance <= 5:
+            context.update(
+                {
+                    "decision_difficulty": "medium",
+                    "go_probability": 0.45,
+                    "recommended_action": "field_goal_or_go",
+                }
+            )
+
+        # Field position affects decision
+        if yard_line and "OPP" in yard_line:
+            try:
+                yard_num = int(yard_line.split()[-1])
+                if yard_num <= 35:  # Field goal range
+                    context["go_probability"] += 0.20
+                    context["recommended_action"] = "field_goal"
+                if yard_num <= 10:  # Red zone
+                    context["go_probability"] += 0.30
+                    context["recommended_action"] = "go_for_it"
+            except:
+                pass
+
+        # Time context
+        if self._is_final_two_minutes(game_clock):
+            context["go_probability"] += 0.25
+            context["time_pressure"] = "critical"
+
+        return context
+
+    def _analyze_two_minute_pressure(self, game_clock: str, hud_info: dict[str, Any]) -> dict:
+        """Analyze two-minute drill pressure context."""
+        context = {"pressure_level": "high", "strategic_phase": "two_minute_drill"}
+
+        # Score differential affects pressure
+        score_home = hud_info.get("score_home", 0)
+        score_away = hud_info.get("score_away", 0)
+
+        try:
+            score_diff = abs(int(score_home) - int(score_away))
+            if score_diff <= 3:
+                context["pressure_level"] = "critical"
+                context["game_situation"] = "one_possession_game"
+            elif score_diff <= 7:
+                context["pressure_level"] = "high"
+                context["game_situation"] = "close_game"
+            else:
+                context["pressure_level"] = "moderate"
+                context["game_situation"] = "comfortable_lead"
+        except:
+            pass
+
+        # Time remaining affects strategy
+        try:
+            if ":" in game_clock:
+                minutes, seconds = game_clock.split(":")
+                total_seconds = int(minutes) * 60 + int(seconds)
+                if total_seconds <= 60:
+                    context["strategic_phase"] = "final_minute"
+                    context["timeout_management"] = "critical"
+                elif total_seconds <= 30:
+                    context["strategic_phase"] = "final_30_seconds"
+                    context["timeout_management"] = "essential"
+        except:
+            pass
+
+        return context
+
+    def _parse_down_distance(self, down_distance_text: str) -> tuple[Optional[int], Optional[int]]:
+        """Parse down and distance from text like '3rd & 8' or '1st & 10'."""
+        import re
+
+        # Pattern to match down and distance
+        pattern = r"(\d)[stndrd]*\s*&\s*(\d+)"
+        match = re.search(pattern, str(down_distance_text))
+
+        if match:
+            try:
+                down = int(match.group(1))
+                distance = int(match.group(2))
+                if 1 <= down <= 4 and 1 <= distance <= 99:
+                    return down, distance
+            except ValueError:
+                pass
+
+        return None, None
 
     def _construct_field_position(self, yards_to_goal: str, territory_indicator: str) -> str:
         """Construct field position string based on yards_to_goal and territory_indicator."""
         if not yards_to_goal or not territory_indicator:
             return "unknown"
-        
+
         # Handle numeric yards_to_goal (should be integer)
         try:
             yards = int(str(yards_to_goal))
         except (ValueError, TypeError):
             return "unknown"
-        
-        # Combine yards_to_goal and territory_indicator 
+
+        # Combine yards_to_goal and territory_indicator
         if territory_indicator == "▲" or "OPP" in str(territory_indicator).upper():
             return f"OPP {yards}"
         elif territory_indicator == "▼" or "OWN" in str(territory_indicator).upper():
@@ -942,22 +1541,22 @@ class SituationDetector:
             return "unknown"
 
     def detect_situation_from_partial_clip(
-        self, 
-        hud_info: dict[str, Any], 
-        frame_number: int = 0, 
+        self,
+        hud_info: dict[str, Any],
+        frame_number: int = 0,
         timestamp: float = 0.0,
-        previous_hud_info: Optional[dict[str, Any]] = None
+        previous_hud_info: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
         """
         Detect game situation from potentially incomplete clips.
         Handles cases where HUD elements might be missing or partially visible.
-        
+
         Args:
             hud_info: Detected HUD elements (may be incomplete)
             frame_number: Frame number in the clip
             timestamp: Timestamp in the clip
             previous_hud_info: Previous frame HUD information (if available)
-            
+
         Returns:
             dict: Situation analysis with confidence levels and fallback methods used
         """
@@ -971,17 +1570,17 @@ class SituationDetector:
             "down_distance": None,
             "time_context": None,
             "strategic_context": None,
-            "down_distance_changes": None
+            "down_distance_changes": None,
         }
-        
+
         # Assess what HUD elements are available
         available_elements = self._assess_available_elements(hud_info)
         situation_result["detected_elements"] = available_elements["found"]
         situation_result["missing_elements"] = available_elements["missing"]
-        
+
         # Base confidence on available elements
         base_confidence = len(available_elements["found"]) / len(UI_CLASSES) * 0.8
-        
+
         # Game State Detection (with fallbacks)
         game_state = self._detect_game_state(hud_info)
         if game_state:
@@ -993,44 +1592,44 @@ class SituationDetector:
             if game_state:
                 situation_result["game_state"] = game_state
                 situation_result["fallback_methods_used"].append("clip_characteristics")
-        
+
         # Down/Distance Change Analysis (if previous frame available)
         if previous_hud_info:
             dd_changes = self._track_down_distance_changes(hud_info, previous_hud_info)
             situation_result["down_distance_changes"] = dd_changes
-            
+
             # Use change analysis to improve game state detection
             if not game_state and dd_changes.get("game_state_inference"):
                 situation_result["game_state"] = dd_changes["game_state_inference"]
                 situation_result["fallback_methods_used"].append("down_distance_changes")
                 base_confidence += dd_changes.get("confidence", 0.0) * 0.1
-        
+
         # Field Position (with fallbacks)
         field_position = self._extract_field_position_with_fallbacks(hud_info)
         if field_position:
             situation_result["field_position"] = field_position
             base_confidence += 0.1
-        
-        # Down and Distance (with fallbacks) 
+
+        # Down and Distance (with fallbacks)
         down_distance = self._extract_down_distance_with_fallbacks(hud_info)
         if down_distance:
             situation_result["down_distance"] = down_distance
             base_confidence += 0.1
-            
+
         # Time Context
         time_context = self._extract_time_context(hud_info)
         if time_context:
             situation_result["time_context"] = time_context
-            
+
         # Strategic Context (even with limited info)
         strategic_context = self._analyze_strategic_context_partial(
             situation_result["field_position"],
-            situation_result["down_distance"], 
-            situation_result["time_context"]
+            situation_result["down_distance"],
+            situation_result["time_context"],
         )
         if strategic_context:
             situation_result["strategic_context"] = strategic_context
-            
+
         situation_result["confidence"] = min(base_confidence, 0.95)
         return situation_result
 
@@ -1038,30 +1637,32 @@ class SituationDetector:
         """Assess which HUD elements are available vs missing."""
         found = []
         missing = []
-        
+
         for element in UI_CLASSES:
             if element in hud_info and hud_info[element] is not None:
                 found.append(element)
             else:
                 missing.append(element)
-                
+
         return {"found": found, "missing": missing}
 
-    def _infer_game_state_from_clip_characteristics(self, hud_info: dict[str, Any]) -> Optional[str]:
+    def _infer_game_state_from_clip_characteristics(
+        self, hud_info: dict[str, Any]
+    ) -> Optional[str]:
         """Infer game state from clip characteristics when primary indicators missing."""
         # Check if we have any movement/action indicators
         # This is a simplified version - full implementation would analyze actual video frames
-        
+
         # If we have detailed HUD info, likely pre-snap or post-play
         detailed_elements = ["down_distance", "yards_to_goal", "territory_indicator"]
         if any(elem in hud_info for elem in detailed_elements):
             return "pre_snap"  # Detailed info usually shown pre-snap
-            
+
         # If only basic elements, might be during action
         basic_elements = ["game_clock", "score_bug"]
         if any(elem in hud_info for elem in basic_elements) and len(hud_info) <= 3:
             return "during_play"  # Minimal HUD during action
-            
+
         return None
 
     def _extract_field_position_with_fallbacks(self, hud_info: dict[str, Any]) -> Optional[str]:
@@ -1069,20 +1670,20 @@ class SituationDetector:
         # Primary method: yards_to_goal + territory_indicator
         yards_to_goal = hud_info.get("yards_to_goal")
         territory_indicator = hud_info.get("territory_indicator")
-        
+
         if yards_to_goal and territory_indicator:
             return self._construct_field_position(yards_to_goal, territory_indicator)
-            
+
         # Fallback 1: Check for any field position text
         field_pos = hud_info.get("field_position")
         if field_pos:
             return str(field_pos)
-            
+
         # Fallback 2: Infer from other context
         down_distance = hud_info.get("down_distance", "")
         if "Goal" in str(down_distance):
             return "RED_ZONE"  # "1st & Goal" indicates red zone
-            
+
         return None
 
     def _extract_down_distance_with_fallbacks(self, hud_info: dict[str, Any]) -> Optional[dict]:
@@ -1090,17 +1691,18 @@ class SituationDetector:
         down_distance = hud_info.get("down_distance")
         if not down_distance:
             return None
-            
+
         # Parse standard format
         import re
+
         # Try patterns like "1st & 10", "4th & Goal", "2nd & 3"
         pattern = r"(\d+)(?:st|nd|rd|th)?\s*&\s*(.+)"
         match = re.search(pattern, str(down_distance), re.IGNORECASE)
-        
+
         if match:
             down = int(match.group(1))
             distance_text = match.group(2).strip()
-            
+
             # Parse distance
             if distance_text.lower() == "goal":
                 return {"down": down, "distance": "goal", "yards_to_go": 0}
@@ -1110,16 +1712,16 @@ class SituationDetector:
                     return {"down": down, "distance": yards, "yards_to_go": yards}
                 except ValueError:
                     return {"down": down, "distance": distance_text, "yards_to_go": None}
-                    
+
         return None
 
     def _extract_time_context(self, hud_info: dict[str, Any]) -> Optional[dict]:
         """Extract time context from available clock information."""
         game_clock = hud_info.get("game_clock")
         play_clock = hud_info.get("play_clock")
-        
+
         time_context = {}
-        
+
         if game_clock:
             time_context["game_clock"] = game_clock
             # Parse quarter/time if available
@@ -1127,7 +1729,7 @@ class SituationDetector:
                 time_context["time_urgency"] = "normal"
             elif any(urgent in str(game_clock).lower() for urgent in ["2:00", "1:00", ":30"]):
                 time_context["time_urgency"] = "high"
-                
+
         if play_clock:
             time_context["play_clock"] = play_clock
             # Assess play clock urgency
@@ -1136,35 +1738,37 @@ class SituationDetector:
                 if clock_value <= 10:
                     time_context["play_urgency"] = "high"
                 elif clock_value <= 20:
-                    time_context["play_urgency"] = "medium" 
+                    time_context["play_urgency"] = "medium"
                 else:
                     time_context["play_urgency"] = "low"
             except (ValueError, TypeError):
                 time_context["play_urgency"] = "unknown"
-                
+
         return time_context if time_context else None
 
     def _analyze_strategic_context_partial(
-        self, 
-        field_position: Optional[str], 
-        down_distance: Optional[dict], 
-        time_context: Optional[dict]
+        self,
+        field_position: Optional[str],
+        down_distance: Optional[dict],
+        time_context: Optional[dict],
     ) -> Optional[dict]:
         """Analyze strategic context even with partial information."""
         if not any([field_position, down_distance, time_context]):
             return None
-            
+
         context = {"implications": [], "urgency": "normal"}
-        
+
         # Field position implications
         if field_position:
             if "RED_ZONE" in field_position or "Goal" in str(field_position):
                 context["implications"].append("red_zone_scoring_opportunity")
                 context["urgency"] = "high"
-            elif "OWN" in field_position and any(num in field_position for num in ["1", "2", "3", "4", "5"]):
+            elif "OWN" in field_position and any(
+                num in field_position for num in ["1", "2", "3", "4", "5"]
+            ):
                 context["implications"].append("safety_risk")
                 context["urgency"] = "high"
-                
+
         # Down implications
         if down_distance:
             down = down_distance.get("down")
@@ -1174,7 +1778,7 @@ class SituationDetector:
             elif down_distance.get("distance") == "goal":
                 context["implications"].append("goal_line_stand")
                 context["urgency"] = "high"
-                
+
         # Time implications
         if time_context:
             if time_context.get("time_urgency") == "high":
@@ -1182,29 +1786,31 @@ class SituationDetector:
                 context["urgency"] = "high"
             elif time_context.get("play_urgency") == "high":
                 context["implications"].append("play_clock_pressure")
-                
+
         return context if context["implications"] else None
 
-    def _track_down_distance_changes(self, current_hud: dict[str, Any], previous_hud: Optional[dict[str, Any]]) -> dict[str, Any]:
+    def _track_down_distance_changes(
+        self, current_hud: dict[str, Any], previous_hud: Optional[dict[str, Any]]
+    ) -> dict[str, Any]:
         """
         Track changes in down_distance between frames for game state detection.
-        
-        Since down_distance is always visible in HUD (even during play), 
+
+        Since down_distance is always visible in HUD (even during play),
         a change indicates transition to pre-snap of new play.
-        
+
         Args:
             current_hud: Current frame HUD data
             previous_hud: Previous frame HUD data (if available)
-            
+
         Returns:
             dict: Simple change analysis with game state inference
         """
         if not previous_hud:
             return {"change_detected": False, "confidence": 0.0, "game_state_inference": None}
-            
+
         current_dd = current_hud.get("down_distance", "")
         previous_dd = previous_hud.get("down_distance", "")
-        
+
         # Simple comparison - if down_distance changed, we're likely pre-snap
         if current_dd and previous_dd and current_dd != previous_dd:
             return {
@@ -1214,14 +1820,14 @@ class SituationDetector:
                 "details": {
                     "from": previous_dd,
                     "to": current_dd,
-                    "reason": "down_distance_change"
-                }
+                    "reason": "down_distance_change",
+                },
             }
-        
+
         # No change detected - could be during play or same pre-snap moment
         return {
-            "change_detected": False, 
+            "change_detected": False,
             "confidence": 0.0,
             "game_state_inference": None,
-            "details": {"down_distance": current_dd}
+            "details": {"down_distance": current_dd},
         }

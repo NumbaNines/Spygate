@@ -1,0 +1,40 @@
+path: spygate/models/yolo11/data # dataset root dir
+train: train/images # train images (relative to 'path')
+val: val/images # val images (relative to 'path')
+test: test/images # test images (relative to 'path')
+
+# Classes
+names:
+  0: score_bug
+  1: down_distance
+  2: game_clock
+  3: play_clock
+  4: score_home
+  5: score_away
+  6: possession
+  7: yard_line
+  8: timeout_indicator
+  9: penalty_indicator
+
+# Training parameters
+epochs: 100
+batch: 16
+imgsz: 640
+device: 0 # cuda device, i.e. 0 or 0,1,2,3 or cpu
+workers: 8 # maximum number of dataloader workers
+patience: 50 # epochs to wait for no observable improvement for early stopping
+
+# Augmentation
+hsv_h: 0.015 # image HSV-Hue augmentation (fraction)
+hsv_s: 0.7 # image HSV-Saturation augmentation (fraction)
+hsv_v: 0.4 # image HSV-Value augmentation (fraction)
+degrees: 0 # image rotation (+/- deg)
+translate: 0.1 # image translation (+/- fraction)
+scale: 0.5 # image scale (+/- gain)
+shear: 0.0 # image shear (+/- deg)
+perspective: 0.0 # image perspective (+/- fraction), range 0-0.001
+flipud: 0.0 # image flip up-down (probability)
+fliplr: 0.5 # image flip left-right (probability)
+mosaic: 1.0 # image mosaic (probability)
+mixup: 0.0 # image mixup (probability)
+copy_paste: 0.0 # segment copy-paste (probability)

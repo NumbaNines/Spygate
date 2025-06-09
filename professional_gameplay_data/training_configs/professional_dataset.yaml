@@ -1,0 +1,84 @@
+# Professional Gameplay Dataset Configuration
+# SpygateAI - Professional Benchmark Model Training
+
+# Dataset paths (relative to this config file)
+path: ../annotations/yolo_format # Root directory for professional annotations
+train: images # Training images directory
+val: images # Validation images directory (can be split later)
+
+# Class definitions - same as casual model for compatibility
+# but trained on higher-quality professional footage
+nc: 4 # number of classes
+names:
+  0: hud # Main HUD overlay detection
+  1: qb_position # Quarterback position for hash mark analysis
+  2: left_hash_mark # Left hash mark identification
+  3: right_hash_mark # Right hash mark identification
+
+# Professional training standards
+quality_threshold: professional # Only use professional-grade footage
+min_confidence: 0.8 # Higher confidence threshold for professional model
+strategic_focus: true # Include strategic context in training
+
+# Data sources metadata
+sources:
+  nfl_games: 70% # Primary focus on NFL footage
+  college_elite: 25% # Top-tier college programs only
+  coaching_clinics: 5% # Professional coaching content
+
+# Professional-specific augmentation settings
+augmentation:
+  # More conservative augmentation to preserve professional quality
+  hsv_h: 0.010 # Reduced hue variation (professional broadcasts more consistent)
+  hsv_s: 0.5 # Saturation adjustment
+  hsv_v: 0.3 # Value/brightness adjustment
+  degrees: 5.0 # Minimal rotation (professional camera angles consistent)
+  translate: 0.05 # Minimal translation (professional framing consistent)
+  scale: 0.1 # Minimal scaling (professional aspect ratios consistent)
+  shear: 1.0 # Minimal shear transformation
+  perspective: 0.0001 # Minimal perspective change (professional cameras stable)
+  flipud: 0.0 # No vertical flipping (would corrupt HUD)
+  fliplr: 0.2 # Occasional horizontal flip (field orientation can vary)
+  mosaic: 0.5 # Mosaic augmentation probability
+  mixup: 0.1 # Mixup augmentation probability
+
+# Professional model optimization
+training_params:
+  epochs: 50 # More epochs for professional precision
+  batch_size: 16 # Optimized for professional data complexity
+  learning_rate: 0.001 # Conservative learning rate for precision
+  weight_decay: 0.0005 # Regularization for professional generalization
+  warmup_epochs: 5 # Warmup period for stable training
+
+# Validation strategy for professional standards
+validation:
+  split_ratio: 0.2 # 80% train, 20% validation
+  stratified: true # Ensure even distribution across game types
+  min_samples_per_class: 50 # Minimum professional samples per class
+
+# Professional benchmarking
+benchmarks:
+  target_map50: 0.99 # Target 99%+ mAP50 for professional model
+  target_map95: 0.85 # Target 85%+ mAP95 for professional precision
+  inference_speed: 2.0 # Target <2ms inference time
+
+# Professional analysis features
+analysis_features:
+  strategic_context: true # Include formation/situation context
+  decision_quality: true # Track decision-making patterns
+  coaching_insights: true # Generate coaching recommendations
+  opponent_analysis: true # Analyze opponent-specific patterns
+
+# Export settings for professional deployment
+export:
+  formats: [pt, onnx, tensorrt] # Professional deployment formats
+  optimization: professional # Professional-grade optimization
+  precision: fp16 # Half precision for speed
+
+# Metadata tracking for professional standards
+metadata:
+  data_version: "1.0"
+  model_version: "professional_v1"
+  training_date: "auto"
+  quality_certification: "professional_grade"
+  coaching_validation: "required"

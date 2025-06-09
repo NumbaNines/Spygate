@@ -1,0 +1,24 @@
+{
+  "timestamp": "2025-06-09T11:57:41.519861",
+  "test_results": {
+    "hardware_detection": true,
+    "tier_classification": true,
+    "optimizer_integration": false,
+    "interface_adaptation": true
+  },
+  "success_rate": 75.0,
+  "hardware_specs": {
+    "tier": "ULTRA",
+    "cpu_cores": 8,
+    "ram_gb": 31.218311309814453,
+    "gpu_name": "NVIDIA GeForce RTX 4070 SUPER",
+    "gpu_memory_gb": 11.99365234375,
+    "cuda_available": true
+  },
+  "adaptations": [
+    "Frame skip: 15 frames (ULTRA tier)",
+    "Processing resolution: 1920x1080 (Full)",
+    "Detection confidence: 0.5 (High accuracy)",
+    "Batch size: 8"
+  ]
+}

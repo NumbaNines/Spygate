@@ -243,7 +243,7 @@ def analyze_any_football_game(video_input):
 - **Backend**: Django REST Framework for API services
 - **Frontend**: Modern SPA (React/Next.js) for dashboard UI
 - **Desktop**: PyQt6 with adaptive video processing
-- **AI/ML**: YOLOv10+ (or latest generation) + Enhanced OpenCV pipeline **with game-agnostic training**
+- **AI/ML**: YOLOv8 (ultralytics) + Enhanced OpenCV pipeline **with game-agnostic training**
 - **Database**: SQLite for local storage, PostgreSQL for cloud sync **with cross-game schema**
 - **Video Processing**: FFmpeg with GPU acceleration support
 - **Cloud**: Optional AWS integration for advanced processing
@@ -395,7 +395,7 @@ This roadmap is revised to prioritize a high-value, low-risk MVP first **with mu
 **Goal**: Introduce AI-driven formation recognition to provide deeper strategic insights **with cross-game mapping**
 **Investment**: 45 hours ($2,250)
 **Deliverables**:
-- ✅ **YOLOv10+ On-Field Player Detection** pipeline **with game-agnostic training**
+- ✅ **YOLOv8 On-Field Player Detection** pipeline **with game-agnostic training**
 - ✅ OpenCV logic for formation classification based on player positions
 - ✅ Integration of formation data into the UI, analysis, and recommendations
 - ✅ **Cross-game intelligence and strategy migration tools**

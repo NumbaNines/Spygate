@@ -1,13 +1,13 @@
 """Customized YOLOv8 model architecture for HUD element detection and text region detection with advanced GPU memory management and optimization."""
 
+import json
 import logging
-import time
 import threading
+import time
+from collections import deque
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
-from dataclasses import dataclass, field
-from collections import deque
-import json
 
 import cv2
 import numpy as np
@@ -33,8 +33,8 @@ except ImportError:
     ops = None
 
 try:
-    from ..core.hardware import HardwareDetector, HardwareTier
     from ..core.gpu_memory_manager import AdvancedGPUMemoryManager, get_memory_manager
+    from ..core.hardware import HardwareDetector, HardwareTier
 
     MEMORY_MANAGER_AVAILABLE = True
 except ImportError:
@@ -61,113 +61,123 @@ UI_CLASSES = [
 ]
 
 # Enhanced hardware-tier specific model configurations with optimization features
-MODEL_CONFIGS = {
-    HardwareTier.ULTRA_LOW: {
-        "model_size": "n",  # YOLOv8n - nano
-        "img_size": 320,
-        "batch_size": 1,
-        "half": False,  # Disable FP16 for better compatibility
-        "device": "cpu",
-        "max_det": 10,
-        "conf": 0.4,
-        "iou": 0.7,
-        "optimize": True,  # Enable optimization
-        "quantize": False,  # Disable quantization for stability
-        "compile": False,  # Disable model compilation
-        "warmup_epochs": 1,
-        "patience": 5,
-        "workers": 1,
-    },
-    HardwareTier.LOW: {
-        "model_size": "n",  # YOLOv8n - nano
-        "img_size": 416,
-        "batch_size": 2,
-        "half": False,
-        "device": "auto",
-        "max_det": 20,
-        "conf": 0.3,
-        "iou": 0.6,
-        "optimize": True,
-        "quantize": False,
-        "compile": False,
-        "warmup_epochs": 2,
-        "patience": 10,
-        "workers": 2,
-    },
-    HardwareTier.MEDIUM: {
-        "model_size": "s",  # YOLOv8s - small
-        "img_size": 640,
-        "batch_size": 4,
-        "half": True,
-        "device": "auto",
-        "max_det": 50,
-        "conf": 0.25,
-        "iou": 0.5,
-        "optimize": True,
-        "quantize": True,  # Enable quantization for performance
-        "compile": True,  # Enable model compilation
-        "warmup_epochs": 3,
-        "patience": 15,
-        "workers": 4,
-    },
-    HardwareTier.HIGH: {
-        "model_size": "m",  # YOLOv8m - medium
-        "img_size": 832,
-        "batch_size": 8,
-        "half": True,
-        "device": "auto",
-        "max_det": 100,
-        "conf": 0.2,
-        "iou": 0.45,
-        "optimize": True,
-        "quantize": True,
-        "compile": True,
-        "warmup_epochs": 5,
-        "patience": 20,
-        "workers": 6,
-    },
-    HardwareTier.ULTRA: {
-        "model_size": "l",  # YOLOv8l - large
-        "img_size": 1280,
-        "batch_size": 16,
-        "half": True,
-        "device": "auto",
-        "max_det": 300,
-        "conf": 0.15,
-        "iou": 0.4,
-        "optimize": True,
-        "quantize": True,
-        "compile": True,
-        "warmup_epochs": 10,
-        "patience": 30,
-        "workers": 8,
-    },
-} if TORCH_AVAILABLE and HardwareTier else {}
+MODEL_CONFIGS = (
+    {
+        HardwareTier.ULTRA_LOW: {
+            "model_size": "n",  # YOLOv8n - nano
+            "img_size": 320,
+            "batch_size": 1,
+            "half": False,  # Disable FP16 for better compatibility
+            "device": "cpu",
+            "max_det": 10,
+            "conf": 0.4,
+            "iou": 0.7,
+            "optimize": True,  # Enable optimization
+            "quantize": False,  # Disable quantization for stability
+            "compile": False,  # Disable model compilation
+            "warmup_epochs": 1,
+            "patience": 5,
+            "workers": 1,
+        },
+        HardwareTier.LOW: {
+            "model_size": "n",  # YOLOv8n - nano
+            "img_size": 416,
+            "batch_size": 2,
+            "half": False,
+            "device": "auto",
+            "max_det": 20,
+            "conf": 0.3,
+            "iou": 0.6,
+            "optimize": True,
+            "quantize": False,
+            "compile": False,
+            "warmup_epochs": 2,
+            "patience": 10,
+            "workers": 2,
+        },
+        HardwareTier.MEDIUM: {
+            "model_size": "s",  # YOLOv8s - small
+            "img_size": 640,
+            "batch_size": 4,
+            "half": True,
+            "device": "auto",
+            "max_det": 50,
+            "conf": 0.25,
+            "iou": 0.5,
+            "optimize": True,
+            "quantize": True,  # Enable quantization for performance
+            "compile": True,  # Enable model compilation
+            "warmup_epochs": 3,
+            "patience": 15,
+            "workers": 4,
+        },
+        HardwareTier.HIGH: {
+            "model_size": "m",  # YOLOv8m - medium
+            "img_size": 832,
+            "batch_size": 8,
+            "half": True,
+            "device": "auto",
+            "max_det": 100,
+            "conf": 0.2,
+            "iou": 0.45,
+            "optimize": True,
+            "quantize": True,
+            "compile": True,
+            "warmup_epochs": 5,
+            "patience": 20,
+            "workers": 6,
+        },
+        HardwareTier.ULTRA: {
+            "model_size": "l",  # YOLOv8l - large
+            "img_size": 1280,
+            "batch_size": 16,
+            "half": True,
+            "device": "auto",
+            "max_det": 300,
+            "conf": 0.15,
+            "iou": 0.4,
+            "optimize": True,
+            "quantize": True,
+            "compile": True,
+            "warmup_epochs": 10,
+            "patience": 30,
+            "workers": 8,
+        },
+    }
+    if TORCH_AVAILABLE and HardwareTier
+    else {}
+)
 
 
 @dataclass
 class PerformanceMetrics:
     """Performance tracking for model optimization."""
-    
+
     inference_times: deque = field(default_factory=lambda: deque(maxlen=100))
     memory_usage: deque = field(default_factory=lambda: deque(maxlen=100))
     accuracy_scores: deque = field(default_factory=lambda: deque(maxlen=50))
     batch_sizes: deque = field(default_factory=lambda: deque(maxlen=100))
     gpu_utilization: deque = field(default_factory=lambda: deque(maxlen=100))
-    
-    def add_measurement(self, inference_time: float, memory_mb: float, batch_size: int, 
-                       accuracy: Optional[float] = None, gpu_util: Optional[float] = None):
+
+    def add_measurement(
+        self,
+        inference_time: float,
+        memory_mb: float,
+        batch_size: int,
+        accuracy: Optional[float] = None,
+        gpu_util: Optional[float] = None,
+    ):
         """Add a performance measurement."""
         self.inference_times.append(inference_time)
         self.memory_usage.append(memory_mb)
         self.batch_sizes.append(batch_size)
-        
+
         if accuracy is not None:
             self.accuracy_scores.append(accuracy)
         if gpu_util is not None:
             self.gpu_utilization.append(gpu_util)
-    
-    def get_average_metrics(self) -> Dict:
+
+    def get_average_metrics(self) -> dict:
         """Get average performance metrics."""
         return {
             "avg_inference_time": np.mean(self.inference_times) if self.inference_times else 0.0,
@@ -182,17 +192,17 @@ class PerformanceMetrics:
 @dataclass
 class OptimizationConfig:
     """Configuration for model optimization features."""
-    
+
     enable_dynamic_switching: bool = True
     enable_adaptive_batch_size: bool = True
     enable_performance_monitoring: bool = True
     enable_auto_optimization: bool = True
-    
+
     # Performance thresholds for optimization
     max_inference_time: float = 1.0  # Maximum acceptable inference time (seconds)
     min_accuracy: float = 0.85  # Minimum acceptable accuracy
     max_memory_usage: float = 0.9  # Maximum GPU memory usage (fraction)
-    
+
     # Optimization intervals
     optimization_interval: int = 50  # Optimize every N inferences
     monitoring_interval: int = 10  # Monitor performance every N inferences
@@ -205,18 +215,22 @@ class DetectionResult:
     boxes: np.ndarray  # Bounding boxes [x1, y1, x2, y2]
     scores: np.ndarray  # Confidence scores
     classes: np.ndarray  # Class indices
-    class_names: List[str]  # Class names
+    class_names: list[str]  # Class names
     processing_time: float  # Time taken for detection
-    memory_usage: Optional[Dict] = None  # Memory usage statistics
-    model_config: Optional[Dict] = None  # Model configuration used
-    optimization_applied: Optional[Dict] = None  # Optimizations applied
+    memory_usage: Optional[dict] = None  # Memory usage statistics
+    model_config: Optional[dict] = None  # Model configuration used
+    optimization_applied: Optional[dict] = None  # Optimizations applied
 
 
 class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
     """Enhanced YOLOv8 model with advanced optimization, dynamic switching, and performance monitoring."""
 
-    def __init__(self, model_path: Optional[str] = None, hardware: Optional[HardwareDetector] = None,
-                 optimization_config: Optional[OptimizationConfig] = None):
+    def __init__(
+        self,
+        model_path: Optional[str] = None,
+        hardware: Optional[HardwareDetector] = None,
+        optimization_config: Optional[OptimizationConfig] = None,
+    ):
         """Initialize the Enhanced YOLOv8 model with advanced optimization features."""
         if not TORCH_AVAILABLE:
             raise ImportError("PyTorch is required for YOLOv8 functionality")
@@ -224,41 +238,43 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
         # Initialize hardware detection
         self.hardware = hardware or HardwareDetector()
         self.optimization_config = optimization_config or OptimizationConfig()
-        
+
         # Initialize base configuration
         self.base_config = MODEL_CONFIGS.get(self.hardware.tier, MODEL_CONFIGS[HardwareTier.LOW])
         self.config = self.base_config.copy()
-        
+
         # Performance tracking
         self.performance_metrics = PerformanceMetrics()
         self.inference_counter = 0
         self.last_optimization = 0
-        
+
         # Model variants for dynamic switching
         self.model_variants = {}
         self.current_variant = "default"
-        
+
         # Threading for background optimization
         self.optimization_lock = threading.Lock()
-        
+
         # Initialize the primary model
         self._initialize_primary_model(model_path)
-        
+
         # Setup memory management
         self._setup_memory_management()
-        
+
         # Configure device and optimizations
         self._setup_device()
         self._apply_optimizations()
-        
+
         # Store class names
         self.class_names = UI_CLASSES
-        
+
         # Start background monitoring if enabled
         if self.optimization_config.enable_performance_monitoring:
             self._start_background_monitoring()
 
-        logger.info(f"Enhanced YOLOv8 model initialized for {self.hardware.tier.name} hardware with optimizations")
+        logger.info(
+            f"Enhanced YOLOv8 model initialized for {self.hardware.tier.name} hardware with optimizations"
+        )
 
     def _initialize_primary_model(self, model_path: Optional[str]):
         """Initialize the primary YOLO model."""
@@ -276,10 +292,10 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
         try:
             super().__init__(model_to_load)
             logger.info(f"Successfully loaded YOLOv8 model: {model_to_load}")
-            
+
             # Store the default variant
             self.model_variants["default"] = self.model
-            
+
         except Exception as e:
             logger.error(f"Failed to load YOLOv8 model: {e}")
             # Fallback to smallest model
@@ -331,7 +347,7 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
     def _apply_optimizations(self):
         """Apply hardware-tier specific optimizations."""
         optimizations_applied = []
-        
+
         try:
             # Model compilation optimization
             if self.config.get("compile", False) and hasattr(torch, "compile"):
@@ -339,13 +355,13 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
                     self.model = torch.compile(self.model)
                     optimizations_applied.append("torch_compile")
                     logger.info("Applied torch.compile optimization")
-            
+
             # Half precision optimization
             if self.config.get("half", False) and self.device == "cuda":
                 self.model.half()
                 optimizations_applied.append("half_precision")
                 logger.info("Applied half precision optimization")
-            
+
             # Model optimization for inference
             if self.config.get("optimize", True):
                 self.model.eval()
@@ -353,22 +369,23 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
                     self.model.fuse()
                     optimizations_applied.append("fused_layers")
                     logger.info("Applied layer fusion optimization")
-            
+
             # Set optimized inference parameters
             if hasattr(self.model, "model"):
                 for m in self.model.model.modules():
                     if hasattr(m, "inplace"):
                         m.inplace = True
-            
+
             self.applied_optimizations = optimizations_applied
             logger.info(f"Applied optimizations: {optimizations_applied}")
-            
+
         except Exception as e:
             logger.warning(f"Some optimizations failed to apply: {e}")
             self.applied_optimizations = optimizations_applied
 
     def _start_background_monitoring(self):
         """Start background performance monitoring."""
+
         def monitor():
             while True:
                 time.sleep(30)  # Monitor every 30 seconds
@@ -376,7 +393,7 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
                     self._check_performance_and_optimize()
                 except Exception as e:
                     logger.warning(f"Background monitoring error: {e}")
-        
+
         monitor_thread = threading.Thread(target=monitor, daemon=True)
         monitor_thread.start()
         logger.info("Started background performance monitoring")
@@ -385,48 +402,54 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
         """Check performance metrics and apply optimizations if needed."""
         if not self.optimization_config.enable_auto_optimization:
             return
-        
+
         with self.optimization_lock:
             metrics = self.performance_metrics.get_average_metrics()
-            
+
             # Check if optimization is needed
             needs_optimization = False
             optimization_reason = []
-            
+
             if metrics["avg_inference_time"] > self.optimization_config.max_inference_time:
                 needs_optimization = True
                 optimization_reason.append("high_inference_time")
-            
-            if metrics["avg_memory_usage"] > self.optimization_config.max_memory_usage * 1000:  # Convert to MB
+
+            if (
+                metrics["avg_memory_usage"] > self.optimization_config.max_memory_usage * 1000
+            ):  # Convert to MB
                 needs_optimization = True
                 optimization_reason.append("high_memory_usage")
-            
+
             if needs_optimization:
                 logger.info(f"Auto-optimization triggered: {optimization_reason}")
                 self._apply_dynamic_optimization(metrics)
 
-    def _apply_dynamic_optimization(self, metrics: Dict):
+    def _apply_dynamic_optimization(self, metrics: dict):
         """Apply dynamic optimizations based on performance metrics."""
         optimizations = []
-        
+
         # Reduce batch size if memory usage is high
-        if metrics["avg_memory_usage"] > self.optimization_config.max_memory_usage * 800:  # 80% threshold
+        if (
+            metrics["avg_memory_usage"] > self.optimization_config.max_memory_usage * 800
+        ):  # 80% threshold
             new_batch_size = max(1, int(self.optimal_batch_size * 0.8))
             self.optimal_batch_size = new_batch_size
             optimizations.append(f"reduced_batch_size_to_{new_batch_size}")
-        
+
         # Adjust confidence threshold if inference time is high
         if metrics["avg_inference_time"] > self.optimization_config.max_inference_time * 0.8:
             new_conf = min(0.5, self.config["conf"] + 0.05)  # Increase confidence threshold
             self.config["conf"] = new_conf
             optimizations.append(f"increased_confidence_to_{new_conf:.2f}")
-        
+
         # Switch to smaller model if performance is consistently poor
-        if (metrics["avg_inference_time"] > self.optimization_config.max_inference_time * 1.5 and
-            self.config["model_size"] != "n"):
+        if (
+            metrics["avg_inference_time"] > self.optimization_config.max_inference_time * 1.5
+            and self.config["model_size"] != "n"
+        ):
             self._switch_to_smaller_model()
             optimizations.append("switched_to_smaller_model")
-        
+
         if optimizations:
             logger.info(f"Applied dynamic optimizations: {optimizations}")
 
@@ -434,26 +457,26 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
         """Switch to a smaller model variant for better performance."""
         current_size = self.config["model_size"]
         size_hierarchy = ["l", "m", "s", "n"]
-        
+
         try:
             current_idx = size_hierarchy.index(current_size)
             if current_idx < len(size_hierarchy) - 1:
                 new_size = size_hierarchy[current_idx + 1]
-                
+
                 # Load smaller model if not already cached
                 variant_key = f"yolov8{new_size}"
                 if variant_key not in self.model_variants:
                     new_model = YOLO(f"yolov8{new_size}.pt")
                     new_model.to(self.device)
                     self.model_variants[variant_key] = new_model
-                
+
                 # Switch to smaller model
                 self.model = self.model_variants[variant_key]
                 self.config["model_size"] = new_size
                 self.current_variant = variant_key
-                
+
                 logger.info(f"Switched to smaller model: YOLOv8{new_size}")
-                
+
         except Exception as e:
             logger.error(f"Failed to switch model: {e}")
 
@@ -495,7 +518,7 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
                     # Process in optimal batch sizes
                     results = []
                     for i in range(0, len(source), self.optimal_batch_size):
-                        batch = source[i:i + self.optimal_batch_size]
+                        batch = source[i : i + self.optimal_batch_size]
                         batch_results = super().predict(
                             source=batch,
                             conf=conf,
@@ -552,9 +575,7 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
                     memory_mb = memory_stats_current.get("allocated_memory_gb", 0) * 1024
 
                 self.performance_metrics.add_measurement(
-                    inference_time=processing_time,
-                    memory_mb=memory_mb,
-                    batch_size=batch_size
+                    inference_time=processing_time, memory_mb=memory_mb, batch_size=batch_size
                 )
 
             # Record batch performance
@@ -576,8 +597,10 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
 
             # Increment inference counter and check for optimization
             self.inference_counter += 1
-            if (self.optimization_config.enable_auto_optimization and
-                self.inference_counter % self.optimization_config.optimization_interval == 0):
+            if (
+                self.optimization_config.enable_auto_optimization
+                and self.inference_counter % self.optimization_config.optimization_interval == 0
+            ):
                 self._check_performance_and_optimize()
 
             if return_memory_stats:
@@ -607,7 +630,7 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
 
     def detect_hud_elements(
         self, frame: np.ndarray, return_memory_stats: bool = False
-    ) -> Union[DetectionResult, Tuple[DetectionResult, Dict]]:
+    ) -> Union[DetectionResult, tuple[DetectionResult, dict]]:
         """Detect HUD elements in a frame with structured output and optimization."""
         try:
             # Run optimized prediction
@@ -635,14 +658,19 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
                     classes = np.empty(0, dtype=int)
 
                 # Get class names
-                class_names = [self.class_names[i] if i < len(self.class_names) else f"class_{i}" for i in classes]
+                class_names = [
+                    self.class_names[i] if i < len(self.class_names) else f"class_{i}"
+                    for i in classes
+                ]
 
                 detection_result = DetectionResult(
                     boxes=boxes,
                     scores=scores,
                     classes=classes,
                     class_names=class_names,
-                    processing_time=memory_stats.get("processing_time", 0.0) if memory_stats else 0.0,
+                    processing_time=(
+                        memory_stats.get("processing_time", 0.0) if memory_stats else 0.0
+                    ),
                     memory_usage=memory_stats,
                     model_config=self.config.copy(),
                     optimization_applied=optimization_applied,
@@ -659,7 +687,9 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
                     scores=np.empty(0),
                     classes=np.empty(0, dtype=int),
                     class_names=[],
-                    processing_time=memory_stats.get("processing_time", 0.0) if memory_stats else 0.0,
+                    processing_time=(
+                        memory_stats.get("processing_time", 0.0) if memory_stats else 0.0
+                    ),
                     memory_usage=memory_stats,
                     model_config=self.config.copy(),
                     optimization_applied=optimization_applied,
@@ -714,17 +744,17 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
         else:
             del tensor
 
-    def get_performance_report(self) -> Dict:
+    def get_performance_report(self) -> dict:
         """Get comprehensive performance report."""
         metrics = self.performance_metrics.get_average_metrics()
-        
+
         report = {
             "model_info": {
                 "model_size": self.config["model_size"],
                 "current_variant": self.current_variant,
                 "hardware_tier": self.hardware.tier.name,
                 "device": self.device,
-                "optimizations_applied": getattr(self, 'applied_optimizations', []),
+                "optimizations_applied": getattr(self, "applied_optimizations", []),
             },
             "performance_metrics": metrics,
             "configuration": {
@@ -743,66 +773,72 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
             "model_variants_loaded": list(self.model_variants.keys()),
             "total_inferences": self.inference_counter,
         }
-        
+
         return report
 
-    def benchmark_model(self, test_images: List[np.ndarray], iterations: int = 10) -> Dict:
+    def benchmark_model(self, test_images: list[np.ndarray], iterations: int = 10) -> dict:
         """Benchmark model performance with given test images."""
-        logger.info(f"Starting model benchmark with {len(test_images)} images, {iterations} iterations")
-        
+        logger.info(
+            f"Starting model benchmark with {len(test_images)} images, {iterations} iterations"
+        )
+
         benchmark_results = {
             "inference_times": [],
             "memory_usage": [],
             "detection_counts": [],
             "model_config": self.config.copy(),
         }
-        
+
         for iteration in range(iterations):
             iteration_times = []
             iteration_memory = []
             iteration_detections = []
-            
+
             for image in test_images:
                 start_time = time.time()
-                
+
                 # Record memory before
                 memory_before = 0
                 if torch.cuda.is_available():
                     memory_before = torch.cuda.memory_allocated()
-                
+
                 # Run detection
                 result = self.detect_hud_elements(image)
-                
+
                 # Record metrics
                 inference_time = time.time() - start_time
                 memory_after = torch.cuda.memory_allocated() if torch.cuda.is_available() else 0
                 memory_used = (memory_after - memory_before) / 1024 / 1024  # MB
-                
+
                 iteration_times.append(inference_time)
                 iteration_memory.append(memory_used)
                 iteration_detections.append(len(result.boxes))
-            
+
             benchmark_results["inference_times"].append(np.mean(iteration_times))
             benchmark_results["memory_usage"].append(np.mean(iteration_memory))
             benchmark_results["detection_counts"].append(np.mean(iteration_detections))
-        
+
         # Calculate statistics
-        benchmark_results.update({
-            "avg_inference_time": np.mean(benchmark_results["inference_times"]),
-            "std_inference_time": np.std(benchmark_results["inference_times"]),
-            "avg_memory_usage": np.mean(benchmark_results["memory_usage"]),
-            "avg_detections": np.mean(benchmark_results["detection_counts"]),
-            "min_inference_time": np.min(benchmark_results["inference_times"]),
-            "max_inference_time": np.max(benchmark_results["inference_times"]),
-        })
-        
-        logger.info(f"Benchmark completed. Avg inference time: {benchmark_results['avg_inference_time']:.3f}s")
+        benchmark_results.update(
+            {
+                "avg_inference_time": np.mean(benchmark_results["inference_times"]),
+                "std_inference_time": np.std(benchmark_results["inference_times"]),
+                "avg_memory_usage": np.mean(benchmark_results["memory_usage"]),
+                "avg_detections": np.mean(benchmark_results["detection_counts"]),
+                "min_inference_time": np.min(benchmark_results["inference_times"]),
+                "max_inference_time": np.max(benchmark_results["inference_times"]),
+            }
+        )
+
+        logger.info(
+            f"Benchmark completed. Avg inference time: {benchmark_results['avg_inference_time']:.3f}s"
+        )
         return benchmark_results
 
     def save_performance_report(self, filepath: str):
         """Save performance report to file."""
         report = self.get_performance_report()
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(report, f, indent=2, default=str)
         logger.info(f"Performance report saved to: {filepath}")
 
@@ -819,7 +855,9 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
         logger.info(f"- Optimizations: {getattr(self, 'applied_optimizations', [])}")
         logger.info(f"- Dynamic Switching: {self.optimization_config.enable_dynamic_switching}")
         logger.info(f"- Adaptive Batching: {self.optimization_config.enable_adaptive_batch_size}")
-        logger.info(f"- Performance Monitoring: {self.optimization_config.enable_performance_monitoring}")
+        logger.info(
+            f"- Performance Monitoring: {self.optimization_config.enable_performance_monitoring}"
+        )
 
         if self.memory_manager:
             logger.info("- Advanced GPU Memory Management")
@@ -835,10 +873,10 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
             "half_precision": self.config["half"],
             "current_variant": self.current_variant,
             "available_variants": list(self.model_variants.keys()),
-            "optimizations_applied": getattr(self, 'applied_optimizations', []),
+            "optimizations_applied": getattr(self, "applied_optimizations", []),
         }
 
-        if hasattr(self.model, 'model') and hasattr(self.model.model, 'parameters'):
+        if hasattr(self.model, "model") and hasattr(self.model.model, "parameters"):
             stats["model_parameters"] = sum(p.numel() for p in self.model.model.parameters())
 
         if self.memory_manager:
@@ -854,19 +892,17 @@ CustomYOLO11 = EnhancedYOLOv8  # For backward compatibility
 
 
 def load_optimized_yolov8_model(
-    model_path: Optional[str] = None, 
+    model_path: Optional[str] = None,
     hardware: Optional[HardwareDetector] = None,
-    optimization_config: Optional[OptimizationConfig] = None
+    optimization_config: Optional[OptimizationConfig] = None,
 ) -> EnhancedYOLOv8:
     """Load and configure optimized YOLOv8 model with advanced features."""
     return EnhancedYOLOv8(
-        model_path=model_path, 
-        hardware=hardware, 
-        optimization_config=optimization_config
+        model_path=model_path, hardware=hardware, optimization_config=optimization_config
     )
 
 
-def get_hardware_optimized_config(hardware_tier: HardwareTier) -> Dict:
+def get_hardware_optimized_config(hardware_tier: HardwareTier) -> dict:
     """Get hardware-optimized configuration for YOLOv8."""
     return MODEL_CONFIGS.get(hardware_tier, MODEL_CONFIGS[HardwareTier.LOW])
 
@@ -878,7 +914,7 @@ def create_optimization_config(
     enable_auto_optimization: bool = True,
     max_inference_time: float = 1.0,
     min_accuracy: float = 0.85,
-    max_memory_usage: float = 0.9
+    max_memory_usage: float = 0.9,
 ) -> OptimizationConfig:
     """Create an optimization configuration with custom settings."""
     return OptimizationConfig(
@@ -889,4 +925,4 @@ def create_optimization_config(
         max_inference_time=max_inference_time,
         min_accuracy=min_accuracy,
         max_memory_usage=max_memory_usage,
-    ) 
+    )

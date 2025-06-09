@@ -52,12 +52,13 @@ logger = logging.getLogger(__name__)
 
 # UI Classes for HUD detection - Essential elements for game situation analysis
 UI_CLASSES = [
-    "score_bug",           # Main score display with team names, scores, timeouts
-    "down_distance",       # Down and distance indicator (e.g., "1st & 10")
-    "game_clock",          # Game time remaining
-    "play_clock",          # Play clock countdown
-    "field_position",      # Yard line or field position marker
-    "possession_indicator", # Shows which team has possession
+    "score_bug",  # Main score display with team names, scores, timeouts
+    "down_distance",  # Down and distance indicator (e.g., "1st & 10")
+    "game_clock",  # Game time remaining
+    "play_clock",  # Play clock countdown
+    "field_position",  # Yard line or field position marker
+    "possession_indicator",  # Shows which team has possession
+    "territory_indicator",  # Triangle showing field territory (▲ = opponent territory, ▼ = own territory)
 ]
 
 # Enhanced hardware-tier specific model configurations with optimization features

@@ -416,6 +416,24 @@ class SituationDetector:
                             },
                         }
                     )
+                    
+                    # Goal line situations (hash marks strategy)
+                    if yard_num <= 5:
+                        situations.append(
+                            {
+                                "type": "goal_line",
+                                "confidence": min(hud_confidence * 1.2, 0.95),
+                                "frame": frame_number,
+                                "timestamp": timestamp,
+                                "details": {
+                                    "yard_line": yard_line,
+                                    "yards_to_goal": yard_num,
+                                    "hash_marks_context": "goal_line_situation",
+                                    "strategic_importance": "high",
+                                    "source": "hash_marks_analysis",
+                                },
+                            }
+                        )
             except (ValueError, IndexError):
                 pass
 
@@ -460,6 +478,26 @@ class SituationDetector:
                             "score_away": score_away,
                             "score_difference": score_diff,
                             "source": "hud_analysis",
+                        },
+                    }
+                )
+
+        # Hash marks strategic analysis for field position
+        if yard_line:
+            hash_marks_context = self._analyze_hash_marks_position(yard_line)
+            if hash_marks_context:
+                situations.append(
+                    {
+                        "type": "hash_marks_position",
+                        "confidence": min(hud_confidence * 1.0, 0.90),
+                        "frame": frame_number,
+                        "timestamp": timestamp,
+                        "details": {
+                            "yard_line": yard_line,
+                            "hash_marks_zone": hash_marks_context["zone"],
+                            "strategic_implications": hash_marks_context["implications"],
+                            "kicking_angle": hash_marks_context.get("kicking_angle"),
+                            "source": "hash_marks_analysis",
                         },
                     }
                 )
@@ -678,3 +716,82 @@ class SituationDetector:
             )
 
         return mistakes
+
+    def _analyze_hash_marks_position(self, yard_line: str) -> Optional[dict[str, Any]]:
+        """
+        Analyze field position relative to hash marks for strategic implications.
+        
+        Args:
+            yard_line: Field position string (e.g., "OPP 25", "OWN 35", "2-PT")
+            
+        Returns:
+            Dict with hash marks analysis or None if not applicable
+        """
+        if not yard_line:
+            return None
+            
+        try:
+            # Handle special situations
+            if "2-PT" in yard_line or "XP" in yard_line:
+                return {
+                    "zone": "conversion_attempt",
+                    "implications": ["short_yardage", "high_pressure"],
+                    "kicking_angle": "center"
+                }
+                
+            # Parse yard line
+            yard_str = str(yard_line).upper()
+            if "OPP" in yard_str:
+                # In opponent territory
+                try:
+                    yard_num = int(yard_str.split()[-1])
+                    
+                    # Field goal range analysis
+                    if yard_num <= 35:
+                        return {
+                            "zone": "field_goal_range",
+                            "implications": ["field_goal_option", "red_zone_offense", "hash_marks_critical"],
+                            "kicking_angle": self._calculate_kicking_angle(yard_num)
+                        }
+                    elif yard_num <= 50:
+                        return {
+                            "zone": "scoring_territory", 
+                            "implications": ["aggressive_playcalling", "downfield_passing"],
+                            "kicking_angle": "long_range"
+                        }
+                        
+                except (ValueError, IndexError):
+                    pass
+                    
+            elif "OWN" in yard_str:
+                # In own territory
+                try:
+                    yard_num = int(yard_str.split()[-1])
+                    
+                    if yard_num <= 20:
+                        return {
+                            "zone": "danger_zone",
+                            "implications": ["conservative_playcalling", "punting_situation", "safety_risk"],
+                        }
+                    elif yard_num <= 40:
+                        return {
+                            "zone": "neutral_territory",
+                            "implications": ["balanced_playcalling", "field_position_battle"],
+                        }
+                        
+                except (ValueError, IndexError):
+                    pass
+                    
+        except Exception:
+            pass
+            
+        return None
+        
+    def _calculate_kicking_angle(self, yards_to_goal: int) -> str:
+        """Calculate kicking angle difficulty based on yard line and hash marks."""
+        if yards_to_goal <= 15:
+            return "tight_angle"
+        elif yards_to_goal <= 25:
+            return "moderate_angle"
+        else:
+            return "wide_angle"

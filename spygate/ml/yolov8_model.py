@@ -59,7 +59,10 @@ UI_CLASSES = [
     "down_distance",  # Down and distance indicator (e.g., "1st & 10", "4th")
     "game_clock",  # Game time remaining (e.g., "1:57")
     "play_clock",  # Play clock countdown (e.g., ":04") - visible PRE-SNAP only
-    "field_position",  # Yard line or special situation marker (e.g., "2-PT")
+    "field_position",  # Yard line or special situation marker (e.g., "25 YL", "RED ZONE", "2-PT")
+    "hash_marks_indicator",  # Field position relative to hash marks for strategic analysis
+    "red_zone_indicator",  # Special indicator when in red zone (inside 20-yard line)
+    "goal_line_indicator",  # Special indicator when at/near goal line (inside 5-yard line)
     "possession_indicator",  # Triangle on LEFT side between team abbreviations (shows ball possession)
     "territory_indicator",  # Triangle on FAR RIGHT side (▲ = opponent territory, ▼ = own territory)
 ]
@@ -354,7 +357,11 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
 
         try:
             # Model compilation optimization
-            if self.config.get("compile", False) and hasattr(torch, "compile") and self.device == "cuda":
+            if (
+                self.config.get("compile", False)
+                and hasattr(torch, "compile")
+                and self.device == "cuda"
+            ):
                 self.model = torch.compile(self.model)
                 optimizations_applied.append("torch_compile")
                 logger.info("Applied torch.compile optimization")
@@ -521,7 +528,7 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
                     # Process in optimal batch sizes
                     results = []
                     for i in range(0, len(source), self.optimal_batch_size):
-                        batch = source[i:i + self.optimal_batch_size]
+                        batch = source[i : i + self.optimal_batch_size]
                         batch_results = super().predict(
                             source=batch,
                             conf=conf,

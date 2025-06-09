@@ -53,8 +53,8 @@ logger = logging.getLogger(__name__)
 # UI Classes for HUD detection - Essential elements for game situation analysis
 UI_CLASSES = [
     "score_bug",  # Overall score display area (contains team info, scores, timeouts)
-    "away_team",  # Away team abbreviation and score (LEFT side of score bug)
-    "home_team",  # Home team abbreviation and score (RIGHT side of score bug)
+    "away_team",  # Away team abbreviation and score (leftmost team on screen)
+    "home_team",  # Home team abbreviation and score (rightmost team abbreviation on screen)
     "down_distance",  # Down and distance indicator (e.g., "1st & 10")
     "game_clock",  # Game time remaining
     "play_clock",  # Play clock countdown

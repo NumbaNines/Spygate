@@ -9,7 +9,8 @@ from typing import Any, Dict, List, Optional, Tuple
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from ..video.metadata import VideoMetadata
+from video.metadata import VideoMetadata
+
 from .schema import AnalysisJob, ImportLog, Player, Tag, Video, video_players
 
 

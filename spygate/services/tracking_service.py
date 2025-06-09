@@ -2,8 +2,8 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
-from ..core.tracking_pipeline import TrackingPipeline
-from ..models.tracking import TrackingData
+from core.tracking_pipeline import TrackingPipeline
+from models.tracking import TrackingData
 
 
 class TrackingService:

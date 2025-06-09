@@ -1,0 +1,19 @@
+{
+    "storage": {
+        "videos_dir": "data/videos",
+        "max_temp_age_hours": 24,
+        "supported_formats": [
+            ".mp4",
+            ".mov",
+            ".avi"
+        ],
+        "max_file_size_gb": 2.0
+    },
+    "database": {
+        "path": "data/spygate.db"
+    },
+    "logging": {
+        "level": "INFO",
+        "file": "logs/spygate.log"
+    }
+}

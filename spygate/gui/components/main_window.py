@@ -27,9 +27,9 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from spygate.database.video_manager import VideoManager
-from spygate.services.analysis_service import AnalysisService
-from spygate.services.video_service import VideoService
+from database.video_manager import VideoManager
+from services.analysis_service import AnalysisService
+from services.video_service import VideoService
 
 from ..components.composite.dashboard import Dashboard
 from ..themes.theme_manager import ThemeManager

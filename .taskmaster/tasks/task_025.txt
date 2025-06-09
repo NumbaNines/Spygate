@@ -1,0 +1,117 @@
+# Task ID: 25
+# Title: Create Production-Ready PyQt6 Desktop Application
+# Status: pending
+# Dependencies: 2, 3, 7, 16, 17, 20
+# Priority: high
+# Description: Develop a polished FACEIT-style desktop application that integrates all existing core modules into a complete auto-clip detection workflow with drag-and-drop functionality, YOLOv8 analysis, auto-detection of key moments, clip creation, and user approval/rejection.
+# Details:
+1. Set up the main application structure:
+   - Create `main.py` as the entry point
+   - Implement MainWindow class inheriting from QMainWindow
+   - Design a modern FACEIT-inspired UI with dark theme (#121212 background, #3B82F6 accent)
+   - Create responsive layout with QSplitter for adjustable panels
+
+2. Implement the core application components:
+   - Create a central dashboard with recent clips and statistics
+   - Implement drag-and-drop zone for video import using QDragEnterEvent and QDropEvent
+   - Add file menu with import/export options
+   - Design settings panel for configuration options
+
+3. Integrate existing modules:
+   - Import and initialize hardware.py for system detection
+   - Connect optimizer.py for performance tuning based on hardware
+   - Integrate game_detector.py for game version identification
+   - Link VideoTimeline component for playback and navigation
+   - Connect YOLOv8 detection pipeline for analysis
+
+4. Implement the complete workflow:
+   - Create WorkflowManager class to orchestrate the process
+   - Handle video import via drag-drop or file dialog
+   - Implement progress indicators for analysis steps
+   - Create ClipSuggestionPanel to display detected key moments
+   - Add approve/reject buttons for each suggested clip
+
+5. Design the clip review interface:
+   - Create split view with video player and detection results
+   - Implement frame-by-frame navigation
+   - Add clip trimming controls with start/end markers
+   - Include metadata editor for clip details
+   - Implement batch approval/rejection functionality
+
+6. Add export functionality:
+   - Create ExportManager class for clip finalization
+   - Support multiple export formats (MP4, GIF, etc.)
+   - Implement quality settings for exports
+   - Add social sharing options (optional)
+
+7. Implement application settings:
+   - Create SettingsManager class for persistent configuration
+   - Add performance tuning options
+   - Include detection sensitivity controls
+   - Implement theme customization
+   - Add keyboard shortcut configuration
+
+8. Add error handling and logging:
+   - Implement comprehensive exception handling
+   - Create logging system with rotating file logs
+   - Add user-friendly error messages
+   - Implement crash recovery
+
+9. Optimize performance:
+   - Implement background processing for analysis
+   - Use QThreadPool for parallel operations
+   - Add caching for analyzed videos
+   - Optimize memory usage for large videos
+
+10. Polish the user experience:
+    - Add tooltips and help documentation
+    - Implement keyboard shortcuts
+    - Create onboarding tutorial for first-time users
+    - Add application update checker
+
+# Test Strategy:
+1. Functional testing:
+   - Verify the application launches correctly on Windows, macOS, and Linux
+   - Test drag-and-drop functionality with various video formats (MP4, MOV, AVI)
+   - Confirm file dialog import works correctly
+   - Validate the complete workflow from import to export
+   - Verify all buttons and controls function as expected
+
+2. Integration testing:
+   - Test hardware detection on various system configurations
+   - Verify optimizer correctly adjusts settings based on hardware
+   - Confirm game detection works for all supported games
+   - Test YOLOv8 integration with different video qualities
+   - Validate timeline component displays detection results correctly
+
+3. Performance testing:
+   - Measure application startup time (should be under 3 seconds)
+   - Test memory usage during video analysis (should not exceed 2GB for 10-minute clips)
+   - Verify CPU usage remains reasonable during analysis (below 80%)
+   - Test with large videos (1+ hour) to ensure stability
+   - Measure time to complete full workflow on reference videos
+
+4. User experience testing:
+   - Conduct usability testing with 5+ users
+   - Verify UI responsiveness during heavy processing
+   - Test keyboard shortcuts for all main functions
+   - Verify error messages are clear and helpful
+   - Test accessibility features
+
+5. Regression testing:
+   - Verify all existing module functionality remains intact
+   - Test backward compatibility with previously analyzed videos
+   - Confirm settings persistence across application restarts
+
+6. Deployment testing:
+   - Create and test installer packages for Windows, macOS, and Linux
+   - Verify application updates correctly (if implemented)
+   - Test installation on clean systems
+   - Verify all dependencies are correctly bundled
+
+7. Edge case testing:
+   - Test with corrupted video files
+   - Verify behavior when disk space is low
+   - Test recovery from unexpected shutdowns
+   - Verify behavior with extremely large or small videos
+   - Test with unusual hardware configurations

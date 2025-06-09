@@ -1,0 +1,112 @@
+# Task ID: 26
+# Title: Create Integrated Production Desktop Application
+# Status: pending
+# Dependencies: 2, 3, 7, 16, 17, 20
+# Priority: high
+# Description: Develop the main production desktop application that integrates all existing core modules into a polished FACEIT-style interface with a complete auto-clip detection workflow, from video import to user approval of detected clips.
+# Details:
+1. Design and implement the main application architecture:
+   - Create a PyQt6-based main window with modern FACEIT-style UI
+   - Design a modular architecture to integrate all core components
+   - Implement a responsive layout with dark theme and accent colors
+
+2. Implement the drag-and-drop video import interface:
+   - Create a drop zone with visual feedback for file acceptance
+   - Support multiple video formats (MP4, MOV, AVI)
+   - Show progress indicators during file loading
+   - Integrate with existing VideoImport functionality
+
+3. Integrate core modules with proper dependency injection:
+   - HardwareDetector: For system capability detection
+   - TierClassifier: For performance tier determination
+   - GameDetector: For game version identification
+   - PerformanceMonitor: For real-time performance tracking
+   - GPUMemoryManager: For optimized GPU resource allocation
+
+4. Implement the analysis workflow pipeline:
+   - Create a workflow controller to manage the processing stages
+   - Integrate YOLOv8 detection with progress visualization
+   - Implement auto-detection of key moments using the SituationDetection module
+   - Add clip generation based on detected moments
+   - Create a clip review interface for user approval/rejection
+
+5. Design the clip review interface:
+   - Create a grid view of detected clips with thumbnails
+   - Implement clip preview on hover/selection
+   - Add approve/reject buttons with keyboard shortcuts
+   - Include batch operations for multiple clips
+   - Implement clip metadata editing
+
+6. Implement settings and configuration panel:
+   - Create a settings dialog for application configuration
+   - Add options for detection sensitivity, output formats
+   - Include hardware utilization preferences
+   - Implement profile saving/loading
+
+7. Add export functionality:
+   - Support multiple export formats (MP4, GIF, etc.)
+   - Implement batch export of approved clips
+   - Add export presets for different platforms (YouTube, Twitter, etc.)
+   - Include progress tracking for exports
+
+8. Implement error handling and logging:
+   - Create a robust error handling system
+   - Implement detailed logging with different severity levels
+   - Add a log viewer within the application
+   - Implement crash recovery mechanisms
+
+9. Optimize performance:
+   - Implement background processing for heavy tasks
+   - Use multithreading for UI responsiveness
+   - Leverage GPU acceleration where available
+   - Implement memory management for large videos
+
+10. Add help and documentation:
+    - Create an integrated help system
+    - Add tooltips and contextual help
+    - Include sample workflows for new users
+
+# Test Strategy:
+1. Functional Testing:
+   - Verify drag-and-drop functionality with various video formats
+   - Test the complete workflow from import to export with sample videos
+   - Validate that all core modules are properly integrated and functioning
+   - Verify clip detection accuracy with pre-annotated test videos
+   - Test approve/reject functionality and ensure clips are properly categorized
+
+2. Performance Testing:
+   - Measure application startup time and resource usage
+   - Test with videos of various lengths (1min, 5min, 30min, 2hr)
+   - Monitor memory usage during extended processing sessions
+   - Verify GPU utilization is optimized based on hardware tier
+   - Test performance on minimum spec hardware to ensure usability
+
+3. UI/UX Testing:
+   - Verify all UI elements follow the FACEIT-style design guidelines
+   - Test responsiveness of the interface during processing
+   - Validate that progress indicators accurately reflect processing status
+   - Test keyboard shortcuts and accessibility features
+   - Conduct user testing with sample workflows
+
+4. Integration Testing:
+   - Verify proper communication between all integrated modules
+   - Test error propagation and handling across module boundaries
+   - Validate that hardware detection properly affects processing parameters
+   - Test game detection with multiple game versions
+   - Verify that tier classification correctly optimizes processing
+
+5. Export Testing:
+   - Test export functionality with various formats and settings
+   - Verify exported clips maintain quality and contain correct segments
+   - Test batch export with large numbers of clips
+   - Validate export presets produce expected results
+
+6. Regression Testing:
+   - Ensure existing functionality from individual modules works correctly
+   - Verify fixes for known issues in component modules are preserved
+   - Test backward compatibility with previously processed videos
+
+7. User Acceptance Testing:
+   - Prepare a test script covering the complete workflow
+   - Have team members follow the script and report issues
+   - Collect feedback on UI/UX and overall application flow

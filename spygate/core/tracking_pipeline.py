@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, Tuple
 import cv2
 import numpy as np
 
-from ..models.tracking import TrackingData
+from models.tracking import TrackingData
 
 
 class TrackingPipeline:

@@ -238,24 +238,48 @@ def analyze_any_football_game(video_input):
     return create_intelligent_recommendations(enhanced_insights)
 ```
 
-#### **4.4 Technology Stack**
+#### **4.4 Hybrid Desktop + Web Architecture**
+
+SpygateAI implements a **dual-platform architecture** to maximize both performance and accessibility:
+
+##### **Phase 1: Desktop Powerhouse (PyQt6)**
+**Primary Launch Platform** - High-performance local analysis application:
+
+- **Core Technology**: PyQt6 with Python backend
+- **AI/ML**: YOLOv8 (ultralytics) + Enhanced OpenCV pipeline **with game-agnostic training**
+- **Video Processing**: FFmpeg with GPU acceleration support
+- **Database**: SQLite for local storage **with cross-game schema**
+- **Hardware Optimization**: Adaptive tier system for all hardware levels
+
+**Desktop App Advantages**:
+- **Maximum Performance**: Direct GPU access, no network latency
+- **Offline Capability**: Full functionality without internet connection
+- **Heavy Processing**: Handles 4K video analysis and real-time processing
+- **Privacy**: All video analysis stays on user's machine
+- **Low Latency**: Instant response for video scrubbing and timeline navigation
+
+##### **Phase 2: Web Collaboration Hub (Django)**
+**Community & Cloud Platform** - Collaboration and strategy sharing:
 
 - **Backend**: Django REST Framework for API services
 - **Frontend**: Modern SPA (React/Next.js) for dashboard UI
-- **Desktop**: PyQt6 with adaptive video processing
-- **AI/ML**: YOLOv8 (ultralytics) + Enhanced OpenCV pipeline **with game-agnostic training**
-- **Database**: SQLite for local storage, PostgreSQL for cloud sync **with cross-game schema**
-- **Video Processing**: FFmpeg with GPU acceleration support
-- **Cloud**: Optional AWS integration for advanced processing
+- **Database**: PostgreSQL for cloud sync **with cross-game schema**
+- **Cloud**: AWS integration for community features
 - **Caching**: Redis/Memcached for API and data caching
 
-**Architecture Benefits**:
-- **Decoupled Frontend**: Static SPA served via CDN for optimal loading
-- **API Performance**: Django REST endpoints with heavy caching
-- **Real-time Updates**: WebSocket support for live analysis feedback
-- **Core Performance**: Python analysis engine remains unaffected
-- **Scalability**: Microservices architecture for independent scaling
-- **User Experience**: Modern, responsive UI with optimized data loading
+**Web Hub Advantages**:
+- **Universal Access**: Works on any device with a browser
+- **Collaboration**: Team strategy sharing and community features
+- **Cloud Sync**: Strategy synchronization across devices
+- **Social Features**: Pro player analysis sharing and tournament prep
+- **Cross-Platform**: Mobile-friendly for on-the-go strategy review
+
+##### **Integration Architecture**:
+- **Local-First Approach**: Desktop app handles all video processing
+- **Smart Sync**: Optional cloud backup of strategies and analysis results
+- **Hybrid Workflows**: Analyze locally, collaborate globally
+- **API Bridge**: Desktop app can push/pull strategy data to/from web hub
+- **Progressive Enhancement**: Start with desktop, add web features as needed
 
 #### **4.5 AI/ML Task Delegation: YOLO vs. OpenCV**
 
@@ -381,32 +405,40 @@ This roadmap is revised to prioritize a high-value, low-risk MVP first **with mu
 - ✅ Cross-game strategy mapping framework
 - ✅ Multi-game Genesis Database annotation tools
 
-#### **Phase 1: Situational Analysis MVP (Current Focus)**
-**Goal**: Launch a tool that saves users time by automatically finding and organizing key game situations **across EA football games**
+#### **Phase 1: Desktop Powerhouse MVP (Current Focus)**
+**Goal**: Launch a high-performance desktop application for local video analysis **across EA football games**
 **Investment**: 40 hours ($2,000)
+**Platform**: PyQt6 Desktop Application
 **Deliverables**:
-- ✅ High-accuracy **HUD Analysis Pipeline** (OpenCV for OCR/Template Matching) **with multi-game support**
-- ✅ Core application infrastructure: video import, timeline UI, clip bookmarking
+- ✅ **Desktop Application with FACEIT-style UI** using PyQt6
+- ✅ High-accuracy **HUD Analysis Pipeline** (YOLOv8 + OpenCV OCR) **with multi-game support**
+- ✅ **Auto-Clip Detection Workflow**: Analyze → Auto-detect key moments → Create clips → User approve/reject
+- ✅ **Local Video Processing**: Drag-and-drop import, timeline UI, clip management
 - ✅ **Situational Gameplan Builder** with cross-game strategy organization
-- ✅ Manual annotation tools for building the Genesis Database **across games**
-- ❌ **Deferred**: On-field player tracking and formation recognition AI
+- ✅ **Hardware-Adaptive Performance**: Tier-based optimization for all hardware levels
+- ❌ **Deferred to Phase 2**: Web collaboration features and cloud sync
 
-#### **Phase 2: Advanced Formation Intelligence**
-**Goal**: Introduce AI-driven formation recognition to provide deeper strategic insights **with cross-game mapping**
+#### **Phase 2: Web Collaboration Hub**
+**Goal**: Launch web platform for strategy sharing and community collaboration **across EA football games**
 **Investment**: 45 hours ($2,250)
+**Platform**: Django REST API + React/Next.js Frontend
 **Deliverables**:
-- ✅ **YOLOv8 On-Field Player Detection** pipeline **with game-agnostic training**
-- ✅ OpenCV logic for formation classification based on player positions
-- ✅ Integration of formation data into the UI, analysis, and recommendations
-- ✅ **Cross-game intelligence and strategy migration tools**
+- ✅ **Django REST API** with JWT authentication and cross-game data models
+- ✅ **React/Next.js Frontend** with responsive design and real-time updates
+- ✅ **Strategy Sharing System**: Upload/download gameplans and analysis results
+- ✅ **Community Features**: Pro player analysis library and tournament prep tools
+- ✅ **Cloud Sync**: Backup and synchronize strategies across devices
+- ✅ **Desktop Integration**: API bridge for seamless local-to-cloud workflows
 
-#### **Phase 3: Predictive & Community Analytics**
-**Goal**: Leverage aggregated data to provide predictive insights and build a community-powered strategic moat **across all EA football games**
+#### **Phase 3: Advanced Formation Intelligence**
+**Goal**: Add AI-driven formation recognition to desktop app **with cross-game mapping**
 **Investment**: 30 hours ($1,500)
+**Platform**: Desktop Application Enhancement
 **Deliverables**:
-- ✅ Opt-in community intelligence system **with cross-game analytics**
-- ✅ Historical meta-evolution analysis **across game versions**
-- ✅ Predictive insights for new game releases
+- ✅ **Enhanced YOLOv8 Pipeline**: On-field player detection **with game-agnostic training**
+- ✅ **Formation Classification**: OpenCV logic for formation analysis based on player positions
+- ✅ **Advanced Analytics**: Formation trends, success rates, and strategic insights
+- ✅ **Cross-Game Intelligence**: Strategy migration tools between EA football titles
 
 ---
 
@@ -448,17 +480,17 @@ This roadmap is revised to prioritize a high-value, low-risk MVP first **with mu
 
 #### **9.2 Updated Investment Summary**
 
-**Core Development** (Phases 0-1):
-- **Phase 0**: $2,250 (45 hours) - Multi-game foundation
-- **Phase 1**: $2,000 (40 hours) - Multi-game MVP
-- **Core Platform Total**: $4,250 (85 hours)
+**Desktop Application Development** (Phases 0-1):
+- **Phase 0**: $2,250 (45 hours) - Multi-game foundation architecture
+- **Phase 1**: $2,000 (40 hours) - PyQt6 desktop app with auto-clip detection
+- **Desktop Platform Total**: $4,250 (85 hours)
 
-**Advanced Features** (Phase 2-3):
-- **Phase 2**: $2,250 (45 hours) - Cross-game formation intelligence
-- **Phase 3**: $1,500 (30 hours) - Predictive analytics across games
-- **Advanced Total**: $3,750 (75 hours)
+**Web Platform & Advanced Features** (Phases 2-3):
+- **Phase 2**: $2,250 (45 hours) - Django web hub with community features
+- **Phase 3**: $1,500 (30 hours) - Advanced formation intelligence for desktop
+- **Web & Advanced Total**: $3,750 (75 hours)
 
-**Total Investment**: $8,000 (160 hours) - includes full multi-game architecture
+**Total Investment**: $8,000 (160 hours) - Complete dual-platform architecture
 
 ---
 

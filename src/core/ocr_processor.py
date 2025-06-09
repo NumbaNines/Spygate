@@ -47,7 +47,7 @@ class OCRProcessor:
             },
         }
 
-    def preprocess_image(self, img: np.ndarray, method: str = "binary") -> np.ndarray:
+    def preprocess_image(self, img: np.ndarray, method: str) -> np.ndarray:
         """Preprocess image for better OCR results.
 
         Args:
@@ -76,8 +76,8 @@ class OCRProcessor:
             return gray
 
     def extract_text(
-        self, img: np.ndarray, roi_type: str, bbox: Optional[List[int]] = None
-    ) -> Tuple[str, float]:
+        self, img: np.ndarray, roi_type: str, bbox: Optional[list[int]] = None
+    ) -> tuple[str, float]:
         """Extract text from a specific region of interest.
 
         Args:
@@ -128,8 +128,8 @@ class OCRProcessor:
             return "", 0.0
 
     def process_hud(
-        self, frame: np.ndarray, detections: List[Dict[str, Any]]
-    ) -> Dict[str, Tuple[str, float]]:
+        self, frame: np.ndarray, detections: list[dict[str, Any]]
+    ) -> dict[str, tuple[str, float]]:
         """Process all HUD elements in a frame.
 
         Args:

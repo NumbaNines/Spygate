@@ -6,7 +6,7 @@ import logging
 import re
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Dict, List, Optional, Set, Tuple, Any
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class GameSituation:
     is_two_point_attempt: bool = False
 
     # Detected situation types
-    situation_types: Set[SituationType] = field(default_factory=set)
+    situation_types: set[SituationType] = field(default_factory=set)
 
     def __post_init__(self) -> None:
         """Initialize the set of situation types after instance creation."""
@@ -89,7 +89,7 @@ class SituationAnalyzer:
 
         # Temporal consistency tracking
         self.last_situation: Optional[GameSituation] = None
-        self.situation_history: List[GameSituation] = []
+        self.situation_history: list[GameSituation] = []
         self.consistency_threshold = 0.8  # Minimum confidence for temporal consistency
 
         # Situation thresholds
@@ -103,7 +103,7 @@ class SituationAnalyzer:
         self.TWO_MINUTE_WARNING_TIME = "2:00"
         self.GARBAGE_TIME_THRESHOLD = 28  # Points difference for garbage time
 
-    def parse_down_distance(self, text: str) -> Tuple[Optional[int], Optional[int]]:
+    def parse_down_distance(self, text: str) -> tuple[Optional[int], Optional[int]]:
         """Parse down and distance from OCR text.
 
         Args:
@@ -176,22 +176,14 @@ class SituationAnalyzer:
             return current
 
         # Rules for temporal consistency
-        if self.last_situation.down is not None and current.down is not None:
-            # Down can only increment by 1 or reset to 1
-            if current.down not in [1, self.last_situation.down + 1]:
-                if current.confidence < self.consistency_threshold:
-                    current.down = self.last_situation.down
+        if self.last_situation.down is not None and current.down is not None and current.down not in [1, self.last_situation.down + 1] and current.confidence < self.consistency_threshold:
+            current.down = self.last_situation.down
 
-        if self.last_situation.score_home is not None and current.score_home is not None:
-            # Score typically changes by 1-8 points
-            diff = abs(current.score_home - self.last_situation.score_home)
-            if diff > 8 and current.confidence < self.consistency_threshold:
-                current.score_home = self.last_situation.score_home
+        if self.last_situation.score_home is not None and current.score_home is not None and abs(current.score_home - self.last_situation.score_home) > 8 and current.confidence < self.consistency_threshold:
+            current.score_home = self.last_situation.score_home
 
-        if self.last_situation.score_away is not None and current.score_away is not None:
-            diff = abs(current.score_away - self.last_situation.score_away)
-            if diff > 8 and current.confidence < self.consistency_threshold:
-                current.score_away = self.last_situation.score_away
+        if self.last_situation.score_away is not None and current.score_away is not None and abs(current.score_away - self.last_situation.score_away) > 8 and current.confidence < self.consistency_threshold:
+            current.score_away = self.last_situation.score_away
 
         # Update history
         self.last_situation = current
@@ -201,7 +193,7 @@ class SituationAnalyzer:
 
         return current
 
-    def determine_situation_types(self, situation: GameSituation) -> Set[SituationType]:
+    def determine_situation_types(self, situation: GameSituation) -> set[SituationType]:
         """Determine the types of situations present.
 
         Args:
@@ -259,7 +251,7 @@ class SituationAnalyzer:
         return types
 
     def analyze_frame(
-        self, ocr_results: Dict[str, Tuple[str, float]], detections: List[Dict[str, Any]]
+        self, ocr_results: dict[str, tuple[str, float]], detections: list[dict[str, Any]]
     ) -> GameSituation:
         """Analyze a frame's OCR results and detections to determine the game situation.
 

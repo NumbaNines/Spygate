@@ -284,12 +284,36 @@ class HUDTextDetect(Detect):
 
 
 class CustomYOLO11(DetectionModel):
-    """Customized YOLO11 model for HUD element and text detection."""
+    """Customized YOLO11 model for HUD element and text detection with advanced GPU memory management."""
 
     def __init__(self, cfg="yolov11.yaml", ch=3, nc=None, verbose=True):
         super().__init__(cfg, ch, nc, verbose)
         self.hardware = HardwareDetector()
+
+        # Initialize memory manager integration
+        self._setup_memory_management()
+
+        # Configure model based on hardware capabilities
         self._configure_model()
+
+    def _setup_memory_management(self):
+        """Set up advanced GPU memory management integration."""
+        try:
+            # Import here to avoid circular imports
+            from ..core.gpu_memory_manager import get_memory_manager
+
+            self.memory_manager = get_memory_manager()
+
+            # Get optimal batch size for this model
+            self.optimal_batch_size = self.memory_manager.get_optimal_batch_size()
+
+            logger.info(
+                f"GPU Memory Manager integrated. Optimal batch size: {self.optimal_batch_size}"
+            )
+        except ImportError:
+            logger.warning("GPU Memory Manager not available, using basic memory management")
+            self.memory_manager = None
+            self.optimal_batch_size = self.hardware.get_recommended_settings()["max_batch_size"]
 
     def _configure_model(self):
         """Configure model based on hardware capabilities."""
@@ -353,14 +377,124 @@ class CustomYOLO11(DetectionModel):
 
         return reduced_model
 
-    def forward(self, x):
-        """Forward pass with memory-efficient processing."""
-        if self.hardware.tier in [HardwareTier.ULTRA_LOW, HardwareTier.LOW]:
-            # Use memory-efficient forward pass
-            with torch.cuda.amp.autocast(enabled=True):
-                return super().forward(x)
+    def forward(self, x, return_memory_stats=False):
+        """Forward pass with advanced memory management."""
+        start_time = torch.cuda.Event(enable_timing=True) if torch.cuda.is_available() else None
+        end_time = torch.cuda.Event(enable_timing=True) if torch.cuda.is_available() else None
+
+        memory_stats = {}
+
+        # Record initial memory state
+        if self.memory_manager and torch.cuda.is_available():
+            memory_stats["initial"] = self.memory_manager.get_memory_stats()
+
+        # Start timing
+        if start_time:
+            start_time.record()
+
+        try:
+            # Memory-efficient forward pass based on hardware tier
+            if self.hardware.tier in [HardwareTier.ULTRA_LOW, HardwareTier.LOW]:
+                # Use memory-efficient forward pass with AMP
+                with torch.cuda.amp.autocast(enabled=True):
+                    result = super().forward(x)
+            else:
+                result = super().forward(x)
+
+            # End timing
+            if end_time:
+                end_time.record()
+                torch.cuda.synchronize()
+                processing_time = start_time.elapsed_time(end_time) / 1000.0  # Convert to seconds
+            else:
+                processing_time = 0.0
+
+            # Record batch performance
+            if self.memory_manager:
+                batch_size = x.shape[0] if hasattr(x, "shape") else 1
+                self.memory_manager.record_batch_performance(
+                    batch_size=batch_size, processing_time=processing_time, success=True
+                )
+
+            # Record final memory state
+            if self.memory_manager and torch.cuda.is_available():
+                memory_stats["final"] = self.memory_manager.get_memory_stats()
+                memory_stats["processing_time"] = processing_time
+
+            if return_memory_stats:
+                return result, memory_stats
+            else:
+                return result
+
+        except torch.cuda.OutOfMemoryError as e:
+            logger.error(f"GPU OOM during forward pass: {e}")
+
+            # Record failed batch performance
+            if self.memory_manager:
+                batch_size = x.shape[0] if hasattr(x, "shape") else 1
+                self.memory_manager.record_batch_performance(
+                    batch_size=batch_size, processing_time=0.0, success=False
+                )
+
+            # Trigger emergency cleanup
+            if self.memory_manager:
+                logger.info("Triggering emergency GPU memory cleanup due to OOM")
+                self.memory_manager._trigger_cleanup()
+
+            # Re-raise the error
+            raise
+        except Exception as e:
+            logger.error(f"Error during forward pass: {e}")
+            raise
+
+    def get_memory_optimized_batch_size(
+        self, input_shape: tuple, safety_factor: float = 0.8
+    ) -> int:
+        """Calculate memory-optimized batch size for given input shape."""
+        if not self.memory_manager:
+            return self.optimal_batch_size
+
+        # Estimate memory usage per sample
+        if torch.cuda.is_available():
+            # Create a dummy input to estimate memory usage
+            dummy_input = torch.zeros((1,) + input_shape[1:], device="cuda")
+
+            # Measure memory before and after a forward pass
+            torch.cuda.empty_cache()
+            mem_before = torch.cuda.memory_allocated()
+
+            try:
+                with torch.no_grad():
+                    _ = self.forward(dummy_input)
+                mem_after = torch.cuda.memory_allocated()
+                mem_per_sample = mem_after - mem_before
+            except Exception:
+                # Fallback to heuristic
+                mem_per_sample = 100 * 1024 * 1024  # 100MB default
+            finally:
+                # Cleanup
+                del dummy_input
+                torch.cuda.empty_cache()
         else:
-            return super().forward(x)
+            # CPU fallback - use smaller batch sizes
+            return min(self.optimal_batch_size, 4)
+
+        # Get optimal batch size from memory manager
+        return self.memory_manager.get_optimal_batch_size(mem_per_sample * safety_factor)
+
+    def get_memory_buffer(self, size: tuple, dtype=torch.float32):
+        """Get a memory buffer from the memory pool."""
+        if self.memory_manager:
+            return self.memory_manager.get_buffer(size, dtype)
+        else:
+            return torch.zeros(
+                size, dtype=dtype, device="cuda" if torch.cuda.is_available() else "cpu"
+            )
+
+    def return_memory_buffer(self, tensor):
+        """Return a memory buffer to the pool."""
+        if self.memory_manager:
+            self.memory_manager.return_buffer(tensor)
 
     def _initialize_weights(self):
         """Initialize model weights with improved schemes."""
@@ -389,8 +523,25 @@ class CustomYOLO11(DetectionModel):
         logger.info("Model Summary:")
         logger.info(f"Total parameters: {n_params:,}")
         logger.info(f"Trainable parameters: {n_gradients:,}")
+        logger.info(f"Hardware tier: {self.hardware.tier.name}")
+        logger.info(f"Optimal batch size: {self.optimal_batch_size}")
         logger.info("Architecture: Enhanced YOLO11 with:")
         logger.info("- Feature Pyramid Attention")
         logger.info("- Deformable Convolutions")
         logger.info("- Confidence Estimation")
         logger.info("- Hardware-Aware Optimizations")
+        logger.info("- Advanced GPU Memory Management")
+
+    def get_model_memory_stats(self) -> dict:
+        """Get comprehensive model memory statistics."""
+        stats = {
+            "hardware_tier": self.hardware.tier.name,
+            "optimal_batch_size": self.optimal_batch_size,
+            "model_parameters": sum(p.numel() for p in self.parameters()),
+            "trainable_parameters": sum(p.numel() for p in self.parameters() if p.requires_grad),
+        }
+
+        if self.memory_manager:
+            stats.update(self.memory_manager.get_memory_stats())
+
+        return stats

@@ -333,6 +333,16 @@ class SituationDetector:
         if hud_confidence < self.min_situation_confidence:
             return situations
 
+        # Extract key elements for analysis
+        down_distance = hud_info.get("down_distance", "")
+        game_clock = hud_info.get("game_clock", "")
+        play_clock = hud_info.get("play_clock", "")
+        yards_to_goal = hud_info.get("yards_to_goal", "")  # Numeric value (e.g., "25", "3", "GL")
+        territory_indicator = hud_info.get("territory_indicator", "")  # ▲ = opponent territory, ▼ = own territory
+        
+        # Determine field position from yards_to_goal + territory_indicator
+        yard_line = self._construct_field_position(yards_to_goal, territory_indicator)
+
         # Detect game state (pre-snap, during play, post-play)
         game_state = self._detect_game_state(hud_info)
         
@@ -353,8 +363,6 @@ class SituationDetector:
         # Detect critical game situations based on HUD data
         down = hud_info.get("down")
         distance = hud_info.get("distance")
-        yard_line = hud_info.get("yard_line")
-        game_clock = hud_info.get("game_clock")
         score_home = hud_info.get("score_home")
         score_away = hud_info.get("score_away")
 
@@ -832,3 +840,16 @@ class SituationDetector:
             logger.warning(f"Error analyzing hash marks position: {e}")
             
         return None
+
+    def _construct_field_position(self, yards_to_goal: str, territory_indicator: str) -> str:
+        """Construct field position string based on yards_to_goal and territory_indicator."""
+        if not yards_to_goal or not territory_indicator:
+            return "unknown"
+        
+        # Combine yards_to_goal and territory_indicator
+        if territory_indicator == "▲":
+            return f"OPP {yards_to_goal}"
+        elif territory_indicator == "▼":
+            return f"OWN {yards_to_goal}"
+        else:
+            return "unknown"

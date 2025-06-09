@@ -23,3 +23,12 @@ pytest>=7.4.3  # Testing
 pytest-django>=4.7.0  # Django test integration
 coverage>=7.3.2  # Code coverage
 factory-boy>=3.3.0  # Test data generation
+
+# Added from the code block
+ultralytics>=8.0.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+PyQt6>=6.5.0
+mss>=9.0.0
+pytesseract>=0.3.10
+Pillow>=10.0.0

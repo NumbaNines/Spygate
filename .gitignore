@@ -98,3 +98,10 @@ cleanup.py
 *.h264
 *.hevc
 *.webm
+
+# Unrelated files
+PowerShell-master.zip
+iCloud Installer.exe
+
+# IDE files
+*.code-workspace

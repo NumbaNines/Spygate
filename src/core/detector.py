@@ -1,3 +1,7 @@
+"""
+Spygate play detector module for analyzing game footage.
+"""
+
 import csv
 import json
 import os
@@ -33,9 +37,15 @@ from ultralytics import YOLO
 from .ocr_processor import OCRProcessor
 from .situation_analyzer import GameSituation, SituationAnalyzer
 
+# Constants
+DEFAULT_WINDOW_SIZE = (1200, 800)
+DEFAULT_FPS = 30
+FRAME_INTERVAL = int(1000 / DEFAULT_FPS)  # 33ms for ~30fps
+MAX_HISTORY_FRAMES = 300  # Keep last ~10 seconds at 30fps
+
 
 class MonitorSelectDialog(QDialog):
-    def __init__(self, monitors: List[Dict[str, Any]], parent: Optional[QWidget] = None) -> None:
+    def __init__(self, monitors: list[dict[str, Any]], parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Select Monitor")
         layout = QVBoxLayout(self)
@@ -59,12 +69,15 @@ class SpygateDetector(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Spygate Play Detector")
-        self.setMinimumSize(1200, 800)
+        self.setMinimumSize(*DEFAULT_WINDOW_SIZE)
 
         # Initialize OCR and situation analysis
         self.ocr_processor = OCRProcessor()
         self.situation_analyzer = SituationAnalyzer()
-        self.current_situation = None
+        self.current_situation: Optional[GameSituation] = None
+
+        # Video writer
+        self.video_writer: Optional[cv2.VideoWriter] = None
 
         # Check if model exists
         model_path = "runs/detect/train5/weights/best.pt"
@@ -80,20 +93,20 @@ class SpygateDetector(QMainWindow):
             sys.exit(1)
 
         # Initialize variables
-        self.video_source = None
-        self.cap = None
+        self.video_source: Optional[str] = None
+        self.cap: Optional[cv2.VideoCapture] = None
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_frame)
-        self.current_frame = None
-        self.is_paused = True
-        self.last_frame = None
-        self.recording = False
-        self.screen_capture = None
-        self.selected_monitor = None
-        self.detection_history = []
-        self.last_fps_update = time.time()
-        self.frame_count = 0
-        self.visualization_options = {
+        self.current_frame: Optional[np.ndarray] = None
+        self.is_paused: bool = True
+        self.last_frame: Optional[np.ndarray] = None
+        self.recording: bool = False
+        self.screen_capture: Optional[mss.mss] = None
+        self.selected_monitor: Optional[dict[str, Any]] = None
+        self.detection_history: list[dict[str, Any]] = []
+        self.last_fps_update: float = time.time()
+        self.frame_count: int = 0
+        self.visualization_options: dict[str, bool] = {
             "show_boxes": True,
             "show_labels": True,
             "show_confidence": True,
@@ -102,9 +115,9 @@ class SpygateDetector(QMainWindow):
         }
 
         # Performance settings
-        self.skip_frames = 0  # Number of frames to skip between detections
-        self.frame_counter = 0
-        self.last_detection_results = None
+        self.skip_frames: int = 0  # Number of frames to skip between detections
+        self.frame_counter: int = 0
+        self.last_detection_results: Optional[list[dict[str, Any]]] = None
 
         # Create output directories
         self.output_dir = Path("detections")
@@ -118,6 +131,22 @@ class SpygateDetector(QMainWindow):
 
     def setup_ui(self) -> None:
         """Set up the user interface."""
+        # UI elements
+        self.file_btn: QPushButton
+        self.source_combo: QComboBox
+        self.skip_frames_spin: QSpinBox
+        self.play_btn: QPushButton
+        self.record_btn: QPushButton
+        self.conf_combo: QComboBox
+        self.save_detections_btn: QPushButton
+        self.display_label: QLabel
+        self.perf_label: QLabel
+        self.down_distance_label: QLabel
+        self.time_label: QLabel
+        self.score_label: QLabel
+        self.situations_label: QLabel
+        self.viz_checkboxes: dict[str, QCheckBox]
+
         # Main widget and layout
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
@@ -267,377 +296,285 @@ class SpygateDetector(QMainWindow):
         self.statusBar().showMessage("Ready - Open a video or image file to start")
 
     def update_performance(self) -> None:
+        """Update performance settings."""
         self.skip_frames = self.skip_frames_spin.value()
         self.frame_counter = 0
 
     def update_visualization_options(self) -> None:
-        for name, cb in self.viz_checkboxes.items():
-            option_key = name.lower().replace("-", "_").replace(" ", "_")
-            self.visualization_options[option_key] = cb.isChecked()
+        """Update visualization options based on checkbox states."""
+        for option, checkbox in self.viz_checkboxes.items():
+            self.visualization_options[option.lower().replace(" ", "_")] = checkbox.isChecked()
 
     def toggle_recording(self) -> None:
+        """Toggle video recording state."""
         if not self.recording:
-            # Start recording
             timestamp = QDateTime.currentDateTime().toString("yyyyMMdd_hhmmss")
-            self.video_writer = None  # Will be initialized on first frame
-            self.csv_file = open(
-                self.output_dir / "data" / f"detections_{timestamp}.csv", "w", newline=""
-            )
-            self.csv_writer = csv.writer(self.csv_file)
-            self.csv_writer.writerow(
-                ["timestamp", "class", "confidence", "x", "y", "width", "height"]
-            )
-
-            self.recording = True
-            self.record_btn.setText("Stop Recording")
-            self.statusBar().showMessage("Recording...")
+            video_path = str(self.output_dir / "videos" / f"recording_{timestamp}.mp4")
+            
+            # Get frame dimensions
+            if self.current_frame is not None:
+                height, width = self.current_frame.shape[:2]
+                self.video_writer = cv2.VideoWriter(
+                    video_path,
+                    cv2.VideoWriter_fourcc(*"mp4v"),
+                    DEFAULT_FPS,
+                    (width, height)
+                )
+                self.recording = True
+                self.record_btn.setText("Stop Recording")
+            else:
+                QMessageBox.warning(self, "Warning", "No frame available to start recording")
         else:
-            # Stop recording
-            self.recording = False
-            if hasattr(self, "video_writer") and self.video_writer:
+            if hasattr(self, "video_writer") and self.video_writer is not None:
                 self.video_writer.release()
-            if hasattr(self, "csv_file"):
-                self.csv_file.close()
+            self.recording = False
             self.record_btn.setText("Start Recording")
-            self.statusBar().showMessage("Recording saved")
 
     def save_detections(self) -> None:
-        if not self.detection_history:
-            QMessageBox.warning(self, "Warning", "No detections to save")
-            return
-
+        """Save detection history to CSV and JSON files."""
         timestamp = QDateTime.currentDateTime().toString("yyyyMMdd_hhmmss")
+        
+        # Save to CSV
+        csv_path = self.output_dir / "data" / f"detections_{timestamp}.csv"
+        with open(csv_path, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["frame", "class", "confidence", "bbox"])
+            for det in self.detection_history:
+                writer.writerow([det["frame"], det["class"], det["confidence"], det["bbox"]])
 
-        # Save detection data as JSON
+        # Save to JSON
         json_path = self.output_dir / "data" / f"detections_{timestamp}.json"
         with open(json_path, "w") as f:
             json.dump(self.detection_history, f, indent=2)
 
-        # Save current frame with detections
-        if self.last_frame is not None:
-            img_path = self.output_dir / "images" / f"detection_{timestamp}.png"
-            cv2.imwrite(str(img_path), self.last_frame)
-
-        QMessageBox.information(self, "Success", f"Detections saved to {json_path}")
         self.detection_history = []  # Clear history after saving
 
     def setup_screen_capture(self) -> None:
-        try:
-            self.screen_capture = mss.mss()
-            monitors = self.screen_capture.monitors[1:]  # Skip the "all monitors" monitor
+        """Set up screen capture using mss."""
+        with mss.mss() as sct:
+            monitors = sct.monitors[1:]  # Skip first monitor (entire virtual screen)
+            if not monitors:
+                QMessageBox.critical(self, "Error", "No monitors detected")
+                return
 
             # Show monitor selection dialog
             dialog = MonitorSelectDialog(monitors, self)
-            if dialog.exec():
+            if dialog.exec() == QDialog.DialogCode.Accepted:
                 selected_idx = dialog.get_selected_index()
                 self.selected_monitor = monitors[selected_idx]
-
-                # Add monitor info to status
-                monitor_info = f"Monitor {selected_idx + 1}: {self.selected_monitor['width']}x{self.selected_monitor['height']}"
-                self.statusBar().showMessage(f"Screen capture ready - {monitor_info}")
-
-                # Enable controls
+                self.screen_capture = mss.mss()
                 self.play_btn.setEnabled(True)
                 self.record_btn.setEnabled(True)
-
-                # Start capture immediately
-                self.toggle_playback()
             else:
                 self.source_combo.setCurrentText("File")
 
-        except Exception as e:
-            QMessageBox.warning(self, "Error", f"Failed to setup screen capture: {str(e)}")
-            self.source_combo.setCurrentText("File")
-
     def capture_screen(self) -> Optional[np.ndarray]:
-        if self.screen_capture and self.selected_monitor:
-            try:
+        """Capture the selected monitor screen.
+
+        Returns:
+            Captured frame as numpy array or None if capture fails
+        """
+        try:
+            if self.screen_capture and self.selected_monitor:
                 screenshot = self.screen_capture.grab(self.selected_monitor)
-                frame = np.array(screenshot)
-                # Convert from BGRA to BGR
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
-                return frame
-            except Exception as e:
-                print(f"Screen capture error: {str(e)}")
-                return None
+                return np.array(screenshot)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Screen capture failed: {str(e)}")
         return None
 
     def source_changed(self, source: str) -> None:
+        """Handle source selection change.
+
+        Args:
+            source: Selected source type
+        """
         if source == "Screen Capture":
-            try:
-                self.setup_screen_capture()
-            except Exception as e:
-                QMessageBox.warning(self, "Error", f"Failed to setup screen capture: {str(e)}")
+            self.setup_screen_capture()
         else:
-            if self.cap is not None:
-                self.cap.release()
-            self.cap = None
-            self.display_label.clear()
+            if hasattr(self, "screen_capture") and self.screen_capture is not None:
+                self.screen_capture.close()
+            self.screen_capture = None
+            self.selected_monitor = None
             self.play_btn.setEnabled(False)
             self.record_btn.setEnabled(False)
 
     def toggle_playback(self) -> None:
-        if self.source_combo.currentText() == "Screen Capture":
-            self.is_paused = not self.is_paused
-            self.play_btn.setText("Pause" if not self.is_paused else "Play")
-
-            if not self.is_paused:
-                self.timer.start(1)  # Update as fast as possible for screen capture
-            else:
-                self.timer.stop()
+        """Toggle video playback state."""
+        if self.is_paused:
+            self.play_btn.setText("Pause")
+            self.timer.start(FRAME_INTERVAL)  # ~30 fps
+            self.is_paused = False
+            self.last_fps_update = time.time()
+            self.frame_count = 0
         else:
-            if self.cap is None:
-                return
-
-            self.is_paused = not self.is_paused
-            self.play_btn.setText("Pause" if not self.is_paused else "Play")
-
-            if not self.is_paused:
-                self.timer.start(30)  # ~30 fps for video files
-            else:
-                self.timer.stop()
-
-    def update_frame(self) -> None:
-        try:
-            start_time = time.time()
-
-            # Get frame from either video or screen capture
-            if self.source_combo.currentText() == "Screen Capture":
-                frame = self.capture_screen()
-                if frame is None:
-                    raise Exception("Failed to capture screen")
-            else:
-                if self.cap is None:
-                    return
-                ret, frame = self.cap.read()
-                if not ret:
-                    if isinstance(self.video_source, str) and os.path.isfile(self.video_source):
-                        self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                        ret, frame = self.cap.read()
-                        if not ret:
-                            raise Exception("Failed to read frame")
-                    else:
-                        raise Exception("Failed to capture frame")
-
-            # Store last valid frame
-            self.last_frame = frame.copy()
-
-            # Update frame counter for skipping
-            self.frame_counter += 1
-
-            # Run detection if needed
-            if self.frame_counter > self.skip_frames:
-                self.frame_counter = 0
-                results = self.model.predict(
-                    source=frame, conf=float(self.conf_combo.currentText()), verbose=False
-                )
-                self.last_detection_results = results[0]
-
-            # Use last detection results if we're skipping frames
-            if self.last_detection_results is not None:
-                detections = self.last_detection_results.boxes
-                classes = ["hud", "gamertag", "preplay", "playcall", "no huddle", "audible"]
-                class_counts = {c: 0 for c in classes}
-
-                # Store detections for recording/saving
-                frame_detections = []
-                for det in detections:
-                    cls_id = int(det.cls)
-                    if cls_id < len(classes):
-                        class_name = classes[cls_id]
-                        conf = float(det.conf)
-                        x1, y1, x2, y2 = map(int, det.xyxy[0])
-
-                        detection = {
-                            "class": class_name,
-                            "confidence": conf,
-                            "bbox": [x1, y1, x2, y2],
-                        }
-                        frame_detections.append(detection)
-                        class_counts[class_name] += 1
-
-                        # Record detection if recording
-                        if self.recording:
-                            self.csv_writer.writerow(
-                                [
-                                    QDateTime.currentDateTime().toString(Qt.DateFormat.ISODate),
-                                    class_name,
-                                    conf,
-                                    x1,
-                                    y1,
-                                    x2 - x1,
-                                    y2 - y1,
-                                ]
-                            )
-
-                self.detection_history.append(frame_detections)
-
-                # Process OCR and analyze situation
-                ocr_results = self.ocr_processor.process_hud(frame, frame_detections)
-                self.current_situation = self.situation_analyzer.analyze_frame(
-                    ocr_results, frame_detections
-                )
-
-                # Update situation display
-                if self.current_situation:
-                    # Update basic game state
-                    if self.current_situation.down and self.current_situation.distance:
-                        self.down_distance_label.setText(
-                            f"Down & Distance: {self.current_situation.down} & {self.current_situation.distance}"
-                        )
-
-                    if self.current_situation.time_remaining:
-                        self.time_label.setText(f"Time: {self.current_situation.time_remaining}")
-
-                    if (
-                        self.current_situation.score_home is not None
-                        and self.current_situation.score_away is not None
-                    ):
-                        self.score_label.setText(
-                            f"Score: {self.current_situation.score_home}-{self.current_situation.score_away}"
-                        )
-
-                    # Update specific situations
-                    situation_desc = self.situation_analyzer.get_situation_description(
-                        self.current_situation
-                    )
-                    if situation_desc:
-                        self.situations_label.setText(situation_desc)
-                    else:
-                        self.situations_label.setText("No specific situations detected")
-
-                    # Update confidence bar
-                    self.confidence_bar.setValue(int(self.current_situation.confidence * 100))
-
-                # Draw results based on visualization options
-                if self.visualization_options["show_boxes"]:
-                    annotated_frame = self.last_detection_results.plot()
-                else:
-                    annotated_frame = frame.copy()
-
-                # Additional visualization options
-                if self.visualization_options["highlight_huddle"]:
-                    # Highlight no-huddle plays in red
-                    for det in frame_detections:
-                        if det["class"] == "no huddle":
-                            x1, y1, x2, y2 = det["bbox"]
-                            cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 0, 255), 3)
-
-                if self.visualization_options["track_motion"]:
-                    # Simple motion tracking (frame difference)
-                    if hasattr(self, "prev_frame"):
-                        frame_diff = cv2.absdiff(self.prev_frame, frame)
-                        motion_mask = cv2.threshold(
-                            cv2.cvtColor(frame_diff, cv2.COLOR_BGR2GRAY), 30, 255, cv2.THRESH_BINARY
-                        )[1]
-                        annotated_frame = cv2.addWeighted(
-                            annotated_frame,
-                            1,
-                            cv2.cvtColor(motion_mask, cv2.COLOR_GRAY2BGR),
-                            0.3,
-                            0,
-                        )
-                    self.prev_frame = frame.copy()
-
-                # Convert to Qt format
-                rgb_image = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
-                h, w, ch = rgb_image.shape
-                bytes_per_line = ch * w
-                qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
-
-                # Scale to fit display area while maintaining aspect ratio
-                scaled_pixmap = QPixmap.fromImage(qt_image).scaled(
-                    self.display_label.size(),
-                    Qt.AspectRatioMode.KeepAspectRatio,
-                    Qt.TransformationMode.SmoothTransformation,
-                )
-
-                self.display_label.setPixmap(scaled_pixmap)
-
-                # Save frame if recording
-                if self.recording:
-                    if self.video_writer is None:
-                        timestamp = QDateTime.currentDateTime().toString("yyyyMMdd_hhmmss")
-                        output_path = str(self.output_dir / "videos" / f"recording_{timestamp}.mp4")
-                        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-                        self.video_writer = cv2.VideoWriter(output_path, fourcc, 30.0, (w, h))
-                    self.video_writer.write(annotated_frame)
-
-                # Update detection info
-                info_text = "Detections:\n"
-                for cls, count in class_counts.items():
-                    if count > 0:
-                        info_text += f"{cls}: {count}\n"
-
-                self.info_label.setText(info_text)
-
-                # Calculate and display FPS
-                self.frame_count += 1
-                current_time = time.time()
-                if current_time - self.last_fps_update >= 1.0:  # Update FPS every second
-                    fps = self.frame_count / (current_time - self.last_fps_update)
-                    processing_time = (current_time - start_time) * 1000
-                    self.perf_label.setText(f"FPS: {fps:.1f}\nProcessing: {processing_time:.1f}ms")
-                    self.frame_count = 0
-                    self.last_fps_update = current_time
-
-                # Enable save button if we have detections
-                self.save_detections_btn.setEnabled(len(self.detection_history) > 0)
-
-                # Update status
-                self.statusBar().showMessage(f"Processing: {len(detections)} objects detected")
-
-        except Exception as e:
+            self.play_btn.setText("Play")
             self.timer.stop()
             self.is_paused = True
-            self.play_btn.setText("Play")
-            QMessageBox.warning(self, "Error", f"Frame processing error: {str(e)}")
+
+    def update_frame(self) -> None:
+        """Process and display the next video frame."""
+        frame = None
+
+        # Get frame from appropriate source
+        if self.video_source == "screen":
+            frame = self.capture_screen()
+        elif self.cap is not None and self.cap.isOpened():
+            ret, frame = self.cap.read()
+            if not ret:
+                self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                return
+
+        if frame is None:
+            return
+
+        # Store original frame
+        self.current_frame = frame.copy()
+
+        # Skip frames for performance if needed
+        self.frame_counter += 1
+        if self.frame_counter <= self.skip_frames:
+            return
+
+        # Reset frame counter
+        self.frame_counter = 0
+
+        # Run detection
+        results = self.model(frame, conf=float(self.conf_combo.currentText()))[0]
+        detections = []
+
+        # Process detections
+        for r in results.boxes.data.tolist():
+            x1, y1, x2, y2, score, class_id = r
+            class_name = results.names[int(class_id)]
+            detections.append({
+                "frame": len(self.detection_history),
+                "class": class_name,
+                "confidence": score,
+                "bbox": [int(x1), int(y1), int(x2), int(y2)]
+            })
+
+        # Store detection history
+        self.detection_history.extend(detections)
+        if len(self.detection_history) > MAX_HISTORY_FRAMES:
+            self.detection_history = self.detection_history[-MAX_HISTORY_FRAMES:]
+
+        # Process OCR and analyze situation
+        ocr_results = self.ocr_processor.process_hud(frame, detections)
+        self.current_situation = self.situation_analyzer.analyze_frame(ocr_results, detections)
+
+        # Visualize detections
+        self.last_frame = frame.copy()
+        if self.visualization_options["show_boxes"]:
+            for det in detections:
+                x1, y1, x2, y2 = det["bbox"]
+                cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+                
+                if self.visualization_options["show_labels"]:
+                    label = det["class"]
+                    if self.visualization_options["show_confidence"]:
+                        label += f" {det['confidence']:.2f}"
+                    cv2.putText(frame, label, (int(x1), int(y1) - 10),
+                              cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+        # Record frame if needed
+        if self.recording and hasattr(self, "video_writer") and self.video_writer is not None:
+            self.video_writer.write(frame)
+
+        # Convert frame for display
+        height, width = frame.shape[:2]
+        bytes_per_line = 3 * width
+        q_img = QImage(frame.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
+        
+        # Scale to fit display area while maintaining aspect ratio
+        scaled_pixmap = QPixmap.fromImage(q_img).scaled(
+            self.display_label.size(), Qt.AspectRatioMode.KeepAspectRatio
+        )
+        self.display_label.setPixmap(scaled_pixmap)
+
+        # Update FPS counter
+        self.frame_count += 1
+        elapsed = time.time() - self.last_fps_update
+        if elapsed >= 1.0:
+            fps = self.frame_count / elapsed
+            self.perf_label.setText(f"FPS: {fps:.2f}")
+            self.frame_count = 0
+            self.last_fps_update = time.time()
+
+        # Update situation display
+        if self.current_situation:
+            # Update basic game state
+            if self.current_situation.down and self.current_situation.distance:
+                self.down_distance_label.setText(
+                    f"Down & Distance: {self.current_situation.down} & {self.current_situation.distance}"
+                )
+
+            if self.current_situation.time_remaining:
+                self.time_label.setText(f"Time: {self.current_situation.time_remaining}")
+
+            if (
+                self.current_situation.score_home is not None
+                and self.current_situation.score_away is not None
+            ):
+                self.score_label.setText(
+                    f"Score: {self.current_situation.score_home}-{self.current_situation.score_away}"
+                )
+
+            # Update specific situations
+            situation_desc = self.situation_analyzer.get_situation_description(
+                self.current_situation
+            )
+            if situation_desc:
+                self.situations_label.setText(situation_desc)
+            else:
+                self.situations_label.setText("No specific situations detected")
+
+            # Update confidence bar
+            self.confidence_bar.setValue(int(self.current_situation.confidence * 100))
+
+        # Enable save button if we have detections
+        self.save_detections_btn.setEnabled(len(self.detection_history) > 0)
+
+        # Update status
+        self.statusBar().showMessage(f"Processing: {len(detections)} objects detected")
 
     def open_file(self) -> None:
         """Open a video or image file."""
-        file_name, _ = QFileDialog.getOpenFileName(
+        file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Open Video/Image",
             "",
-            "Video/Image Files (*.mp4 *.avi *.mov *.jpg *.jpeg *.png);;All Files (*)",
+            "Video/Image Files (*.mp4 *.avi *.mov *.jpg *.jpeg *.png);;All Files (*.*)"
         )
+        if file_path:
+            self.video_source = "file"
+            self.setup_video_source(file_path)
 
-        if file_name:
-            self.video_source = file_name
-            self.setup_video_source()
+    def setup_video_source(self, file_path: str) -> None:
+        """Set up video source from file.
 
-    def setup_video_source(self) -> None:
-        """Set up video source for capture."""
-        try:
-            if isinstance(self.video_source, str):
-                # Check if it's an image file
-                if self.video_source.lower().endswith((".jpg", ".jpeg", ".png")):
-                    self.cap = None
-                    frame = cv2.imread(self.video_source)
-                    if frame is None:
-                        raise Exception("Failed to load image")
-                    self.current_frame = frame
-                    self.last_frame = frame.copy()
-                else:
-                    # Assume it's a video file
-                    self.cap = cv2.VideoCapture(self.video_source)
-                    if not self.cap.isOpened():
-                        raise Exception("Failed to open video file")
+        Args:
+            file_path: Path to video/image file
+        """
+        # Close existing video capture if any
+        if self.cap is not None:
+            self.cap.release()
 
-                # Enable controls
-                self.play_btn.setEnabled(True)
-                self.record_btn.setEnabled(True)
-                self.save_detections_btn.setEnabled(True)
+        # Check if image or video
+        if file_path.lower().endswith((".jpg", ".jpeg", ".png")):
+            self.current_frame = cv2.imread(file_path)
+            if self.current_frame is None:
+                QMessageBox.critical(self, "Error", "Failed to load image")
+                return
+            self.play_btn.setEnabled(False)
+        else:
+            self.cap = cv2.VideoCapture(file_path)
+            if not self.cap.isOpened():
+                QMessageBox.critical(self, "Error", "Failed to open video file")
+                return
+            self.play_btn.setEnabled(True)
 
-                # Start playback
-                self.toggle_playback()
-
-            else:
-                raise Exception("Invalid video source")
-
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to open file: {str(e)}")
-            self.cap = None
+        self.record_btn.setEnabled(True)
+        self.save_detections_btn.setEnabled(True)
 
 
 if __name__ == "__main__":

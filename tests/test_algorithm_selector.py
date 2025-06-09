@@ -66,7 +66,9 @@ class TestAlgorithmSelector(unittest.TestCase):
         """Test algorithm selection with basic hardware."""
         with patch("spygate.utils.tracking_hardware.TrackingHardwareManager") as mock_manager:
             mock_manager.return_value.tracking_mode = TrackingMode.BASIC
-            mock_manager.return_value.get_recommended_algorithm.return_value = TrackingAlgorithm.CSRT
+            mock_manager.return_value.get_recommended_algorithm.return_value = (
+                TrackingAlgorithm.CSRT
+            )
 
             selector = AlgorithmSelector()
             algorithm = selector.select_algorithm(self.frame)
@@ -76,7 +78,9 @@ class TestAlgorithmSelector(unittest.TestCase):
         """Test algorithm selection with professional hardware."""
         with patch("spygate.utils.tracking_hardware.TrackingHardwareManager") as mock_manager:
             mock_manager.return_value.tracking_mode = TrackingMode.PROFESSIONAL
-            mock_manager.return_value.get_recommended_algorithm.return_value = TrackingAlgorithm.DEEPSORT
+            mock_manager.return_value.get_recommended_algorithm.return_value = (
+                TrackingAlgorithm.DEEPSORT
+            )
 
             selector = AlgorithmSelector()
             algorithm = selector.select_algorithm(self.frame)
@@ -92,12 +96,11 @@ class TestAlgorithmSelector(unittest.TestCase):
         )
 
         with patch("spygate.utils.tracking_hardware.TrackingHardwareManager") as mock_manager:
-            mock_manager.return_value.get_recommended_algorithm.return_value = TrackingAlgorithm.DEEPSORT
-
-            algorithm = self.selector.select_algorithm(
-                frame=self.frame,
-                requirements=requirements
+            mock_manager.return_value.get_recommended_algorithm.return_value = (
+                TrackingAlgorithm.DEEPSORT
             )
+
+            algorithm = self.selector.select_algorithm(frame=self.frame, requirements=requirements)
             self.assertEqual(algorithm, TrackingAlgorithm.DEEPSORT)
 
             # Verify weights were adjusted based on scene complexity
@@ -114,7 +117,9 @@ class TestAlgorithmSelector(unittest.TestCase):
             self.selector.update_fps(15.0)  # 50% drop
 
         with patch("spygate.utils.tracking_hardware.TrackingHardwareManager") as mock_manager:
-            mock_manager.return_value.get_recommended_algorithm.return_value = TrackingAlgorithm.MOSSE
+            mock_manager.return_value.get_recommended_algorithm.return_value = (
+                TrackingAlgorithm.MOSSE
+            )
 
             algorithm = self.selector.select_algorithm(self.frame)
             self.assertEqual(algorithm, TrackingAlgorithm.MOSSE)
@@ -122,8 +127,7 @@ class TestAlgorithmSelector(unittest.TestCase):
             # Verify weights were adjusted to prioritize speed
             call_args = mock_manager.return_value.get_recommended_algorithm.call_args[1]
             self.assertGreater(
-                call_args["priority_speed"],
-                self.selector.current_requirements.speed_weight
+                call_args["priority_speed"], self.selector.current_requirements.speed_weight
             )
 
     def test_get_algorithm_stats(self):
@@ -165,4 +169,4 @@ class TestAlgorithmSelector(unittest.TestCase):
 
         score = self.selector._analyze_texture(frame)
         self.assertGreaterEqual(score, 0.0)
-        self.assertLessEqual(score, 1.0) 
+        self.assertLessEqual(score, 1.0)

@@ -136,7 +136,7 @@ def test_prometheus_metrics():
     import requests
 
     try:
-        response = requests.get("http://localhost:9090/metrics")
+        response = requests.get("http://localhost:9090/metrics", timeout=10)
         metrics_text = response.text
     except:
         # If Prometheus server is not accessible, skip test

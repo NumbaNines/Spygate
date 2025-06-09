@@ -176,13 +176,28 @@ class SituationAnalyzer:
             return current
 
         # Rules for temporal consistency
-        if self.last_situation.down is not None and current.down is not None and current.down not in [1, self.last_situation.down + 1] and current.confidence < self.consistency_threshold:
+        if (
+            self.last_situation.down is not None
+            and current.down is not None
+            and current.down not in [1, self.last_situation.down + 1]
+            and current.confidence < self.consistency_threshold
+        ):
             current.down = self.last_situation.down
 
-        if self.last_situation.score_home is not None and current.score_home is not None and abs(current.score_home - self.last_situation.score_home) > 8 and current.confidence < self.consistency_threshold:
+        if (
+            self.last_situation.score_home is not None
+            and current.score_home is not None
+            and abs(current.score_home - self.last_situation.score_home) > 8
+            and current.confidence < self.consistency_threshold
+        ):
             current.score_home = self.last_situation.score_home
 
-        if self.last_situation.score_away is not None and current.score_away is not None and abs(current.score_away - self.last_situation.score_away) > 8 and current.confidence < self.consistency_threshold:
+        if (
+            self.last_situation.score_away is not None
+            and current.score_away is not None
+            and abs(current.score_away - self.last_situation.score_away) > 8
+            and current.confidence < self.consistency_threshold
+        ):
             current.score_away = self.last_situation.score_away
 
         # Update history

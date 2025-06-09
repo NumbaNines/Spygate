@@ -310,15 +310,12 @@ class SpygateDetector(QMainWindow):
         if not self.recording:
             timestamp = QDateTime.currentDateTime().toString("yyyyMMdd_hhmmss")
             video_path = str(self.output_dir / "videos" / f"recording_{timestamp}.mp4")
-            
+
             # Get frame dimensions
             if self.current_frame is not None:
                 height, width = self.current_frame.shape[:2]
                 self.video_writer = cv2.VideoWriter(
-                    video_path,
-                    cv2.VideoWriter_fourcc(*"mp4v"),
-                    DEFAULT_FPS,
-                    (width, height)
+                    video_path, cv2.VideoWriter_fourcc(*"mp4v"), DEFAULT_FPS, (width, height)
                 )
                 self.recording = True
                 self.record_btn.setText("Stop Recording")
@@ -333,7 +330,7 @@ class SpygateDetector(QMainWindow):
     def save_detections(self) -> None:
         """Save detection history to CSV and JSON files."""
         timestamp = QDateTime.currentDateTime().toString("yyyyMMdd_hhmmss")
-        
+
         # Save to CSV
         csv_path = self.output_dir / "data" / f"detections_{timestamp}.csv"
         with open(csv_path, "w", newline="") as f:
@@ -446,12 +443,14 @@ class SpygateDetector(QMainWindow):
         for r in results.boxes.data.tolist():
             x1, y1, x2, y2, score, class_id = r
             class_name = results.names[int(class_id)]
-            detections.append({
-                "frame": len(self.detection_history),
-                "class": class_name,
-                "confidence": score,
-                "bbox": [int(x1), int(y1), int(x2), int(y2)]
-            })
+            detections.append(
+                {
+                    "frame": len(self.detection_history),
+                    "class": class_name,
+                    "confidence": score,
+                    "bbox": [int(x1), int(y1), int(x2), int(y2)],
+                }
+            )
 
         # Store detection history
         self.detection_history.extend(detections)
@@ -468,13 +467,20 @@ class SpygateDetector(QMainWindow):
             for det in detections:
                 x1, y1, x2, y2 = det["bbox"]
                 cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
-                
+
                 if self.visualization_options["show_labels"]:
                     label = det["class"]
                     if self.visualization_options["show_confidence"]:
                         label += f" {det['confidence']:.2f}"
-                    cv2.putText(frame, label, (int(x1), int(y1) - 10),
-                              cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    cv2.putText(
+                        frame,
+                        label,
+                        (int(x1), int(y1) - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5,
+                        (0, 255, 0),
+                        2,
+                    )
 
         # Record frame if needed
         if self.recording and hasattr(self, "video_writer") and self.video_writer is not None:
@@ -484,7 +490,7 @@ class SpygateDetector(QMainWindow):
         height, width = frame.shape[:2]
         bytes_per_line = 3 * width
         q_img = QImage(frame.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
-        
+
         # Scale to fit display area while maintaining aspect ratio
         scaled_pixmap = QPixmap.fromImage(q_img).scaled(
             self.display_label.size(), Qt.AspectRatioMode.KeepAspectRatio
@@ -543,7 +549,7 @@ class SpygateDetector(QMainWindow):
             self,
             "Open Video/Image",
             "",
-            "Video/Image Files (*.mp4 *.avi *.mov *.jpg *.jpeg *.png);;All Files (*.*)"
+            "Video/Image Files (*.mp4 *.avi *.mov *.jpg *.jpeg *.png);;All Files (*.*)",
         )
         if file_path:
             self.video_source = "file"

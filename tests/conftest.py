@@ -3,10 +3,9 @@
 import json
 import shutil
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-
-from collections.abc import Generator
 
 import cv2
 import numpy as np

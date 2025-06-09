@@ -58,7 +58,7 @@ class HealthChecker:
         """Check API endpoint health."""
         try:
             start_time = datetime.now()
-            response = requests.get(endpoint)
+            response = requests.get(endpoint, timeout=10)
             end_time = datetime.now()
 
             # Calculate latency

@@ -5,34 +5,46 @@ This script provides a GUI interface for organizing datasets and training YOLO m
 for the SpygateAI project.
 """
 
-import sys
-import os
 import logging
-from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, 
-    QProgressBar, QTextEdit, QPushButton, QLabel,
-    QMessageBox
-)
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+import os
+import sys
+
 from dataset_organizer import DatasetOrganizer
 from model_trainer import ModelTrainer
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtWidgets import (
+    QApplication,
+    QLabel,
+    QMainWindow,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
+
 
 class LogHandler(logging.Handler):
     """Custom logging handler that emits logs to a Qt signal."""
+
     def __init__(self, signal):
         super().__init__()
         self.signal = signal
-        self.setFormatter(logging.Formatter(
-            '%(asctime)s - %(levelname)s - %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
-        ))
+        self.setFormatter(
+            logging.Formatter(
+                "%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+            )
+        )
 
     def emit(self, record):
         msg = self.format(record)
         self.signal.emit(msg)
 
+
 class WorkerThread(QThread):
     """Worker thread for dataset organization and model training."""
+
     progress_updated = pyqtSignal(int)
     log_updated = pyqtSignal(str)
     finished = pyqtSignal()
@@ -54,17 +66,18 @@ class WorkerThread(QThread):
             # Train model
             self.log_updated.emit("Starting model training...")
             trainer = ModelTrainer(
-                data_yaml="test_dataset/data.yaml",
-                progress_callback=self.progress_updated.emit
+                data_yaml="test_dataset/data.yaml", progress_callback=self.progress_updated.emit
             )
             trainer.train()
-            
+
             self.finished.emit()
         except Exception as e:
             self.error_occurred.emit(str(e))
 
+
 class MainWindow(QMainWindow):
     """Main window of the SpygateAI Training GUI."""
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("SpygateAI Training GUI")
@@ -87,7 +100,7 @@ class MainWindow(QMainWindow):
         # Add progress section
         progress_label = QLabel("Training Progress (Epochs)")
         layout.addWidget(progress_label)
-        
+
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)  # 100 epochs
         self.progress_bar.setFormat("%v/%m epochs (%p%)")
@@ -96,7 +109,7 @@ class MainWindow(QMainWindow):
         # Add log section
         log_label = QLabel("Training Logs")
         layout.addWidget(log_label)
-        
+
         self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
         layout.addWidget(self.log_text)
@@ -137,31 +150,29 @@ class MainWindow(QMainWindow):
         """Handle process completion."""
         self.start_button.setEnabled(True)
         QMessageBox.information(
-            self, 
+            self,
             "Process Complete",
-            "Dataset organization and model training completed successfully!"
+            "Dataset organization and model training completed successfully!",
         )
 
     def handle_error(self, error_message):
         """Handle process errors."""
         self.start_button.setEnabled(True)
-        QMessageBox.critical(
-            self,
-            "Error",
-            f"An error occurred:\n{error_message}"
-        )
+        QMessageBox.critical(self, "Error", f"An error occurred:\n{error_message}")
+
 
 def main():
     """Main application entry point."""
     app = QApplication(sys.argv)
-    
+
     # Set application style
-    app.setStyle('Fusion')
-    
+    app.setStyle("Fusion")
+
     window = MainWindow()
     window.show()
-    
+
     sys.exit(app.exec())
 
+
 if __name__ == "__main__":
-    main() 
+    main()

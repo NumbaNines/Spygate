@@ -47,7 +47,7 @@ def test_prometheus_exporter(mock_monitor):
         time.sleep(0.5)
 
         # Get metrics
-        response = requests.get("http://localhost:8765/metrics")
+        response = requests.get("http://localhost:8765/metrics", timeout=10)
         assert response.status_code == 200
 
         metrics = response.text
@@ -96,7 +96,7 @@ def test_prometheus_cleanup(mock_monitor):
     exporter = PrometheusExporter(monitor=mock_monitor, port=8767, interval=0.1)
 
     # Get initial metrics
-    response = requests.get("http://localhost:8767/metrics")
+    response = requests.get("http://localhost:8767/metrics", timeout=10)
     assert response.status_code == 200
 
     # Stop exporter
@@ -113,7 +113,7 @@ def test_prometheus_custom_prefix(mock_monitor):
     try:
         time.sleep(0.5)
 
-        response = requests.get("http://localhost:8768/metrics")
+        response = requests.get("http://localhost:8768/metrics", timeout=10)
         metrics = response.text
 
         # Check custom prefix
@@ -137,7 +137,7 @@ def test_prometheus_metric_types(mock_monitor):
     try:
         time.sleep(0.5)
 
-        response = requests.get("http://localhost:8769/metrics")
+        response = requests.get("http://localhost:8769/metrics", timeout=10)
         metrics = response.text
 
         # Check gauge format

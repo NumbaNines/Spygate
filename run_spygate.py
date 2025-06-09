@@ -28,26 +28,30 @@ if __name__ == "__main__":
     try:
         # Change to spygate directory for relative file paths
         os.chdir(SPYGATE_DIR)
-        
+
         # Import and run main
         from main import main
+
         main()
-        
+
     except ImportError as e:
         print(f"❌ Import Error: {e}")
         print("🔧 Attempting to diagnose...")
-        
+
         # Diagnostic information
         print(f"📁 Current directory: {os.getcwd()}")
         print(f"🐍 Python path: {sys.path[:3]}...")
         print(f"📦 Spygate directory exists: {SPYGATE_DIR.exists()}")
-        
+
         if SPYGATE_DIR.exists():
-            print(f"📋 Spygate contents: {[f.name for f in SPYGATE_DIR.iterdir() if f.is_file()][:5]}")
-        
+            print(
+                f"📋 Spygate contents: {[f.name for f in SPYGATE_DIR.iterdir() if f.is_file()][:5]}"
+            )
+
         sys.exit(1)
     except Exception as e:
         print(f"❌ Application Error: {e}")
         import traceback
+
         traceback.print_exc()
-        sys.exit(1) 
+        sys.exit(1)

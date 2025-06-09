@@ -57,8 +57,8 @@ UI_CLASSES = [
     "game_clock",  # Game time remaining
     "play_clock",  # Play clock countdown
     "field_position",  # Yard line or field position marker
-    "possession_indicator",  # Shows which team has possession
-    "territory_indicator",  # Triangle showing field territory (▲ = opponent territory, ▼ = own territory)
+    "possession_indicator",  # Triangle on LEFT side between team abbreviations (shows ball possession)
+    "territory_indicator",  # Triangle on FAR RIGHT side (▲ = opponent territory, ▼ = own territory)
 ]
 
 # Enhanced hardware-tier specific model configurations with optimization features

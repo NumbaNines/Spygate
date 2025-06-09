@@ -60,9 +60,8 @@ UI_CLASSES = [
     "game_clock",  # Game time remaining (e.g., "1:57")
     "play_clock",  # Play clock countdown (e.g., ":04") - visible PRE-SNAP only
     "field_position",  # Yard line or special situation marker (e.g., "25 YL", "RED ZONE", "2-PT")
+    "qb_position",  # QB/ball position indicating hash mark placement (left hash, right hash, center)
     "hash_marks_indicator",  # Field position relative to hash marks for strategic analysis
-    "red_zone_indicator",  # Special indicator when in red zone (inside 20-yard line)
-    "goal_line_indicator",  # Special indicator when at/near goal line (inside 5-yard line)
     "possession_indicator",  # Triangle on LEFT side between team abbreviations (shows ball possession)
     "territory_indicator",  # Triangle on FAR RIGHT side (▲ = opponent territory, ▼ = own territory)
 ]

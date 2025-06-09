@@ -484,7 +484,8 @@ class SituationDetector:
 
         # Hash marks strategic analysis for field position
         if yard_line:
-            hash_marks_context = self._analyze_hash_marks_position(yard_line)
+            qb_position = hud_info.get("qb_position")  # Get QB position for hash mark analysis
+            hash_marks_context = self._analyze_hash_marks_position(yard_line, qb_position)
             if hash_marks_context:
                 situations.append(
                     {
@@ -494,7 +495,9 @@ class SituationDetector:
                         "timestamp": timestamp,
                         "details": {
                             "yard_line": yard_line,
+                            "qb_position": qb_position,
                             "hash_marks_zone": hash_marks_context["zone"],
+                            "hash_mark_side": hash_marks_context.get("hash_mark_side"),
                             "strategic_implications": hash_marks_context["implications"],
                             "kicking_angle": hash_marks_context.get("kicking_angle"),
                             "source": "hash_marks_analysis",
@@ -717,12 +720,13 @@ class SituationDetector:
 
         return mistakes
 
-    def _analyze_hash_marks_position(self, yard_line: str) -> Optional[dict[str, Any]]:
+    def _analyze_hash_marks_position(self, yard_line: str, qb_position: str) -> Optional[dict[str, Any]]:
         """
         Analyze field position relative to hash marks for strategic implications.
         
         Args:
             yard_line: Field position string (e.g., "OPP 25", "OWN 35", "2-PT")
+            qb_position: QB position string (e.g., "left", "right", "center")
             
         Returns:
             Dict with hash marks analysis or None if not applicable
@@ -735,63 +739,96 @@ class SituationDetector:
             if "2-PT" in yard_line or "XP" in yard_line:
                 return {
                     "zone": "conversion_attempt",
+                    "hash_mark_side": "center",  # Conversions typically start at center
                     "implications": ["short_yardage", "high_pressure"],
                     "kicking_angle": "center"
                 }
-                
-            # Parse yard line
-            yard_str = str(yard_line).upper()
-            if "OPP" in yard_str:
-                # In opponent territory
+            
+            # Determine hash mark side based on QB position
+            hash_mark_side = "unknown"
+            if qb_position:
+                if "left" in str(qb_position).lower():
+                    hash_mark_side = "left_hash"
+                elif "right" in str(qb_position).lower():
+                    hash_mark_side = "right_hash"
+                elif "center" in str(qb_position).lower():
+                    hash_mark_side = "between_hashes"
+            
+            # Parse yard line for strategic analysis
+            if "OPP" in yard_line:
                 try:
-                    yard_num = int(yard_str.split()[-1])
+                    yard_num = int(yard_line.split()[-1])
                     
-                    # Field goal range analysis
-                    if yard_num <= 35:
-                        return {
-                            "zone": "field_goal_range",
-                            "implications": ["field_goal_option", "red_zone_offense", "hash_marks_critical"],
-                            "kicking_angle": self._calculate_kicking_angle(yard_num)
-                        }
-                    elif yard_num <= 50:
-                        return {
-                            "zone": "scoring_territory", 
-                            "implications": ["aggressive_playcalling", "downfield_passing"],
-                            "kicking_angle": "long_range"
-                        }
-                        
+                    # Determine strategic implications based on hash mark position
+                    implications = []
+                    kicking_angle = "unknown"
+                    
+                    if hash_mark_side == "left_hash":
+                        implications.extend(["left_hash_tendency", "right_side_field_advantage"])
+                        kicking_angle = "angled_right"
+                    elif hash_mark_side == "right_hash":
+                        implications.extend(["right_hash_tendency", "left_side_field_advantage"])
+                        kicking_angle = "angled_left"
+                    elif hash_mark_side == "between_hashes":
+                        implications.extend(["center_field", "optimal_kicking_angle"])
+                        kicking_angle = "straight"
+                    
+                    # Add distance-based implications
+                    if yard_num <= 5:
+                        implications.append("goal_line_stand")
+                        zone = "goal_line"
+                    elif yard_num <= 20:
+                        implications.append("red_zone")
+                        zone = "red_zone"
+                    elif yard_num <= 35:
+                        implications.append("scoring_territory")
+                        zone = "scoring_territory"
+                    else:
+                        zone = "opponent_territory"
+                    
+                    return {
+                        "zone": zone,
+                        "hash_mark_side": hash_mark_side,
+                        "implications": implications,
+                        "kicking_angle": kicking_angle,
+                        "yards_to_goal": yard_num
+                    }
+                    
                 except (ValueError, IndexError):
                     pass
                     
-            elif "OWN" in yard_str:
-                # In own territory
+            elif "OWN" in yard_line:
+                # Own territory - different strategic considerations
                 try:
-                    yard_num = int(yard_str.split()[-1])
+                    yard_num = int(yard_line.split()[-1])
+                    implications = ["own_territory"]
                     
-                    if yard_num <= 20:
-                        return {
-                            "zone": "danger_zone",
-                            "implications": ["conservative_playcalling", "punting_situation", "safety_risk"],
-                        }
-                    elif yard_num <= 40:
-                        return {
-                            "zone": "neutral_territory",
-                            "implications": ["balanced_playcalling", "field_position_battle"],
-                        }
+                    if hash_mark_side == "left_hash":
+                        implications.append("left_hash_own_territory")
+                    elif hash_mark_side == "right_hash":
+                        implications.append("right_hash_own_territory")
+                    
+                    if yard_num <= 10:
+                        implications.append("deep_own_territory")
+                        zone = "deep_own_territory"
+                    elif yard_num <= 25:
+                        implications.append("own_red_zone")
+                        zone = "own_red_zone"
+                    else:
+                        zone = "own_territory"
                         
+                    return {
+                        "zone": zone,
+                        "hash_mark_side": hash_mark_side,
+                        "implications": implications,
+                        "kicking_angle": "punt_consideration",
+                        "yards_to_own_goal": yard_num
+                    }
+                    
                 except (ValueError, IndexError):
                     pass
                     
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Error analyzing hash marks position: {e}")
             
         return None
-        
-    def _calculate_kicking_angle(self, yards_to_goal: int) -> str:
-        """Calculate kicking angle difficulty based on yard line and hash marks."""
-        if yards_to_goal <= 15:
-            return "tight_angle"
-        elif yards_to_goal <= 25:
-            return "moderate_angle"
-        else:
-            return "wide_angle"

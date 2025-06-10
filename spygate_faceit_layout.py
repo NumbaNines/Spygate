@@ -130,7 +130,7 @@ class SpygateDesktopFaceIt(QMainWindow):
 
         # Store nav buttons for selection management
         self.nav_buttons = []
-        
+
         for icon, text in nav_items:
             nav_button = self.create_nav_button(icon, text)
             nav_layout.addWidget(nav_button)
@@ -145,11 +145,11 @@ class SpygateDesktopFaceIt(QMainWindow):
         button = QPushButton(f"{icon}  {text}")
         button.setFixedHeight(45)
         button.setCheckable(True)  # Make button checkable for selected state
-        
+
         # Set first button (Search) as selected by default
         if text == "Search":
             button.setChecked(True)
-            
+
         button.setStyleSheet(
             f"""
             QPushButton {{
@@ -177,7 +177,7 @@ class SpygateDesktopFaceIt(QMainWindow):
             }}
         """
         )
-        
+
         # Connect button click to handle selection
         button.clicked.connect(lambda: self.handle_nav_selection(button))
         return button

@@ -52,15 +52,17 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         super().__init__()
         self.setWindowTitle("SpygateAI Desktop - FaceIt Style")
         self.setGeometry(100, 100, 1400, 900)
-        
+
         # Set dark background
-        self.setStyleSheet(f"""
+        self.setStyleSheet(
+            f"""
             QMainWindow {{
                 background-color: #0b0c0f;
                 color: #ffffff;
                 font-family: 'Minork Sans', Arial, sans-serif;
             }}
-        """)
+        """
+        )
 
         self.current_content = "analysis"  # Track current tab
         self.init_ui()
@@ -149,7 +151,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
 
         # Store nav buttons for selection management
         self.nav_buttons = []
-        
+
         for icon, text in nav_items:
             nav_button = self.create_nav_button(icon, text)
             nav_layout.addWidget(nav_button)
@@ -164,11 +166,11 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         button = QPushButton(f"{icon}  {text}")
         button.setFixedHeight(45)
         button.setCheckable(True)  # Make button checkable for selected state
-        
+
         # Set first button (Analysis) as selected by default
         if text == "Analysis":
             button.setChecked(True)
-            
+
         button.setStyleSheet(
             f"""
             QPushButton {{
@@ -196,7 +198,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             }}
         """
         )
-        
+
         # Connect button click to handle selection
         button.clicked.connect(lambda: self.handle_nav_selection(button, text.lower()))
         return button
@@ -206,7 +208,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         for button in self.nav_buttons:
             button.setChecked(False)
         selected_button.setChecked(True)
-        
+
         # Update main content based on selection
         self.current_content = content_type
         self.update_main_content()
@@ -378,8 +380,9 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         self.content_layout.addStretch()
 
     def create_gameplan_content(self):
-        """Create gameplan content"""
-        header = QLabel("🎯 Gameplan")
+        """Create gameplan content with Play Planner"""
+        # Header
+        header = QLabel("🎯 Play Planner")
         header.setStyleSheet(
             """
             color: #ffffff;
@@ -391,16 +394,509 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         )
         self.content_layout.addWidget(header)
 
-        gameplan_text = QLabel("🎮 Strategy management coming soon...")
-        gameplan_text.setStyleSheet(
+        # Main Play Planner layout
+        planner_layout = QHBoxLayout()
+
+        # Football field area (main center)
+        field_widget = self.create_play_planner_field()
+        planner_layout.addWidget(field_widget, 2)  # Takes 2/3 of space
+
+        # Controls area (right side)
+        controls_widget = self.create_formation_controls()
+        planner_layout.addWidget(controls_widget, 1)  # Takes 1/3 of space
+
+        # Add to main layout
+        planner_container = QWidget()
+        planner_container.setLayout(planner_layout)
+        self.content_layout.addWidget(planner_container)
+
+    def create_play_planner_field(self):
+        """Create the interactive 120-yard NFL football field using QGraphicsScene"""
+        # Create graphics view and scene
+        self.field_view = QGraphicsView()
+        self.field_scene = QGraphicsScene()
+        self.field_view.setScene(self.field_scene)
+
+        # Style the graphics view
+        self.field_view.setStyleSheet(
             """
-            color: #767676;
-            font-family: 'Minork Sans', Arial, sans-serif;
-            font-size: 16px;
+            QGraphicsView {
+                background-color: #1a1a1a;
+                border: 2px solid #2a2a2a;
+                border-radius: 8px;
+            }
         """
         )
-        self.content_layout.addWidget(gameplan_text)
-        self.content_layout.addStretch()
+
+        # Set scene dimensions (120 yards + end zones) - Vertical orientation like Madden
+        field_width = 600  # ~53.3 yards width * 11 pixels per yard
+        field_height = 1200  # 120 yards * 10 pixels per yard
+        self.field_scene.setSceneRect(0, 0, field_width, field_height)
+
+        # Draw the football field
+        self.draw_football_field()
+
+        # Add player icons
+        self.add_player_icons()
+
+        # Enable drag and drop
+        self.field_view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
+
+        return self.field_view
+
+    def draw_football_field(self):
+        """Draw the football field with yard markers, hash marks, and goal lines - Vertical orientation like Madden"""
+        field_width = 600  # Width (53.3 yards)
+        field_height = 1200  # Height (120 yards)
+
+        # Field background (green)
+        field_rect = QGraphicsRectItem(0, 0, field_width, field_height)
+        field_rect.setBrush(QBrush(QColor(34, 139, 34)))  # Forest green
+        field_rect.setPen(QPen(QColor(255, 255, 255), 2))
+        self.field_scene.addItem(field_rect)
+
+        # End zones (darker green) - Now top and bottom
+        end_zone_height = 100  # 10 yards
+
+        # Top end zone
+        top_endzone = QGraphicsRectItem(0, 0, field_width, end_zone_height)
+        top_endzone.setBrush(QBrush(QColor(25, 100, 25)))
+        top_endzone.setPen(QPen(QColor(255, 255, 255), 2))
+        self.field_scene.addItem(top_endzone)
+
+        # Bottom end zone
+        bottom_endzone = QGraphicsRectItem(
+            0, field_height - end_zone_height, field_width, end_zone_height
+        )
+        bottom_endzone.setBrush(QBrush(QColor(25, 100, 25)))
+        bottom_endzone.setPen(QPen(QColor(255, 255, 255), 2))
+        self.field_scene.addItem(bottom_endzone)
+
+        # Yard lines (every 10 yards) - Now horizontal lines
+        for yard in range(0, 121, 10):
+            y = yard * 10
+            yard_line = QGraphicsLineItem(0, y, field_width, y)
+            yard_line.setPen(QPen(QColor(255, 255, 255), 2))
+            self.field_scene.addItem(yard_line)
+
+            # Yard numbers
+            if 10 <= yard <= 110 and yard % 10 == 0:
+                yard_num = (
+                    min(yard // 10, 10, 110 // 10 - yard // 10 + 1) if yard > 50 else yard // 10
+                )
+                if yard != 50:  # Don't duplicate 50-yard line
+                    yard_text = QGraphicsTextItem(
+                        str(yard_num * 10) if yard <= 50 else str(110 - yard)
+                    )
+                    yard_text.setDefaultTextColor(QColor(255, 255, 255))
+                    yard_text.setFont(QFont("Minork Sans", 12, QFont.Weight.Bold))
+                    yard_text.setPos(field_width // 2 - 15, y - 20)
+                    self.field_scene.addItem(yard_text)
+
+        # 50-yard line (special) - Now horizontal
+        fifty_line = QGraphicsLineItem(0, 600, field_width, 600)
+        fifty_line.setPen(QPen(QColor(255, 215, 0), 3))  # Gold
+        self.field_scene.addItem(fifty_line)
+
+        # Hash marks - Now vertical, positioned left and right
+        hash_spacing = field_width // 4
+        for yard in range(1, 120):
+            y = yard * 10
+            # Inner hash marks (vertical lines)
+            hash1 = QGraphicsLineItem(hash_spacing, y, hash_spacing + 20, y)
+            hash1.setPen(QPen(QColor(255, 255, 255), 1))
+            self.field_scene.addItem(hash1)
+
+            hash2 = QGraphicsLineItem(
+                field_width - hash_spacing - 20, y, field_width - hash_spacing, y
+            )
+            hash2.setPen(QPen(QColor(255, 255, 255), 1))
+            self.field_scene.addItem(hash2)
+
+    def add_player_icons(self):
+        """Add draggable player icons to the field"""
+        self.offensive_players = {}
+        self.defensive_players = {}
+
+        # Offensive formation (11 players) - Blue - Vertical field orientation - NOW ATTACKING UPFIELD
+        offensive_positions = [
+            ("QB", 300, 750),  # Quarterback deeper in own territory  
+            ("RB", 300, 710),  # Running back behind QB
+            ("WR1", 100, 750),  # Split end
+            ("WR2", 500, 750),  # Flanker
+            ("WR3", 150, 650),  # Slot receiver
+            ("TE", 350, 790),  # Tight end
+            ("LT", 250, 780),  # Left tackle
+            ("LG", 275, 780),  # Left guard
+            ("C", 300, 780),  # Center
+            ("RG", 325, 780),  # Right guard
+            ("RT", 350, 780),  # Right tackle
+        ]
+
+        for pos, x, y in offensive_positions:
+            player = self.create_player_icon(pos, x, y, QColor(70, 130, 180), True)  # Steel blue
+            self.offensive_players[pos] = player
+
+        # Defensive formation (11 players) - Red - Vertical field orientation - NOW DEFENDING UPFIELD
+        defensive_positions = [
+            ("DE", 200, 420),  # Defensive end
+            ("DT", 280, 420),  # Defensive tackle
+            ("NT", 320, 420),  # Nose tackle
+            ("OLB", 150, 450),  # Outside linebacker
+            ("MLB", 300, 450),  # Middle linebacker
+            ("CB1", 100, 500),  # Cornerback 1
+            ("CB2", 500, 500),  # Cornerback 2
+            ("FS", 200, 550),  # Free safety
+            ("SS", 400, 550),  # Strong safety
+            ("DE2", 380, 420),  # Defensive end 2
+            ("LB", 450, 450),  # Linebacker
+        ]
+
+        for pos, x, y in defensive_positions:
+            player = self.create_player_icon(pos, x, y, QColor(220, 20, 60), False)  # Crimson
+            self.defensive_players[pos] = player
+
+    def create_player_icon(self, position, x, y, color, is_offensive):
+        """Create a draggable player icon"""
+        # Create player circle
+        player = QGraphicsEllipseItem(0, 0, 30, 30)
+        player.setBrush(QBrush(color))
+        player.setPen(QPen(QColor(255, 255, 255), 2))
+        player.setPos(x - 15, y - 15)  # Center the circle
+
+        # Make draggable
+        player.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, True)
+        player.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
+
+        # Add position label (centered inside circle)
+        label = QGraphicsTextItem(position)
+        label.setDefaultTextColor(QColor(255, 255, 255))
+        label.setFont(QFont("Minork Sans", 8, QFont.Weight.Bold))
+
+        # Center the text within the 30x30 circle
+        text_rect = label.boundingRect()
+        label.setPos(
+            (30 - text_rect.width()) / 2,  # Center horizontally within circle
+            (30 - text_rect.height()) / 2,  # Center vertically within circle
+        )
+        label.setParentItem(player)
+
+        # Store metadata
+        player.setData(0, position)  # Position name
+        player.setData(1, is_offensive)  # True if offensive player
+        player.setData(2, color)  # Original color
+
+        self.field_scene.addItem(player)
+        return player
+
+    def create_formation_controls(self):
+        """Create formation controls for the right sidebar"""
+        controls_widget = QWidget()
+        controls_widget.setStyleSheet(
+            """
+            QWidget {
+                background-color: #1a1a1a;
+                border-radius: 8px;
+                padding: 20px;
+            }
+        """
+        )
+
+        layout = QVBoxLayout(controls_widget)
+        layout.setSpacing(15)
+
+        # Controls header
+        controls_header = QLabel("Formation Controls")
+        controls_header.setStyleSheet(
+            """
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: 'Minork Sans', Arial, sans-serif;
+            margin-bottom: 10px;
+        """
+        )
+        layout.addWidget(controls_header)
+
+        # Formation presets section
+        presets_label = QLabel("Formation Presets:")
+        presets_label.setStyleSheet(
+            """
+            color: #ffffff;
+            font-family: 'Minork Sans', Arial, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 10px;
+        """
+        )
+        layout.addWidget(presets_label)
+
+        # Formation preset buttons
+        formations = [
+            "I-Formation",
+            "Shotgun",
+            "Shotgun Gun Bunch",
+            "Pistol",
+            "Spread",
+            "Singleback",
+            "Wildcat",
+        ]
+
+        for formation in formations:
+            btn = QPushButton(formation)
+            btn.setStyleSheet(
+                """
+                QPushButton {
+                    background-color: #2a2a2a;
+                    color: #e3e3e3;
+                    padding: 8px 12px;
+                    border: none;
+                    border-radius: 4px;
+                    font-family: 'Minork Sans', Arial, sans-serif;
+                    font-size: 12px;
+                    text-align: left;
+                }
+                QPushButton:hover {
+                    background-color: #1ce783;
+                    color: #0b0c0f;
+                }
+            """
+            )
+            btn.clicked.connect(lambda checked, f=formation: self.apply_formation_preset(f))
+            layout.addWidget(btn)
+
+        # Personnel packages section
+        personnel_label = QLabel("Personnel Packages:")
+        personnel_label.setStyleSheet(
+            """
+            color: #ffffff;
+            font-family: 'Minork Sans', Arial, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 15px;
+        """
+        )
+        layout.addWidget(personnel_label)
+
+        # Personnel buttons
+        personnel = [
+            "11 Personnel",
+            "12 Personnel",
+            "21 Personnel",
+            "Nickel Defense",
+            "Dime Defense",
+            "Quarter Defense",
+        ]
+
+        for package in personnel:
+            btn = QPushButton(package)
+            btn.setStyleSheet(
+                """
+                QPushButton {
+                    background-color: #2a2a2a;
+                    color: #e3e3e3;
+                    padding: 8px 12px;
+                    border: none;
+                    border-radius: 4px;
+                    font-family: 'Minork Sans', Arial, sans-serif;
+                    font-size: 12px;
+                    text-align: left;
+                }
+                QPushButton:hover {
+                    background-color: #1ce783;
+                    color: #0b0c0f;
+                }
+            """
+            )
+            btn.clicked.connect(lambda checked, p=package: self.apply_personnel_package(p))
+            layout.addWidget(btn)
+
+        # Action buttons section
+        actions_label = QLabel("Actions:")
+        actions_label.setStyleSheet(
+            """
+            color: #ffffff;
+            font-family: 'Minork Sans', Arial, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 15px;
+        """
+        )
+        layout.addWidget(actions_label)
+
+        # Action buttons with accent color
+        action_buttons = [
+            ("Save Play", self.save_play),
+            ("Load Play", self.load_play),
+            ("Clear Field", self.clear_field),
+            ("Reset Positions", self.reset_positions),
+        ]
+
+        for btn_text, btn_func in action_buttons:
+            btn = QPushButton(btn_text)
+            btn.setStyleSheet(
+                """
+                QPushButton {
+                    background-color: #1ce783;
+                    color: #e3e3e3;
+                    padding: 10px 15px;
+                    border: none;
+                    border-radius: 6px;
+                    font-family: 'Minork Sans', Arial, sans-serif;
+                    font-size: 12px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #17d474;
+                }
+            """
+            )
+            btn.clicked.connect(btn_func)
+            layout.addWidget(btn)
+
+        layout.addStretch()
+        return controls_widget
+
+    def apply_formation_preset(self, formation):
+        """Apply a formation preset to offensive players"""
+        print(f"🏈 Applying formation: {formation}")
+
+        # Define formation templates with player positions (x, y coordinates) - FLIPPED TO ATTACK UPFIELD
+        formations = {
+            "I-Formation": {
+                "QB": (300, 750),
+                "RB": (300, 710),
+                "FB": (300, 730),  # Fullback in I-Formation
+                "WR1": (100, 780),
+                "WR2": (500, 780),
+                "WR3": (150, 780),
+                "TE": (350, 780),
+                "LT": (250, 780),
+                "LG": (275, 780),
+                "C": (300, 780),
+                "RG": (325, 780),
+                "RT": (350, 780),
+            },
+            "Shotgun": {
+                "QB": (300, 720),  # QB deeper in shotgun
+                "RB": (250, 720),  # RB beside QB
+                "WR1": (100, 780),  # Split end
+                "WR2": (500, 780),  # Flanker
+                "WR3": (150, 720),  # Slot receiver
+                "TE": (375, 780),  # Tight end
+                "LT": (250, 780),
+                "LG": (275, 780),
+                "C": (300, 780),
+                "RG": (325, 780),
+                "RT": (350, 780),
+            },
+            "Shotgun Gun Bunch": {
+                "QB": (300, 700),  # QB in shotgun formation
+                "RB": (250, 700),  # Running back beside QB
+                "WR1": (380, 720),  # Bunch formation - receivers grouped together
+                "WR2": (400, 720),  # Bunch formation - close to WR1
+                "WR3": (420, 720),  # Bunch formation - close to WR2
+                "TE": (360, 780),  # Tight end on line
+                "LT": (250, 780),  # Offensive line
+                "LG": (275, 780),
+                "C": (300, 780),
+                "RG": (325, 780),
+                "RT": (350, 780),
+            },
+            "Pistol": {
+                "QB": (300, 740),  # QB closer to line than shotgun
+                "RB": (300, 710),  # RB directly behind QB
+                "WR1": (100, 780),
+                "WR2": (500, 780),
+                "WR3": (150, 740),
+                "TE": (375, 780),
+                "LT": (250, 780),
+                "LG": (275, 780),
+                "C": (300, 780),
+                "RG": (325, 780),
+                "RT": (350, 780),
+            },
+            "Spread": {
+                "QB": (300, 720),  # QB in shotgun
+                "RB": (300, 700),  # RB behind QB
+                "WR1": (80, 780),  # Wide spread
+                "WR2": (520, 780),  # Wide spread
+                "WR3": (150, 740),  # Slot left
+                "TE": (450, 740),  # Slot right (TE as receiver)
+                "LT": (250, 780),
+                "LG": (275, 780),
+                "C": (300, 780),
+                "RG": (325, 780),
+                "RT": (350, 780),
+            },
+            "Singleback": {
+                "QB": (300, 750),
+                "RB": (300, 720),  # RB directly behind QB
+                "WR1": (100, 780),
+                "WR2": (500, 780),
+                "WR3": (150, 780),
+                "TE": (375, 780),
+                "LT": (250, 780),
+                "LG": (275, 780),
+                "C": (300, 780),
+                "RG": (325, 780),
+                "RT": (350, 780),
+            },
+            "Wildcat": {
+                "QB": (250, 720),  # QB as receiver in Wildcat
+                "RB": (300, 750),  # RB takes snap
+                "WR1": (100, 780),
+                "WR2": (500, 780),
+                "WR3": (350, 720),  # Additional back
+                "TE": (375, 780),
+                "LT": (250, 780),
+                "LG": (275, 780),
+                "C": (300, 780),
+                "RG": (325, 780),
+                "RT": (350, 780),
+            },
+        }
+
+        # Apply the formation if it exists
+        if formation in formations:
+            formation_positions = formations[formation]
+
+            # Move each offensive player to their formation position
+            for position, player in self.offensive_players.items():
+                if position in formation_positions:
+                    new_x, new_y = formation_positions[position]
+                    # Adjust for player icon center (15px offset since icon is 30x30)
+                    player.setPos(new_x - 15, new_y - 15)
+                    print(f"  Moved {position} to ({new_x}, {new_y})")
+
+            print(f"✅ Applied {formation} formation!")
+        else:
+            print(f"❌ Formation '{formation}' not found!")
+
+    def apply_personnel_package(self, package):
+        """Apply a personnel package to defensive players"""
+        print(f"🛡️ Applying personnel: {package}")
+        # Personnel-specific positioning logic would go here
+
+    def save_play(self):
+        """Save the current play setup"""
+        print("💾 Saving play...")
+        # Save current player positions
+
+    def load_play(self):
+        """Load a saved play setup"""
+        print("📂 Loading play...")
+        # Load saved player positions
+
+    def clear_field(self):
+        """Clear all routes and annotations from the field"""
+        print("🧹 Clearing field...")
+        # Clear any drawn routes or annotations
+
+    def reset_positions(self):
+        """Reset all players to default positions"""
+        print("🔄 Resetting positions...")
+        # Reset players to original formation positions
 
     def create_learn_content(self):
         """Create learn content"""
@@ -483,11 +979,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         parent_layout.addWidget(watch_header)
 
         # Watch items
-        watch_items = [
-            "🎬 Pro Gameplay Analysis",
-            "📺 Tutorial Videos", 
-            "🏆 Tournament Highlights"
-        ]
+        watch_items = ["🎬 Pro Gameplay Analysis", "📺 Tutorial Videos", "🏆 Tournament Highlights"]
 
         for item in watch_items:
             watch_item = QLabel(item)
@@ -516,11 +1008,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         parent_layout.addWidget(clips_header)
 
         # Placeholder clips
-        clip_items = [
-            "📊 3rd & Long Analysis",
-            "🏃 Red Zone Breakdown",
-            "⏱️ 2-Minute Drill Study"
-        ]
+        clip_items = ["📊 3rd & Long Analysis", "🏃 Red Zone Breakdown", "⏱️ 2-Minute Drill Study"]
 
         for item in clip_items:
             clip_item = QLabel(item)
@@ -550,12 +1038,12 @@ class SpygateDesktopFaceItStyle(QMainWindow):
 def main():
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
-    
+
     window = SpygateDesktopFaceItStyle()
     window.show()
-    
+
     sys.exit(app.exec())
 
 
 if __name__ == "__main__":
-    main() 
+    main()

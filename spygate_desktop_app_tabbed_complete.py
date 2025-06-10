@@ -729,10 +729,10 @@ class SpygateDesktopAppTabbed(QMainWindow):
         logo_widget = QWidget()
         logo_widget.setFixedHeight(80)
         logo_widget.setStyleSheet("background-color: #0b0c0f; border-bottom: 1px solid #1a1a1a;")
-        
+
         logo_layout = QHBoxLayout(logo_widget)
         logo_layout.setContentsMargins(20, 0, 20, 0)
-        
+
         logo_label = QLabel("🏈 SpygateAI")
         logo_label.setStyleSheet(
             """
@@ -752,16 +752,11 @@ class SpygateDesktopAppTabbed(QMainWindow):
         nav_layout.setSpacing(2)
 
         # Navigation items
-        nav_items = [
-            ("📊", "Analysis"),
-            ("🏠", "Dashboard"), 
-            ("🎯", "Gameplan"),
-            ("📚", "Learn")
-        ]
+        nav_items = [("📊", "Analysis"), ("🏠", "Dashboard"), ("🎯", "Gameplan"), ("📚", "Learn")]
 
         # Store nav buttons for selection management
         self.nav_buttons = []
-        
+
         for i, (icon, text) in enumerate(nav_items):
             nav_button = self.create_nav_button(icon, text, i)
             nav_layout.addWidget(nav_button)
@@ -807,7 +802,7 @@ class SpygateDesktopAppTabbed(QMainWindow):
             }}
         """
         )
-        
+
         # Connect button click to handle selection and content switching
         button.clicked.connect(lambda: self.handle_nav_selection(button, index))
         return button
@@ -817,7 +812,7 @@ class SpygateDesktopAppTabbed(QMainWindow):
         for button in self.nav_buttons:
             button.setChecked(False)
         selected_button.setChecked(True)
-        
+
         # Switch content
         self.content_stack.setCurrentIndex(index)
 

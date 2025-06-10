@@ -639,6 +639,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             "I-Formation",
             "Shotgun", 
             "Gun Bunch",
+            "Gun Trips Te",
             "Pistol",
             "Spread",
             "Singleback",
@@ -805,6 +806,19 @@ class SpygateDesktopFaceItStyle(QMainWindow):
                 "C": (300, 300),
                 "RG": (325, 300),
                 "RT": (350, 300),
+            },
+            "Gun Trips Te": {
+                "QB": (309, 348),  # QB in shotgun formation
+                "RB": (352, 348),  # Running back positioned beside QB
+                "WR1": (36, 300),   # Wide receiver far left
+                "WR2": (186, 308),  # Trips formation receiver
+                "WR3": (108, 309),  # Trips formation receiver  
+                "TE": (412, 301),   # Tight end on right side
+                "LT": (246, 300),   # Offensive line on line of scrimmage
+                "LG": (280, 299),
+                "C": (312, 300),
+                "RG": (344, 300),
+                "RT": (377, 300),
             },
             "Pistol": {
                 "QB": (300, 740),  # QB closer to line than shotgun

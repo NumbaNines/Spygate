@@ -520,7 +520,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
 
         # Offensive formation (11 players) - Blue - Vertical field orientation - NOW ATTACKING UPFIELD
         offensive_positions = [
-            ("QB", 300, 750),  # Quarterback deeper in own territory  
+            ("QB", 300, 750),  # Quarterback deeper in own territory
             ("RB", 300, 710),  # Running back behind QB
             ("WR1", 100, 750),  # Split end
             ("WR2", 500, 750),  # Flanker
@@ -790,14 +790,14 @@ class SpygateDesktopFaceItStyle(QMainWindow):
                 "RG": (325, 780),
                 "RT": (350, 780),
             },
-            "Shotgun Gun Bunch": {
-                "QB": (300, 700),  # QB in shotgun formation
-                "RB": (250, 700),  # Running back beside QB
-                "WR1": (380, 720),  # Bunch formation - receivers grouped together
-                "WR2": (400, 720),  # Bunch formation - close to WR1
-                "WR3": (420, 720),  # Bunch formation - close to WR2
-                "TE": (360, 780),  # Tight end on line
-                "LT": (250, 780),  # Offensive line
+                        "Shotgun Gun Bunch": {
+                "QB": (300, 730),  # QB in shotgun formation
+                "RB": (300, 710),  # Running back directly behind QB (slightly behind)
+                "WR1": (100, 780),  # Split end far left on line of scrimmage
+                "WR2": (200, 780),  # Flanker wider left on line of scrimmage  
+                "WR3": (410, 780),  # Bunch formation - tight with TE on right side
+                "TE": (430, 780),  # Tight end in tight bunch with WR3 on right side
+                "LT": (250, 780),  # Offensive line - all on line of scrimmage
                 "LG": (275, 780),
                 "C": (300, 780),
                 "RG": (325, 780),

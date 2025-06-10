@@ -535,6 +535,17 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         bottom_endzone.setPen(QPen(QColor("#29d28c"), 2))
         self.field_scene.addItem(bottom_endzone)
 
+        # Endzone Back Lines (long lines at back of endzones) - Green like field markings
+        # Back of top endzone (0-yard line)
+        top_endzone_back = QGraphicsLineItem(0, 0, field_width, 0)
+        top_endzone_back.setPen(QPen(QColor("#29d28c"), 4))
+        self.field_scene.addItem(top_endzone_back)
+
+        # Back of bottom endzone (120-yard line)
+        bottom_endzone_back = QGraphicsLineItem(0, field_height, field_width, field_height)
+        bottom_endzone_back.setPen(QPen(QColor("#29d28c"), 4))
+        self.field_scene.addItem(bottom_endzone_back)
+
         # Goal Lines (4-inch wide per NFL spec) - White like in Madden
         top_goal = QGraphicsLineItem(0, 100, field_width, 100)
         top_goal.setPen(QPen(QColor("#ffffff"), 4))

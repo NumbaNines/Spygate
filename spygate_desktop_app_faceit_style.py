@@ -535,13 +535,13 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         bottom_endzone.setPen(QPen(QColor("#29d28c"), 2))
         self.field_scene.addItem(bottom_endzone)
 
-        # Goal Lines (4-inch wide per NFL spec)
+        # Goal Lines (4-inch wide per NFL spec) - White like in Madden
         top_goal = QGraphicsLineItem(0, 100, field_width, 100)
-        top_goal.setPen(QPen(QColor("#29d28c"), 4))
+        top_goal.setPen(QPen(QColor("#ffffff"), 4))
         self.field_scene.addItem(top_goal)
 
         bottom_goal = QGraphicsLineItem(0, 1100, field_width, 1100)
-        bottom_goal.setPen(QPen(QColor("#29d28c"), 4))
+        bottom_goal.setPen(QPen(QColor("#ffffff"), 4))
         self.field_scene.addItem(bottom_goal)
 
         # Yard Lines (every 5 yards, 4-inch wide per NFL spec)
@@ -563,27 +563,28 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         fifty_line.setPen(QPen(QColor("#29d28c"), 5))
         self.field_scene.addItem(fifty_line)
 
-        # Field Numbers (6 feet high, 4 feet wide per NFL spec)
-        # Bottom edge 12 yards from sideline per NFL specification
-        left_number_pos = int(12 * width_scale)  # 12 yards from left sideline
-        right_number_pos = int(41.3 * width_scale)  # 12 yards from right sideline
+        # Field Numbers (6 feet high, 4 feet wide per NFL spec) - White like in Madden 25
+        # Position numbers like in Madden - between hash marks, rotated for proper viewing
+        left_number_pos = int(21 * width_scale)   # Left of center between hash marks  
+        right_number_pos = int(32 * width_scale)  # Right of center between hash marks
 
         # Numbers 10-40 on first half
         for yard in range(10, 50, 10):
             y = yard * yard_scale
 
-            # Left side numbers
+            # Left side numbers (upright orientation)
             left_num = QGraphicsTextItem(str(yard))
-            left_num.setDefaultTextColor(QColor("#29d28c"))
-            left_num.setFont(QFont("Minork Sans", 16, QFont.Weight.Bold))
-            left_num.setPos(left_number_pos - 15, y - 25)
+            left_num.setDefaultTextColor(QColor("#ffffff"))
+            left_num.setFont(QFont("Minork Sans", 18, QFont.Weight.Bold))
+            left_num.setPos(left_number_pos - 12, y - 30)
             self.field_scene.addItem(left_num)
 
-            # Right side numbers
+            # Right side numbers (flipped 180 degrees like in Madden)
             right_num = QGraphicsTextItem(str(yard))
-            right_num.setDefaultTextColor(QColor("#29d28c"))
-            right_num.setFont(QFont("Minork Sans", 16, QFont.Weight.Bold))
-            right_num.setPos(right_number_pos - 15, y - 25)
+            right_num.setDefaultTextColor(QColor("#ffffff"))
+            right_num.setFont(QFont("Minork Sans", 18, QFont.Weight.Bold))
+            right_num.setRotation(180)  # Flip the number
+            right_num.setPos(right_number_pos + 12, y + 30)
             self.field_scene.addItem(right_num)
 
         # Numbers 40-10 on second half (counting down from 50)
@@ -591,18 +592,19 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             y = yard * yard_scale
             display_num = 110 - yard  # 50, 40, 30, 20, 10
 
-            # Left side numbers
+            # Left side numbers (upright orientation)
             left_num = QGraphicsTextItem(str(display_num))
-            left_num.setDefaultTextColor(QColor("#29d28c"))
-            left_num.setFont(QFont("Minork Sans", 16, QFont.Weight.Bold))
-            left_num.setPos(left_number_pos - 15, y - 25)
+            left_num.setDefaultTextColor(QColor("#ffffff"))
+            left_num.setFont(QFont("Minork Sans", 18, QFont.Weight.Bold))
+            left_num.setPos(left_number_pos - 12, y - 30)
             self.field_scene.addItem(left_num)
 
-            # Right side numbers
+            # Right side numbers (flipped 180 degrees like in Madden)
             right_num = QGraphicsTextItem(str(display_num))
-            right_num.setDefaultTextColor(QColor("#29d28c"))
-            right_num.setFont(QFont("Minork Sans", 16, QFont.Weight.Bold))
-            right_num.setPos(right_number_pos - 15, y - 25)
+            right_num.setDefaultTextColor(QColor("#ffffff"))
+            right_num.setFont(QFont("Minork Sans", 18, QFont.Weight.Bold))
+            right_num.setRotation(180)  # Flip the number
+            right_num.setPos(right_number_pos + 12, y + 30)
             self.field_scene.addItem(right_num)
 
         # 50-Yard Line Number - Removed per user request
@@ -614,7 +616,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         right_hash_pos = int(29.75 * width_scale)  # 29.75 yards from left
         hash_length = 8  # 2-foot lines scaled
 
-        # Hash marks on EVERY yard in field of play (players use these for positioning)
+        # Hash marks on EVERY yard in field of play (players use these for positioning) - White like in Madden
         for yard in range(11, 110):
             y = yard * yard_scale
 
@@ -622,17 +624,17 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             left_hash = QGraphicsLineItem(
                 left_hash_pos - hash_length // 2, y, left_hash_pos + hash_length // 2, y
             )
-            left_hash.setPen(QPen(QColor("#29d28c"), 2))
+            left_hash.setPen(QPen(QColor("#ffffff"), 2))
             self.field_scene.addItem(left_hash)
 
             # Right hash mark
             right_hash = QGraphicsLineItem(
                 right_hash_pos - hash_length // 2, y, right_hash_pos + hash_length // 2, y
             )
-            right_hash.setPen(QPen(QColor("#29d28c"), 2))
+            right_hash.setPen(QPen(QColor("#ffffff"), 2))
             self.field_scene.addItem(right_hash)
 
-        # Conversion Spots (2-Point Conversion Lines)
+        # Conversion Spots (2-Point Conversion Lines) - White like in Madden
         # 2-foot line at 3-yard line (updated NFL rule)
         conv_length = int(2 * width_scale)  # 2-foot line scaled
         center_x = field_width // 2
@@ -642,7 +644,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         top_conv = QGraphicsLineItem(
             center_x - conv_length // 2, top_conv_y, center_x + conv_length // 2, top_conv_y
         )
-        top_conv.setPen(QPen(QColor("#29d28c"), 3))
+        top_conv.setPen(QPen(QColor("#ffffff"), 3))
         self.field_scene.addItem(top_conv)
 
         # Bottom conversion spot (3 yards from goal = 107-yard mark)
@@ -650,20 +652,20 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         bottom_conv = QGraphicsLineItem(
             center_x - conv_length // 2, bottom_conv_y, center_x + conv_length // 2, bottom_conv_y
         )
-        bottom_conv.setPen(QPen(QColor("#29d28c"), 3))
+        bottom_conv.setPen(QPen(QColor("#ffffff"), 3))
         self.field_scene.addItem(bottom_conv)
 
-        # Kickoff Marks (35-yard lines per NFL spec)
+        # Kickoff Marks (35-yard lines per NFL spec) - White like in Madden
         # Top kickoff (35-yard line)
         top_kickoff = QGraphicsTextItem("✕")
-        top_kickoff.setDefaultTextColor(QColor("#29d28c"))
+        top_kickoff.setDefaultTextColor(QColor("#ffffff"))
         top_kickoff.setFont(QFont("Minork Sans", 12, QFont.Weight.Bold))
         top_kickoff.setPos(center_x - 6, 350 - 15)
         self.field_scene.addItem(top_kickoff)
 
         # Bottom kickoff (35-yard line from other end = 85-yard line)
         bottom_kickoff = QGraphicsTextItem("✕")
-        bottom_kickoff.setDefaultTextColor(QColor("#29d28c"))
+        bottom_kickoff.setDefaultTextColor(QColor("#ffffff"))
         bottom_kickoff.setFont(QFont("Minork Sans", 12, QFont.Weight.Bold))
         bottom_kickoff.setPos(center_x - 6, 850 - 15)
         self.field_scene.addItem(bottom_kickoff)
@@ -686,7 +688,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         bottom_red_zone.setPen(QPen(QColor(220, 20, 60), 1))
         self.field_scene.addItem(bottom_red_zone)
 
-        # Sideline Hash Marks (1-yard increments per NFL spec)
+        # Sideline Hash Marks (1-yard increments per NFL spec) - White like in Madden
         # 2-foot long, 4-inch wide lines, 6 inches inside sideline border
         sideline_hash_length = 6
         left_sideline_pos = 8  # 6 inches inside border (scaled)
@@ -703,7 +705,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
                 left_sideline_pos,
                 y + sideline_hash_length // 2,
             )
-            left_side_hash.setPen(QPen(QColor("#29d28c"), 1))
+            left_side_hash.setPen(QPen(QColor("#ffffff"), 1))
             self.field_scene.addItem(left_side_hash)
 
             # Right sideline hash
@@ -713,7 +715,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
                 right_sideline_pos,
                 y + sideline_hash_length // 2,
             )
-            right_side_hash.setPen(QPen(QColor("#29d28c"), 1))
+            right_side_hash.setPen(QPen(QColor("#ffffff"), 1))
             self.field_scene.addItem(right_side_hash)
 
     def add_player_icons(self):

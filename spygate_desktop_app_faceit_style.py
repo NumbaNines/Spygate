@@ -605,12 +605,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             right_num.setPos(right_number_pos - 15, y - 25)
             self.field_scene.addItem(right_num)
 
-        # Special 50-Yard Line Number
-        fifty_text = QGraphicsTextItem("50")
-        fifty_text.setDefaultTextColor(QColor("#29d28c"))
-        fifty_text.setFont(QFont("Minork Sans", 20, QFont.Weight.Bold))
-        fifty_text.setPos(field_width // 2 - 20, 570)
-        self.field_scene.addItem(fifty_text)
+        # 50-Yard Line Number - Removed per user request
 
         # Hash Marks (Inbound Lines) - Official NFL Specification
         # 70 feet 9 inches from each sideline = 23 yards 1 foot 9 inches

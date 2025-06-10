@@ -502,140 +502,225 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         return self.field_view
 
     def draw_football_field(self):
-        """Draw the football field with yard markers, hash marks, and goal lines - Vertical orientation like Madden"""
-        field_width = 800  # Width (53.3 yards) - increased for wider layout
-        field_height = 1200  # Height (120 yards)
+        """Draw official NFL football field with exact specifications"""
+        # Official NFL Field Dimensions (scaled for display)
+        # Total: 360 feet (120 yards) x 160 feet (53.3 yards)
+        field_width = 800   # 160 feet (53.3 yards) scaled
+        field_height = 1200 # 360 feet (120 yards) scaled
+        
+        # Calculate scaling factors based on official measurements
+        yard_scale = 10      # 10 pixels per yard
+        width_scale = field_width / 53.3  # Pixels per yard horizontally (~15 px/yard)
 
-        # Field background - Updated color scheme
+        # Field Background (dark surface per user request)
         field_rect = QGraphicsRectItem(0, 0, field_width, field_height)
-        field_rect.setBrush(QBrush(QColor("#151515")))  # Dark background as requested
-        field_rect.setPen(QPen(QColor("#29d28c"), 2))  # Green border
+        field_rect.setBrush(QBrush(QColor("#151515")))  # Dark field surface
+        field_rect.setPen(QPen(QColor("#29d28c"), 3))   # Green 6-foot sideline
         self.field_scene.addItem(field_rect)
 
-        # End zones (darker) - Now top and bottom
-        end_zone_height = 100  # 10 yards
+        # End Zones (10 yards each = 30 feet)
+        end_zone_height = 100  # 10 yards * 10 pixels/yard
 
-        # Top end zone
+        # Top End Zone (0-10 yard line)
         top_endzone = QGraphicsRectItem(0, 0, field_width, end_zone_height)
-        top_endzone.setBrush(QBrush(QColor("#0f0f0f")))  # Even darker for end zones
-        top_endzone.setPen(QPen(QColor("#29d28c"), 2))  # Green border
+        top_endzone.setBrush(QBrush(QColor("#0f0f0f")))  # Darker end zone
+        top_endzone.setPen(QPen(QColor("#29d28c"), 2))
         self.field_scene.addItem(top_endzone)
 
-        # Bottom end zone
-        bottom_endzone = QGraphicsRectItem(
-            0, field_height - end_zone_height, field_width, end_zone_height
-        )
-        bottom_endzone.setBrush(QBrush(QColor("#0f0f0f")))  # Even darker for end zones
-        bottom_endzone.setPen(QPen(QColor("#29d28c"), 2))  # Green border
+        # Bottom End Zone (110-120 yard line)
+        bottom_endzone = QGraphicsRectItem(0, field_height - end_zone_height, field_width, end_zone_height)
+        bottom_endzone.setBrush(QBrush(QColor("#0f0f0f")))
+        bottom_endzone.setPen(QPen(QColor("#29d28c"), 2))
         self.field_scene.addItem(bottom_endzone)
 
-        # Yard lines (every 5 yards per NFL specifications) - Horizontal lines
-        for yard in range(0, 121, 5):
-            y = yard * 10
-            # Thicker lines for major yard markers (every 10 yards)
-            line_width = 3 if yard % 10 == 0 else 1
+        # Goal Lines (4-inch wide per NFL spec)
+        top_goal = QGraphicsLineItem(0, 100, field_width, 100)
+        top_goal.setPen(QPen(QColor("#29d28c"), 4))
+        self.field_scene.addItem(top_goal)
+        
+        bottom_goal = QGraphicsLineItem(0, 1100, field_width, 1100)
+        bottom_goal.setPen(QPen(QColor("#29d28c"), 4))
+        self.field_scene.addItem(bottom_goal)
+
+        # Yard Lines (every 5 yards, 4-inch wide per NFL spec)
+        for yard in range(5, 116, 5):
+            y = yard * yard_scale
+            
+            # Skip goal lines (already drawn)
+            if yard == 10 or yard == 110:
+                continue
+                
+            # Major yard lines (every 10 yards) are more prominent
+            line_width = 3 if yard % 10 == 0 else 2
             yard_line = QGraphicsLineItem(0, y, field_width, y)
-            yard_line.setPen(QPen(QColor("#29d28c"), line_width))  # Green yard lines
+            yard_line.setPen(QPen(QColor("#29d28c"), line_width))
             self.field_scene.addItem(yard_line)
 
-            # Yard numbers (only on 10-yard intervals)
-            if 10 <= yard <= 110 and yard % 10 == 0:
-                # Calculate proper yard number display
-                if yard <= 50:
-                    display_num = yard
-                else:
-                    display_num = 110 - yard
-                
-                if yard != 50:  # Don't duplicate 50-yard line number
-                    yard_text = QGraphicsTextItem(str(display_num))
-                    yard_text.setDefaultTextColor(QColor("#29d28c"))  # Green yard numbers
-                    yard_text.setFont(QFont("Minork Sans", 12, QFont.Weight.Bold))
-                    yard_text.setPos(field_width // 2 - 15, y - 20)
-                    self.field_scene.addItem(yard_text)
-
-        # 50-yard line (special) - Horizontal line at midfield
+        # 50-Yard Line (most prominent)
         fifty_line = QGraphicsLineItem(0, 600, field_width, 600)
-        fifty_line.setPen(QPen(QColor("#29d28c"), 4))  # Green 50-yard line (most prominent)
+        fifty_line.setPen(QPen(QColor("#29d28c"), 5))
         self.field_scene.addItem(fifty_line)
+
+        # Field Numbers (6 feet high, 4 feet wide per NFL spec)
+        # Bottom edge 12 yards from sideline per NFL specification
+        left_number_pos = int(12 * width_scale)    # 12 yards from left sideline
+        right_number_pos = int(41.3 * width_scale) # 12 yards from right sideline
         
-        # Add "50" yard marker
+        # Numbers 10-40 on first half
+        for yard in range(10, 50, 10):
+            y = yard * yard_scale
+            
+            # Left side numbers
+            left_num = QGraphicsTextItem(str(yard))
+            left_num.setDefaultTextColor(QColor("#29d28c"))
+            left_num.setFont(QFont("Minork Sans", 16, QFont.Weight.Bold))
+            left_num.setPos(left_number_pos - 15, y - 25)
+            self.field_scene.addItem(left_num)
+            
+            # Right side numbers  
+            right_num = QGraphicsTextItem(str(yard))
+            right_num.setDefaultTextColor(QColor("#29d28c"))
+            right_num.setFont(QFont("Minork Sans", 16, QFont.Weight.Bold))
+            right_num.setPos(right_number_pos - 15, y - 25)
+            self.field_scene.addItem(right_num)
+            
+        # Numbers 40-10 on second half (counting down from 50)
+        for yard in range(60, 110, 10):
+            y = yard * yard_scale
+            display_num = 110 - yard  # 50, 40, 30, 20, 10
+            
+            # Left side numbers
+            left_num = QGraphicsTextItem(str(display_num))
+            left_num.setDefaultTextColor(QColor("#29d28c"))
+            left_num.setFont(QFont("Minork Sans", 16, QFont.Weight.Bold))
+            left_num.setPos(left_number_pos - 15, y - 25)
+            self.field_scene.addItem(left_num)
+            
+            # Right side numbers
+            right_num = QGraphicsTextItem(str(display_num))
+            right_num.setDefaultTextColor(QColor("#29d28c"))
+            right_num.setFont(QFont("Minork Sans", 16, QFont.Weight.Bold))
+            right_num.setPos(right_number_pos - 15, y - 25)
+            self.field_scene.addItem(right_num)
+
+        # Special 50-Yard Line Number
         fifty_text = QGraphicsTextItem("50")
         fifty_text.setDefaultTextColor(QColor("#29d28c"))
-        fifty_text.setFont(QFont("Minork Sans", 14, QFont.Weight.Bold))
-        fifty_text.setPos(field_width // 2 - 20, 580)
+        fifty_text.setFont(QFont("Minork Sans", 20, QFont.Weight.Bold))
+        fifty_text.setPos(field_width // 2 - 20, 570)
         self.field_scene.addItem(fifty_text)
 
-        # Hash marks - NFL specification: 20 yards from each sideline
-        # Field width represents 53.3 yards, hash marks at 20 yards from each side
-        left_hash_pos = int((20.0 / 53.3) * field_width)  # ~300px from left
-        right_hash_pos = int((33.3 / 53.3) * field_width)  # ~500px from left (20 yards from right)
-        hash_length = 6  # Short hash mark length
+        # Hash Marks (Inbound Lines) - Official NFL Specification
+        # 70 feet 9 inches from each sideline = 23 yards 1 foot 9 inches
+        # 18 feet 6 inches apart (same as goalpost width)
+        left_hash_pos = int(23.58 * width_scale)   # 23.58 yards from left
+        right_hash_pos = int(29.75 * width_scale)  # 29.75 yards from left
+        hash_length = 8  # 2-foot lines scaled
         
-        # Hash marks on every 5-yard line (excluding goal lines and 50-yard line)
-        for yard in range(5, 116, 5):
-            y = yard * 10
-            # Left hash mark
-            hash1 = QGraphicsLineItem(left_hash_pos - hash_length//2, y, left_hash_pos + hash_length//2, y)
-            hash1.setPen(QPen(QColor("#29d28c"), 2))  # Green hash marks
-            self.field_scene.addItem(hash1)
+        # Hash marks on every yard in field of play (every 5 yards visible)
+        for yard in range(11, 110):
+            y = yard * yard_scale
+            
+            # Only show hash marks on 5-yard intervals for clarity
+            if yard % 5 == 0:
+                # Left hash mark (2-foot long, 4-inch wide per NFL)
+                left_hash = QGraphicsLineItem(left_hash_pos - hash_length//2, y, 
+                                            left_hash_pos + hash_length//2, y)
+                left_hash.setPen(QPen(QColor("#29d28c"), 2))
+                self.field_scene.addItem(left_hash)
 
-            # Right hash mark  
-            hash2 = QGraphicsLineItem(right_hash_pos - hash_length//2, y, right_hash_pos + hash_length//2, y)
-            hash2.setPen(QPen(QColor("#29d28c"), 2))  # Green hash marks
-            self.field_scene.addItem(hash2)
+                # Right hash mark
+                right_hash = QGraphicsLineItem(right_hash_pos - hash_length//2, y,
+                                             right_hash_pos + hash_length//2, y)
+                right_hash.setPen(QPen(QColor("#29d28c"), 2))
+                self.field_scene.addItem(right_hash)
 
-        # NFL Special Field Markings
+        # Conversion Spots (2-Point Conversion Lines)
+        # 2-foot line at 3-yard line (updated NFL rule)
+        conv_length = int(2 * width_scale)  # 2-foot line scaled
+        center_x = field_width // 2
         
-        # 2-yard line conversion markers (3-foot lines parallel to goal line at center)
-        # Top end zone 2-yard line
-        conversion_line_top = QGraphicsLineItem(field_width // 2 - 18, 120, field_width // 2 + 18, 120)
-        conversion_line_top.setPen(QPen(QColor("#29d28c"), 2))
-        self.field_scene.addItem(conversion_line_top)
+        # Top conversion spot (3 yards from goal = 13-yard mark)
+        top_conv_y = 130
+        top_conv = QGraphicsLineItem(center_x - conv_length//2, top_conv_y,
+                                   center_x + conv_length//2, top_conv_y)
+        top_conv.setPen(QPen(QColor("#29d28c"), 3))
+        self.field_scene.addItem(top_conv)
         
-        # Bottom end zone 2-yard line
-        conversion_line_bottom = QGraphicsLineItem(field_width // 2 - 18, 1080, field_width // 2 + 18, 1080)
-        conversion_line_bottom.setPen(QPen(QColor("#29d28c"), 2))
-        self.field_scene.addItem(conversion_line_bottom)
+        # Bottom conversion spot (3 yards from goal = 107-yard mark)  
+        bottom_conv_y = 1070
+        bottom_conv = QGraphicsLineItem(center_x - conv_length//2, bottom_conv_y,
+                                      center_x + conv_length//2, bottom_conv_y)
+        bottom_conv.setPen(QPen(QColor("#29d28c"), 3))
+        self.field_scene.addItem(bottom_conv)
+
+        # Kickoff Marks (35-yard lines per NFL spec)
+        # Top kickoff (35-yard line)
+        top_kickoff = QGraphicsTextItem("✕")
+        top_kickoff.setDefaultTextColor(QColor("#29d28c"))
+        top_kickoff.setFont(QFont("Minork Sans", 12, QFont.Weight.Bold))
+        top_kickoff.setPos(center_x - 6, 350 - 15)
+        self.field_scene.addItem(top_kickoff)
         
-        # 35-yard line kickoff spots (small X marks at center)
-        # Top 35-yard line (y = 350)
-        x_mark_top = QGraphicsTextItem("X")
-        x_mark_top.setDefaultTextColor(QColor("#29d28c"))
-        x_mark_top.setFont(QFont("Minork Sans", 10, QFont.Weight.Bold))
-        x_mark_top.setPos(field_width // 2 - 5, 340)
-        self.field_scene.addItem(x_mark_top)
-        
-        # Bottom 35-yard line (y = 850) 
-        x_mark_bottom = QGraphicsTextItem("X")
-        x_mark_bottom.setDefaultTextColor(QColor("#29d28c"))
-        x_mark_bottom.setFont(QFont("Minork Sans", 10, QFont.Weight.Bold))
-        x_mark_bottom.setPos(field_width // 2 - 5, 840)
-        self.field_scene.addItem(x_mark_bottom)
-        
-        # 50-yard line logo area (placeholder for team/league logos)
-        logo_area = QGraphicsEllipseItem(field_width // 2 - 40, 580, 80, 40)
+        # Bottom kickoff (35-yard line from other end = 85-yard line)
+        bottom_kickoff = QGraphicsTextItem("✕")
+        bottom_kickoff.setDefaultTextColor(QColor("#29d28c"))
+        bottom_kickoff.setFont(QFont("Minork Sans", 12, QFont.Weight.Bold))
+        bottom_kickoff.setPos(center_x - 6, 850 - 15)
+        self.field_scene.addItem(bottom_kickoff)
+
+        # 50-Yard Line Logo Area (NFL specification)
         logo_color = QColor("#29d28c")
-        logo_color.setAlpha(30)  # Set transparency
+        logo_color.setAlpha(40)
+        logo_area = QGraphicsEllipseItem(center_x - 50, 580, 100, 40)
         logo_area.setBrush(QBrush(logo_color))
         logo_area.setPen(QPen(QColor("#29d28c"), 1, Qt.PenStyle.DashLine))
         self.field_scene.addItem(logo_area)
         
-        # Red zone indicators (20-yard lines)
-        # Top red zone (y = 200)
-        red_zone_top = QGraphicsRectItem(0, 195, field_width, 10)
-        red_color_top = QColor(220, 20, 60)
-        red_color_top.setAlpha(40)  # Set transparency
-        red_zone_top.setBrush(QBrush(red_color_top))
-        red_zone_top.setPen(QPen(QColor(220, 20, 60), 1))
-        self.field_scene.addItem(red_zone_top)
+        # NFL logo placeholder
+        logo_text = QGraphicsTextItem("NFL")
+        logo_text.setDefaultTextColor(QColor("#29d28c"))
+        logo_text.setFont(QFont("Minork Sans", 10, QFont.Weight.Bold))
+        logo_text.setPos(center_x - 15, 590)
+        self.field_scene.addItem(logo_text)
+
+        # Red Zone Indicators (20-yard lines per NFL spec)
+        red_color = QColor(220, 20, 60)
+        red_color.setAlpha(60)
         
-        # Bottom red zone (y = 1000) 
-        red_zone_bottom = QGraphicsRectItem(0, 995, field_width, 10)
-        red_color_bottom = QColor(220, 20, 60)
-        red_color_bottom.setAlpha(40)  # Set transparency
-        red_zone_bottom.setBrush(QBrush(red_color_bottom))
-        red_zone_bottom.setPen(QPen(QColor(220, 20, 60), 1))
-        self.field_scene.addItem(red_zone_bottom)
+        # Top red zone (20-yard line)
+        top_red_zone = QGraphicsRectItem(0, 195, field_width, 10)
+        top_red_zone.setBrush(QBrush(red_color))
+        top_red_zone.setPen(QPen(QColor(220, 20, 60), 1))
+        self.field_scene.addItem(top_red_zone)
+        
+        # Bottom red zone (20-yard line from other end = 100-yard mark)
+        bottom_red_zone = QGraphicsRectItem(0, 995, field_width, 10)
+        bottom_red_zone.setBrush(QBrush(red_color))
+        bottom_red_zone.setPen(QPen(QColor(220, 20, 60), 1))
+        self.field_scene.addItem(bottom_red_zone)
+
+        # Sideline Hash Marks (1-yard increments per NFL spec)
+        # 2-foot long, 4-inch wide lines, 6 inches inside sideline border
+        sideline_hash_length = 6
+        left_sideline_pos = 8   # 6 inches inside border (scaled)
+        right_sideline_pos = field_width - 8
+        
+        # Add sideline hash marks every 5 yards for visibility
+        for yard in range(0, 121, 5):
+            y = yard * yard_scale
+            
+            # Left sideline hash
+            left_side_hash = QGraphicsLineItem(left_sideline_pos, y - sideline_hash_length//2,
+                                             left_sideline_pos, y + sideline_hash_length//2)
+            left_side_hash.setPen(QPen(QColor("#29d28c"), 1))
+            self.field_scene.addItem(left_side_hash)
+            
+            # Right sideline hash
+            right_side_hash = QGraphicsLineItem(right_sideline_pos, y - sideline_hash_length//2,
+                                              right_sideline_pos, y + sideline_hash_length//2)
+            right_side_hash.setPen(QPen(QColor("#29d28c"), 1))
+            self.field_scene.addItem(right_side_hash)
 
     def add_player_icons(self):
         """Add draggable player icons to the field"""

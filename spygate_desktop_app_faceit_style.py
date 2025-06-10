@@ -381,7 +381,9 @@ class SpygateDesktopFaceItStyle(QMainWindow):
 
     def create_gameplan_content(self):
         """Create gameplan content with Play Planner"""
-        # Header
+        # Header with toggle button
+        header_layout = QHBoxLayout()
+        
         header = QLabel("🎯 Play Planner")
         header.setStyleSheet(
             """
@@ -392,23 +394,74 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             padding: 20px 0;
         """
         )
-        self.content_layout.addWidget(header)
+        header_layout.addWidget(header)
+        
+        # Toggle button for sidebar
+        self.sidebar_toggle_btn = QPushButton("⚙️ Hide Controls")
+        self.sidebar_toggle_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #29d28c;
+                color: #151515;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-family: 'Minork Sans', Arial, sans-serif;
+                font-weight: bold;
+                font-size: 12px;
+            }
+            QPushButton:hover {
+                background-color: #34e89a;
+            }
+            QPushButton:pressed {
+                background-color: #1fc47d;
+            }
+        """
+        )
+        self.sidebar_toggle_btn.clicked.connect(self.toggle_sidebar)
+        header_layout.addStretch()
+        header_layout.addWidget(self.sidebar_toggle_btn)
+        
+        header_widget = QWidget()
+        header_widget.setLayout(header_layout)
+        self.content_layout.addWidget(header_widget)
 
         # Main Play Planner layout
-        planner_layout = QHBoxLayout()
+        self.planner_layout = QHBoxLayout()
 
         # Football field area (main center)
-        field_widget = self.create_play_planner_field()
-        planner_layout.addWidget(field_widget, 2)  # Takes 2/3 of space
+        self.field_widget = self.create_play_planner_field()
+        self.planner_layout.addWidget(self.field_widget, 3)  # Takes more space by default
 
         # Controls area (right side)
-        controls_widget = self.create_formation_controls()
-        planner_layout.addWidget(controls_widget, 1)  # Takes 1/3 of space
+        self.controls_widget = self.create_formation_controls()
+        self.planner_layout.addWidget(self.controls_widget, 1)  # Takes less space
 
         # Add to main layout
-        planner_container = QWidget()
-        planner_container.setLayout(planner_layout)
-        self.content_layout.addWidget(planner_container)
+        self.planner_container = QWidget()
+        self.planner_container.setLayout(self.planner_layout)
+        self.content_layout.addWidget(self.planner_container)
+        
+        # Store sidebar visibility state
+        self.sidebar_visible = True
+
+    def toggle_sidebar(self):
+        """Toggle the visibility of the formation controls sidebar"""
+        if self.sidebar_visible:
+            # Hide the sidebar
+            self.controls_widget.hide()
+            self.sidebar_toggle_btn.setText("⚙️ Show Controls")
+            self.sidebar_visible = False
+            # Field takes up all available space
+            self.planner_layout.setStretch(0, 1)  # Field widget index 0, stretch factor 1
+        else:
+            # Show the sidebar
+            self.controls_widget.show()
+            self.sidebar_toggle_btn.setText("⚙️ Hide Controls")
+            self.sidebar_visible = True
+            # Reset to normal proportions: field takes 3 parts, controls take 1 part
+            self.planner_layout.setStretch(0, 3)  # Field widget
+            self.planner_layout.setStretch(1, 1)  # Controls widget
 
     def create_play_planner_field(self):
         """Create the interactive 120-yard NFL football field using QGraphicsScene"""
@@ -429,7 +482,8 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         )
 
         # Set scene dimensions (120 yards + end zones) - Vertical orientation like Madden
-        field_width = 600  # ~53.3 yards width * 11 pixels per yard
+        # Made wider for better layout proportions
+        field_width = 800  # ~53.3 yards width * 15 pixels per yard (increased from 600)
         field_height = 1200  # 120 yards * 10 pixels per yard
         self.field_scene.setSceneRect(0, 0, field_width, field_height)
 
@@ -438,7 +492,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
 
         # Add player icons
         self.add_player_icons()
-        
+
         # Apply default Gun Bunch formation
         self.apply_formation_preset("Gun Bunch")
 
@@ -449,7 +503,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
 
     def draw_football_field(self):
         """Draw the football field with yard markers, hash marks, and goal lines - Vertical orientation like Madden"""
-        field_width = 600  # Width (53.3 yards)
+        field_width = 800  # Width (53.3 yards) - increased for wider layout
         field_height = 1200  # Height (120 yards)
 
         # Field background - Updated color scheme
@@ -502,16 +556,17 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         self.field_scene.addItem(fifty_line)
 
         # Hash marks - Now vertical, positioned left and right
-        hash_spacing = field_width // 4
+        hash_spacing = field_width // 4  # Automatically scales with field width
+        hash_length = int(20 * (field_width / 600))  # Scale hash mark length proportionally
         for yard in range(1, 120):
             y = yard * 10
             # Inner hash marks (vertical lines)
-            hash1 = QGraphicsLineItem(hash_spacing, y, hash_spacing + 20, y)
+            hash1 = QGraphicsLineItem(hash_spacing, y, hash_spacing + hash_length, y)
             hash1.setPen(QPen(QColor("#29d28c"), 1))  # Green hash marks
             self.field_scene.addItem(hash1)
 
             hash2 = QGraphicsLineItem(
-                field_width - hash_spacing - 20, y, field_width - hash_spacing, y
+                field_width - hash_spacing - hash_length, y, field_width - hash_spacing, y
             )
             hash2.setPen(QPen(QColor("#29d28c"), 1))  # Green hash marks
             self.field_scene.addItem(hash2)
@@ -521,38 +576,43 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         self.offensive_players = {}
         self.defensive_players = {}
 
-        # Offensive formation (11 players) - Blue - Vertical field orientation - NOW ATTACKING UPFIELD
+        # Calculate scaling factor for the wider field (800px vs 600px)
+        scale_factor = 800 / 600  # 1.333
+        
+        # Offensive formation (11 players) - Scaled for wider field
         offensive_positions = [
-            ("QB", 300, 750),  # Quarterback deeper in own territory
-            ("RB", 300, 710),  # Running back behind QB
-            ("WR1", 100, 750),  # Split end
-            ("WR2", 500, 750),  # Flanker
-            ("WR3", 150, 650),  # Slot receiver
-            ("TE", 350, 790),  # Tight end
-            ("LT", 250, 780),  # Left tackle
-            ("LG", 275, 780),  # Left guard
-            ("C", 300, 780),  # Center
-            ("RG", 325, 780),  # Right guard
-            ("RT", 350, 780),  # Right tackle
+            ("QB", int(300 * scale_factor), 750),  # Quarterback deeper in own territory
+            ("RB", int(300 * scale_factor), 710),  # Running back behind QB
+            ("WR1", int(100 * scale_factor), 750),  # Split end
+            ("WR2", int(500 * scale_factor), 750),  # Flanker
+            ("WR3", int(150 * scale_factor), 650),  # Slot receiver
+            ("TE", int(350 * scale_factor), 790),  # Tight end
+            ("LT", int(250 * scale_factor), 780),  # Left tackle
+            ("LG", int(275 * scale_factor), 780),  # Left guard
+            ("C", int(300 * scale_factor), 780),  # Center
+            ("RG", int(325 * scale_factor), 780),  # Right guard
+            ("RT", int(350 * scale_factor), 780),  # Right tackle
         ]
 
         for pos, x, y in offensive_positions:
-            player = self.create_player_icon(pos, x, y, QColor("#bfbfc1"), True)  # Light gray for offense indicators
+            player = self.create_player_icon(
+                pos, x, y, QColor("#bfbfc1"), True
+            )  # Light gray for offense indicators
             self.offensive_players[pos] = player
 
-        # Defensive formation (11 players) - Red - Vertical field orientation - NOW DEFENDING UPFIELD
+        # Defensive formation (11 players) - Scaled for wider field
         defensive_positions = [
-            ("DE", 200, 420),  # Defensive end
-            ("DT", 280, 420),  # Defensive tackle
-            ("NT", 320, 420),  # Nose tackle
-            ("OLB", 150, 450),  # Outside linebacker
-            ("MLB", 300, 450),  # Middle linebacker
-            ("CB1", 100, 500),  # Cornerback 1
-            ("CB2", 500, 500),  # Cornerback 2
-            ("FS", 200, 550),  # Free safety
-            ("SS", 400, 550),  # Strong safety
-            ("DE2", 380, 420),  # Defensive end 2
-            ("LB", 450, 450),  # Linebacker
+            ("DE", int(200 * scale_factor), 420),  # Defensive end
+            ("DT", int(280 * scale_factor), 420),  # Defensive tackle
+            ("NT", int(320 * scale_factor), 420),  # Nose tackle
+            ("OLB", int(150 * scale_factor), 450),  # Outside linebacker
+            ("MLB", int(300 * scale_factor), 450),  # Middle linebacker
+            ("CB1", int(100 * scale_factor), 500),  # Cornerback 1
+            ("CB2", int(500 * scale_factor), 500),  # Cornerback 2
+            ("FS", int(200 * scale_factor), 550),  # Free safety
+            ("SS", int(400 * scale_factor), 550),  # Strong safety
+            ("DE2", int(380 * scale_factor), 420),  # Defensive end 2
+            ("LB", int(450 * scale_factor), 450),  # Linebacker
         ]
 
         for pos, x, y in defensive_positions:
@@ -637,7 +697,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         # Formation preset buttons
         formations = [
             "I-Formation",
-            "Shotgun", 
+            "Shotgun",
             "Gun Bunch",
             "Gun Trips Te",
             "Gun Normal Y Off Close",
@@ -797,12 +857,12 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             },
             "Gun Bunch": {
                 "QB": (297, 347),  # QB in shotgun formation
-                "RB": (336, 348),  # Running back positioned behind/beside QB  
+                "RB": (336, 348),  # Running back positioned behind/beside QB
                 "WR1": (111, 299),  # Split end on left side
                 "WR2": (414, 300),  # Flanker on right side
                 "WR3": (446, 309),  # Bunch formation with TE
-                "TE": (381, 309),   # Tight end in bunch with WR3
-                "LT": (250, 300),   # Offensive line on line of scrimmage
+                "TE": (381, 309),  # Tight end in bunch with WR3
+                "LT": (250, 300),  # Offensive line on line of scrimmage
                 "LG": (275, 300),
                 "C": (300, 300),
                 "RG": (325, 300),
@@ -811,11 +871,11 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             "Gun Trips Te": {
                 "QB": (309, 348),  # QB in shotgun formation
                 "RB": (352, 348),  # Running back positioned beside QB
-                "WR1": (36, 300),   # Wide receiver far left
+                "WR1": (36, 300),  # Wide receiver far left
                 "WR2": (186, 308),  # Trips formation receiver
-                "WR3": (108, 309),  # Trips formation receiver  
-                "TE": (412, 301),   # Tight end on right side
-                "LT": (246, 300),   # Offensive line on line of scrimmage
+                "WR3": (108, 309),  # Trips formation receiver
+                "TE": (412, 301),  # Tight end on right side
+                "LT": (246, 300),  # Offensive line on line of scrimmage
                 "LG": (280, 299),
                 "C": (312, 300),
                 "RG": (344, 300),
@@ -824,11 +884,11 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             "Gun Normal Y Off Close": {
                 "QB": (309, 348),  # QB in shotgun formation
                 "RB": (352, 348),  # Running back positioned beside QB
-                "WR1": (91, 299),   # Wide receiver left side
-                "WR2": (472, 299),  # Wide receiver right side  
+                "WR1": (91, 299),  # Wide receiver left side
+                "WR2": (472, 299),  # Wide receiver right side
                 "WR3": (181, 307),  # Slot receiver
-                "TE": (415, 309),   # Tight end Y Off formation
-                "LT": (246, 309),   # Offensive line with varied positioning
+                "TE": (415, 309),  # Tight end Y Off formation
+                "LT": (246, 309),  # Offensive line with varied positioning
                 "LG": (279, 305),
                 "C": (312, 300),
                 "RG": (344, 303),
@@ -891,11 +951,16 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         # Apply the formation if it exists
         if formation in formations:
             formation_positions = formations[formation]
+            
+            # Calculate scaling factor for the wider field (800px vs 600px)
+            scale_factor = 800 / 600  # 1.333
 
             # Move each offensive player to their formation position
             for position, player in self.offensive_players.items():
                 if position in formation_positions:
-                    new_x, new_y = formation_positions[position]
+                    original_x, new_y = formation_positions[position]
+                    # Scale the x-coordinate for the wider field, keep y-coordinate the same
+                    new_x = int(original_x * scale_factor)
                     # Adjust for player icon center (15px offset since icon is 30x30)
                     player.setPos(new_x - 15, new_y - 15)
                     print(f"  Moved {position} to ({new_x}, {new_y})")

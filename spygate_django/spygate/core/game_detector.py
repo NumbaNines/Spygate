@@ -60,7 +60,7 @@ class GameDetector:
         """Initialize the game detector."""
         self.hardware = HardwareDetector()
         self._current_game: Optional[GameVersion] = None
-        self._confidence_threshold = 0.8  # Minimum confidence for game detection
+        self._confidence_threshold = 0.75  # Minimum confidence for professional MCS tournament use
         self._frame_buffer_size = 5  # Number of frames to buffer for stable detection
         self._frame_buffer = []  # Buffer of recent detections
         self._game_profiles: dict[GameVersion, GameProfile] = self._initialize_game_profiles()

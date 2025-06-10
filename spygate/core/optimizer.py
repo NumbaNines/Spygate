@@ -236,6 +236,25 @@ class TierOptimizer:
             "batch_warning": self.profile.batch_size * 0.8,
         }
 
+    def get_current_params(self) -> dict[str, any]:
+        """Get current optimization parameters as a dictionary."""
+        return {
+            "hardware_tier": self.hardware.tier.name,
+            "batch_size": self.profile.batch_size,
+            "num_workers": self.profile.num_workers,
+            "use_gpu": self.profile.use_gpu,
+            "enable_caching": self.profile.enable_caching,
+            "enable_parallel": self.profile.enable_parallel,
+            "enable_advanced_features": self.profile.enable_advanced_features,
+            "max_memory_usage_mb": self.profile.max_memory_usage,
+            "target_fps": self.profile.target_fps,
+            "min_fps": self.profile.min_fps,
+            "quality_scale": self.profile.quality_scale,
+            "prefetch_size": self.profile.prefetch_size,
+            "cleanup_interval": self.profile.cleanup_interval,
+            "max_prediction_age": self.profile.max_prediction_age,
+        }
+
     def update_profile(self, hardware: Optional[HardwareDetector] = None):
         """Update optimization profile with new hardware info."""
         if hardware:

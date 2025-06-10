@@ -1,0 +1,74 @@
+{
+  "total_tests": 6,
+  "passed_tests": 4,
+  "failed_tests": 2,
+  "success_rate": 66.66666666666666,
+  "gpu_available": false,
+  "test_results": [
+    {
+      "test_name": "formation_analyzer_gpu_init",
+      "passed": true,
+      "gpu_enabled": false,
+      "initialization_time": 0.09964513778686523,
+      "memory_usage": {
+        "before_mb": 14767.1484375,
+        "after_mb": 14881.0546875,
+        "difference_mb": 113.90625
+      },
+      "errors": [],
+      "progress_updates": 7,
+      "hardware_tier": "ULTRA"
+    },
+    {
+      "test_name": "gpu_memory_during_analysis",
+      "passed": false,
+      "analysis_count": 0,
+      "memory_leak_detected": false,
+      "peak_memory_mb": 0.0,
+      "errors": [
+        "GPU not available for testing"
+      ]
+    },
+    {
+      "test_name": "gpu_vs_cpu_performance",
+      "passed": true,
+      "gpu_time": Infinity,
+      "cpu_time": 1.9262146949768066,
+      "speedup_factor": 0.0,
+      "errors": [],
+      "frames_processed": 5
+    },
+    {
+      "test_name": "gpu_error_handling",
+      "passed": true,
+      "fallback_successful": true,
+      "errors": [],
+      "analysis_works_on_fallback": true
+    },
+    {
+      "test_name": "memory_cleanup",
+      "passed": true,
+      "memory_cleaned": false,
+      "errors": [],
+      "baseline_mb": 14886.6328125,
+      "peak_mb": 14932.76953125,
+      "final_mb": 15369.0234375,
+      "cleanup_percentage": -945.5676911353823
+    },
+    {
+      "test_name": "concurrent_gpu_usage",
+      "passed": false,
+      "concurrent_analyses": 0,
+      "errors": [
+        "GPU not available for concurrent testing"
+      ]
+    }
+  ],
+  "system_info": {
+    "hardware_tier": "ULTRA",
+    "cpu_count": 16,
+    "total_memory_gb": 31.218311309814453
+  },
+  "test_mode": "comprehensive",
+  "execution_time": 4.72577428817749
+}

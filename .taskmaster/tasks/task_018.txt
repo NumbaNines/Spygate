@@ -1,6 +1,6 @@
 # Task ID: 18
 # Title: Enhance CV Pipeline with Universal HUD Detection and Adaptive Processing
-# Status: pending
+# Status: done
 # Dependencies: 16, 17, 4, 7
 # Priority: medium
 # Description: Improve the computer vision pipeline by implementing universal HUD detection, adaptive region sizing, and tier-based YOLO model selection, integrating with the existing detection system.
@@ -48,10 +48,10 @@ class YOLOModelSelector:
             'medium': YOLOv5s,
             'high': YOLOv5m
         }
-
+    
     def get_model(self):
         return self.models[self.hardware_tier]()
-
+    
     def update_tier(self, new_tier):
         if new_tier in self.models:
             self.hardware_tier = new_tier

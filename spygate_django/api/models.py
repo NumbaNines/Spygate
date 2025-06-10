@@ -6,11 +6,11 @@ as specified in the PRD Phase 2 requirements.
 """
 
 import uuid
-from enum import TextChoices
 
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import TextChoices
 from django.utils import timezone
 
 

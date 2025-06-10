@@ -82,8 +82,8 @@ class SpygateService:
             return {
                 "initialized": True,
                 "engine_status": status,
-                "hardware_info": self.hardware.get_system_info() if self.hardware else {},
-                "performance_optimizations": self.engine.get_optimization_status(),
+                "hardware_info": self.hardware.get_comprehensive_stats() if self.hardware else {},
+                "performance_optimizations": "Available via hardware optimization endpoint",
             }
         except Exception as e:
             logger.error(f"Error getting engine status: {e}")

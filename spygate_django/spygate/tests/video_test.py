@@ -15,12 +15,8 @@ class TestVideoProcessing(unittest.TestCase):
     def setUp(self):
         self.video_service = VideoService()
         self.transcoder = Transcoder()
-        self.test_video_path = os.path.join(
-            "spygate", "tests", "data", "test_video.mp4"
-        )
-        self.test_output_path = os.path.join(
-            "spygate", "tests", "data", "test_output.mp4"
-        )
+        self.test_video_path = os.path.join("spygate", "tests", "data", "test_video.mp4")
+        self.test_output_path = os.path.join("spygate", "tests", "data", "test_output.mp4")
 
     def tearDown(self):
         # Clean up output file if it exists
@@ -49,10 +45,9 @@ class TestVideoProcessing(unittest.TestCase):
                 capture_output=True,
                 text=True,
             )
-            self.assertEqual(
-                result.returncode, 0, "FFmpeg version check should succeed"
-            )
-            logger.info(f"FFmpeg version info: {result.stdout.split('\\n')[0]}")
+            self.assertEqual(result.returncode, 0, "FFmpeg version check should succeed")
+            first_line = result.stdout.split("\n")[0]
+            logger.info(f"FFmpeg version info: {first_line}")
 
             # Verify through transcoder
             self.assertTrue(
@@ -83,9 +78,7 @@ class TestVideoProcessing(unittest.TestCase):
     def test_video_transcoding(self):
         """Test video transcoding functionality"""
         # Verify test video exists
-        self.assertTrue(
-            os.path.exists(self.test_video_path), "Test video file should exist"
-        )
+        self.assertTrue(os.path.exists(self.test_video_path), "Test video file should exist")
         logger.info(f"Test video file found: {self.test_video_path}")
 
         # Log input file size
@@ -118,9 +111,7 @@ class TestVideoProcessing(unittest.TestCase):
             )
 
             # Verify output file exists
-            self.assertTrue(
-                os.path.exists(self.test_output_path), "Output file should exist"
-            )
+            self.assertTrue(os.path.exists(self.test_output_path), "Output file should exist")
 
             # Log output file size
             output_size = os.path.getsize(self.test_output_path)
@@ -130,9 +121,7 @@ class TestVideoProcessing(unittest.TestCase):
             self.assertGreater(output_size, 0, "Output file should not be empty")
 
             # Verify progress tracking worked
-            self.assertGreater(
-                len(progress_values), 0, "Progress callback should have been called"
-            )
+            self.assertGreater(len(progress_values), 0, "Progress callback should have been called")
             logger.info(f"Progress tracking: {len(progress_values)} updates received")
 
             # Check if transcoding made significant progress (>95% is good enough)

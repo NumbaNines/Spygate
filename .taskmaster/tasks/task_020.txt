@@ -1,6 +1,6 @@
 # Task ID: 20
 # Title: Implement Game Detection Pipeline
-# Status: pending
+# Status: in-progress
 # Dependencies: 16, 17, 18
 # Priority: high
 # Description: Create a robust game detection system to identify and adapt to different football game versions and interfaces.

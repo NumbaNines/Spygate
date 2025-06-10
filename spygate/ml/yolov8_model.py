@@ -339,17 +339,22 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
 
         if device_config == "auto":
             if torch.cuda.is_available() and self.hardware.has_cuda:
-                self.device = "cuda"
+                self._device = "cuda"
             else:
-                self.device = "cpu"
+                self._device = "cpu"
         else:
-            self.device = device_config
+            self._device = device_config
 
         # Move model to device
         if hasattr(self.model, "to"):
-            self.model.to(self.device)
+            self.model.to(self._device)
 
-        logger.info(f"YOLOv8 model configured for device: {self.device}")
+        logger.info(f"YOLOv8 model configured for device: {self._device}")
+
+    @property
+    def device(self):
+        """Get the current device."""
+        return getattr(self, "_device", "cpu")
 
     def _apply_optimizations(self):
         """Apply hardware-tier specific optimizations."""
@@ -360,14 +365,14 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
             if (
                 self.config.get("compile", False)
                 and hasattr(torch, "compile")
-                and self.device == "cuda"
+                and self._device == "cuda"
             ):
                 self.model = torch.compile(self.model)
                 optimizations_applied.append("torch_compile")
                 logger.info("Applied torch.compile optimization")
 
             # Half precision optimization
-            if self.config.get("half", False) and self.device == "cuda":
+            if self.config.get("half", False) and self._device == "cuda":
                 self.model.half()
                 optimizations_applied.append("half_precision")
                 logger.info("Applied half precision optimization")
@@ -477,7 +482,7 @@ class EnhancedYOLOv8(YOLO if TORCH_AVAILABLE else object):
                 variant_key = f"yolov8{new_size}"
                 if variant_key not in self.model_variants:
                     new_model = YOLO(f"yolov8{new_size}.pt")
-                    new_model.to(self.device)
+                    new_model.to(self._device)
                     self.model_variants[variant_key] = new_model
 
                 # Switch to smaller model

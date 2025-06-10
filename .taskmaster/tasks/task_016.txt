@@ -1,6 +1,6 @@
 # Task ID: 16
 # Title: Implement HardwareDetector Class
-# Status: pending
+# Status: done
 # Dependencies: 2, 3, 4
 # Priority: medium
 # Description: Create a HardwareDetector class to detect and classify hardware specifications using psutil and OpenCV, integrating with the existing video processing pipeline, with support for multiple games and their specific requirements.

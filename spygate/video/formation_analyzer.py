@@ -18,8 +18,10 @@ from numba import cuda, jit
 from scipy.spatial import ConvexHull
 from sklearn.cluster import DBSCAN
 
+from ..core.game_detector import GameVersion
 from ..core.hardware import HardwareDetector
 from ..core.optimizer import TierOptimizer
+from .player_detector import PlayerDetector
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +55,45 @@ class Formation(Enum):
     UNKNOWN = auto()
 
 
+class FormationType(Enum):
+    """Football formation types for offensive and defensive schemes."""
+
+    # Offensive formations
+    SPREAD = "spread"
+    I_FORMATION = "i_formation"
+    SHOTGUN = "shotgun"
+    PISTOL = "pistol"
+    UNDER_CENTER = "under_center"
+    WILDCAT = "wildcat"
+    TRIPS = "trips"
+    BUNCH = "bunch"
+    EMPTY = "empty"
+    GOAL_LINE = "goal_line"
+
+    # Defensive formations
+    FOUR_THREE = "4-3"
+    THREE_FOUR = "3-4"
+    NICKEL = "nickel"
+    DIME = "dime"
+    QUARTER = "quarter"
+    SIX_ONE = "6-1"
+    FIVE_TWO = "5-2"
+    FOUR_FOUR = "4-4"
+    BEAR = "bear"
+    COVER_TWO = "cover_2"
+    COVER_THREE = "cover_3"
+    COVER_FOUR = "cover_4"
+
+    # Special formations
+    SPECIAL_TEAMS = "special_teams"
+    PUNT = "punt"
+    KICK_RETURN = "kick_return"
+    FIELD_GOAL = "field_goal"
+
+    # Unknown/Unrecognized
+    UNKNOWN = "unknown"
+
+
 @dataclass
 class FormationConfig:
     """Configuration for formation analysis."""
@@ -66,6 +107,8 @@ class FormationConfig:
     gpu_acceleration: bool = True
     prediction_buffer_size: int = 30
     confidence_threshold: float = 0.7
+    clustering_eps: float = 0.15
+    clustering_min_samples: int = 2
 
     # Validation ranges
     _min_players_range: tuple[int, int] = field(default=(4, 11), repr=False)
@@ -215,6 +258,16 @@ class FormationAnalyzer:
             # Performance monitoring
             self.processing_times = deque(maxlen=100)
 
+            # Initialize player detector
+            self._update_progress("Initializing player detector...", 0.85)
+            self.player_detector = PlayerDetector(
+                confidence_threshold=self.config.confidence_threshold
+            )
+
+            # Initialize formation templates
+            self._update_progress("Loading formation templates...", 0.9)
+            self._initialize_formation_templates()
+
             self._update_progress("Initialization complete", 1.0)
             logger.info(f"Initialized FormationAnalyzer with {self.hardware.tier.name} tier")
 
@@ -233,420 +286,312 @@ class FormationAnalyzer:
             except Exception as e:
                 logger.warning(f"Failed to update progress: {e}")
 
+    def _initialize_formation_templates(self):
+        """Initialize formation templates for pattern matching."""
+        # Offensive formation templates (normalized coordinates 0-1)
+        self.offensive_templates = {
+            FormationType.SPREAD: [
+                # QB
+                (0.5, 0.2),
+                # O-Line (5 players)
+                (0.45, 0.3),
+                (0.475, 0.3),
+                (0.5, 0.3),
+                (0.525, 0.3),
+                (0.55, 0.3),
+                # WRs (3 players)
+                (0.15, 0.3),
+                (0.85, 0.3),
+                (0.3, 0.4),
+                # RB
+                (0.5, 0.15),
+                # TE
+                (0.6, 0.3),
+            ],
+            FormationType.I_FORMATION: [
+                # QB
+                (0.5, 0.2),
+                # O-Line (5 players)
+                (0.45, 0.3),
+                (0.475, 0.3),
+                (0.5, 0.3),
+                (0.525, 0.3),
+                (0.55, 0.3),
+                # WRs (2 players)
+                (0.15, 0.3),
+                (0.85, 0.3),
+                # FB
+                (0.5, 0.15),
+                # RB
+                (0.5, 0.1),
+                # TE
+                (0.6, 0.3),
+            ],
+            FormationType.SHOTGUN: [
+                # QB
+                (0.5, 0.15),
+                # O-Line (5 players)
+                (0.45, 0.3),
+                (0.475, 0.3),
+                (0.5, 0.3),
+                (0.525, 0.3),
+                (0.55, 0.3),
+                # WRs (3 players)
+                (0.2, 0.35),
+                (0.8, 0.35),
+                (0.35, 0.4),
+                # RB
+                (0.45, 0.2),
+                # TE
+                (0.6, 0.3),
+            ],
+        }
+
+        # Defensive formation templates (normalized coordinates 0-1)
+        self.defensive_templates = {
+            FormationType.FOUR_THREE: [
+                # D-Line (4 players)
+                (0.4, 0.6),
+                (0.47, 0.6),
+                (0.53, 0.6),
+                (0.6, 0.6),
+                # LBs (3 players)
+                (0.35, 0.7),
+                (0.5, 0.7),
+                (0.65, 0.7),
+                # DBs (4 players)
+                (0.2, 0.85),
+                (0.4, 0.8),
+                (0.6, 0.8),
+                (0.8, 0.85),
+            ],
+            FormationType.THREE_FOUR: [
+                # D-Line (3 players)
+                (0.4, 0.6),
+                (0.5, 0.6),
+                (0.6, 0.6),
+                # LBs (4 players)
+                (0.3, 0.7),
+                (0.45, 0.7),
+                (0.55, 0.7),
+                (0.7, 0.7),
+                # DBs (4 players)
+                (0.2, 0.85),
+                (0.4, 0.8),
+                (0.6, 0.8),
+                (0.8, 0.85),
+            ],
+        }
+
     def analyze_formation(
-        self,
-        positions: list[tuple[float, float]],
-        frame_number: int,
-        confidence_scores: Optional[list[float]] = None,
-    ) -> dict[str, Union[Formation, dict]]:
-        """Analyze player formation from positions.
+        self, frame: np.ndarray, game_version: GameVersion, is_offense: bool = True
+    ) -> dict:
+        """
+        Analyze formation from a video frame.
 
         Args:
-            positions: List of player positions (x, y)
-            frame_number: Current frame number
-            confidence_scores: Optional confidence scores for positions
+            frame: Video frame as numpy array
+            game_version: Game version for context
+            is_offense: Whether to analyze offensive (True) or defensive (False) formation
 
         Returns:
             Dictionary containing formation analysis results
-
-        Raises:
-            ProcessingError: If analysis fails
         """
         try:
-            start_time = time.time()
+            # Detect players in the frame
+            detections = self.player_detector.detect_players(frame)
 
-            self._update_progress("Starting formation analysis...", 0.0)
+            # Extract player positions from detections
+            player_positions = []
+            for detection in detections:
+                bbox = detection["bbox"]
+                # Calculate center of bounding box
+                center_x = (bbox[0] + bbox[2]) / 2 / frame.shape[1]  # Normalize to 0-1
+                center_y = (bbox[1] + bbox[3]) / 2 / frame.shape[0]  # Normalize to 0-1
+                player_positions.append((center_x, center_y))
 
-            # Filter positions by confidence if scores provided
-            if confidence_scores is not None:
-                self._update_progress("Filtering positions by confidence...", 0.1)
-                positions = [
-                    pos
-                    for pos, conf in zip(positions, confidence_scores)
-                    if conf >= self.config.confidence_threshold
-                ]
-
-            # Check minimum players requirement
-            if len(positions) < self.config.min_players:
-                logger.warning(f"Insufficient players ({len(positions)}) for formation analysis")
+            # Check if we have enough players
+            if len(player_positions) < self.config.min_players:
                 return {
-                    "formation": Formation.UNKNOWN,
+                    "formation_type": None,
                     "confidence": 0.0,
-                    "metrics": {},
-                    "error": "Insufficient players for analysis",
+                    "player_positions": player_positions,
+                    "clusters": [],
                 }
 
-            # Convert positions to numpy array
-            pos_array = np.array(positions)
+            # Choose appropriate templates based on offense/defense
+            templates = self.offensive_templates if is_offense else self.defensive_templates
 
-            # Update position history
-            self._update_progress("Updating position history...", 0.2)
-            self.position_history.append(pos_array)
+            # Find best matching formation
+            best_formation = None
+            best_confidence = 0.0
 
-            # Apply temporal smoothing if enabled
-            if self.config.temporal_smoothing and len(self.position_history) >= 2:
-                self._update_progress("Applying temporal smoothing...", 0.3)
-                pos_array = self._apply_temporal_smoothing()
+            for formation_type, template in templates.items():
+                similarity = self._calculate_template_similarity(player_positions, template)
+                confidence = self._adjust_confidence_for_game(
+                    similarity, formation_type, game_version
+                )
 
-            # Calculate formation metrics
-            self._update_progress("Calculating formation metrics...", 0.5)
-            metrics = self._calculate_metrics(pos_array)
+                if confidence > best_confidence:
+                    best_confidence = confidence
+                    best_formation = formation_type
 
-            # Detect formation pattern
-            self._update_progress("Detecting formation pattern...", 0.7)
-            formation, confidence = self._detect_formation(pos_array, metrics)
-
-            # Update formation history
-            self.formation_history.append(formation)
-
-            # Generate additional analysis
-            self._update_progress("Generating detailed analysis...", 0.9)
-            analysis = self._analyze_formation_details(pos_array, metrics)
-
-            # Update performance metrics
-            end_time = time.time()
-            self.processing_times.append(end_time - start_time)
-
-            self._update_progress("Analysis complete", 1.0)
+            # Cluster player positions
+            clusters = self._cluster_positions(player_positions)
 
             return {
-                "formation": formation,
-                "confidence": confidence,
-                "metrics": metrics,
-                "analysis": analysis,
+                "formation_type": (
+                    best_formation if best_confidence >= self.config.confidence_threshold else None
+                ),
+                "confidence": best_confidence,
+                "player_positions": player_positions,
+                "clusters": clusters,
             }
 
         except Exception as e:
             logger.error(f"Formation analysis failed: {e}")
-            raise ProcessingError(f"Formation analysis failed: {e}")
-
-    def _apply_temporal_smoothing(self) -> np.ndarray:
-        """Apply temporal smoothing to position data."""
-        # Calculate weighted average of recent positions
-        weights = np.exp(-np.arange(len(self.position_history)) / 2)
-        weights = weights / np.sum(weights)
-
-        smoothed = np.zeros_like(self.position_history[-1])
-        for i, pos in enumerate(self.position_history):
-            smoothed += weights[i] * pos
-
-        return smoothed
-
-    def _calculate_metrics(
-        self,
-        positions: np.ndarray,
-    ) -> dict[str, Union[float, np.ndarray]]:
-        """Calculate formation metrics."""
-        metrics = {}
-
-        # Calculate basic metrics
-        centroid, spread, density = calculate_formation_metrics(positions)
-        metrics.update(
-            {
-                "centroid": centroid,
-                "spread": spread,
-                "density": density,
+            return {
+                "formation_type": None,
+                "confidence": 0.0,
+                "player_positions": [],
+                "clusters": [],
             }
-        )
 
-        # Calculate convex hull
-        hull = ConvexHull(positions)
-        metrics["area"] = hull.area
-        metrics["perimeter"] = hull.area / hull.volume if hull.volume > 0 else 0
+    def _cluster_positions(self, positions: list[tuple[float, float]]) -> list[tuple[float, float]]:
+        """
+        Cluster player positions using DBSCAN.
 
-        # Calculate clustering metrics
-        clusters = self.clustering.fit_predict(positions)
-        n_clusters = len(set(clusters)) - (1 if -1 in clusters else 0)
-        metrics["n_clusters"] = n_clusters
+        Args:
+            positions: List of (x, y) player positions
 
-        # Calculate line structure metrics
-        metrics.update(self._calculate_line_metrics(positions))
+        Returns:
+            List of cluster centers
+        """
+        if len(positions) < self.config.clustering_min_samples:
+            return []
 
-        return metrics
+        try:
+            # Convert to numpy array
+            pos_array = np.array(positions)
 
-    def _calculate_line_metrics(
-        self,
-        positions: np.ndarray,
-    ) -> dict[str, float]:
-        """Calculate metrics for line structures in formation."""
-        metrics = {}
+            # Apply DBSCAN clustering
+            clustering = DBSCAN(
+                eps=self.config.clustering_eps, min_samples=self.config.clustering_min_samples
+            ).fit(pos_array)
 
-        # Sort positions by y-coordinate (assuming y is depth)
-        sorted_pos = positions[positions[:, 1].argsort()]
+            # Calculate cluster centers
+            clusters = []
+            unique_labels = set(clustering.labels_)
 
-        # Find potential lines
-        lines = []
-        current_line = [sorted_pos[0]]
-        current_y = sorted_pos[0, 1]
+            for label in unique_labels:
+                if label == -1:  # Noise points
+                    continue
 
-        for pos in sorted_pos[1:]:
-            if abs(pos[1] - current_y) < self.config.max_distance / 3:
-                current_line.append(pos)
-            else:
-                if len(current_line) >= 2:
-                    lines.append(np.array(current_line))
-                current_line = [pos]
-                current_y = pos[1]
+                cluster_points = pos_array[clustering.labels_ == label]
+                cluster_center = np.mean(cluster_points, axis=0)
+                clusters.append((float(cluster_center[0]), float(cluster_center[1])))
 
-        if len(current_line) >= 2:
-            lines.append(np.array(current_line))
+            return clusters
 
-        # Calculate line metrics
-        metrics["n_lines"] = len(lines)
+        except Exception as e:
+            logger.warning(f"Clustering failed: {e}")
+            return []
 
-        if lines:
-            # Calculate average line straightness
-            straightness = []
-            for line in lines:
-                if len(line) >= 2:
-                    # Fit line and calculate R²
-                    coeffs = np.polyfit(line[:, 0], line[:, 1], 1)
-                    poly = np.poly1d(coeffs)
-                    y_pred = poly(line[:, 0])
-                    r2 = 1 - (
-                        np.sum((line[:, 1] - y_pred) ** 2)
-                        / np.sum((line[:, 1] - np.mean(line[:, 1])) ** 2)
-                    )
-                    straightness.append(r2)
-
-            metrics["avg_line_straightness"] = np.mean(straightness) if straightness else 0
-
-            # Calculate line spacing
-            line_positions = [np.mean(line[:, 1]) for line in lines]
-            if len(line_positions) >= 2:
-                metrics["avg_line_spacing"] = np.mean(np.diff(sorted(line_positions)))
-            else:
-                metrics["avg_line_spacing"] = 0
-        else:
-            metrics["avg_line_straightness"] = 0
-            metrics["avg_line_spacing"] = 0
-
-        return metrics
-
-    def _detect_formation(
-        self,
-        positions: np.ndarray,
-        metrics: dict[str, Union[float, np.ndarray]],
-    ) -> tuple[Formation, float]:
-        """Detect formation pattern from positions and metrics."""
-        # Calculate formation features
-        features = self._calculate_formation_features(positions, metrics)
-
-        # Match against known formations
-        best_match = Formation.UNKNOWN
-        best_confidence = 0.0
-
-        for formation in Formation:
-            if formation == Formation.UNKNOWN:
-                continue
-
-            confidence = self._match_formation_pattern(
-                formation,
-                features,
-                metrics,
-            )
-
-            if confidence > best_confidence:
-                best_match = formation
-                best_confidence = confidence
-
-        return best_match, best_confidence
-
-    def _calculate_formation_features(
-        self,
-        positions: np.ndarray,
-        metrics: dict[str, Union[float, np.ndarray]],
-    ) -> dict[str, float]:
-        """Calculate features for formation matching."""
-        features = {}
-
-        # Number of players in each third
-        y_min, y_max = np.min(positions[:, 1]), np.max(positions[:, 1])
-        y_range = y_max - y_min
-        thirds = [y_min + i * y_range / 3 for i in range(4)]
-
-        for i in range(3):
-            mask = (positions[:, 1] >= thirds[i]) & (positions[:, 1] < thirds[i + 1])
-            features[f"players_third_{i}"] = np.sum(mask)
-
-        # Width utilization
-        x_range = np.max(positions[:, 0]) - np.min(positions[:, 0])
-        features["width_utilization"] = x_range / metrics["spread"]
-
-        # Clustering features
-        features["cluster_ratio"] = (
-            metrics["n_clusters"] / len(positions) if len(positions) > 0 else 0
-        )
-
-        # Line structure features
-        features["line_score"] = (
-            metrics["avg_line_straightness"]
-            * metrics["n_lines"]
-            / (metrics["avg_line_spacing"] + 1e-6)
-        )
-
-        return features
-
-    def _match_formation_pattern(
-        self,
-        formation: Formation,
-        features: dict[str, float],
-        metrics: dict[str, Union[float, np.ndarray]],
+    def _calculate_template_similarity(
+        self, positions: list[tuple[float, float]], template: list[tuple[float, float]]
     ) -> float:
-        """Match features against a known formation pattern."""
-        # Define expected patterns
-        patterns = {
-            Formation.F_4_4_2: {
-                "players_third_0": (4, 0.5),  # (expected value, weight)
-                "players_third_1": (4, 0.3),
-                "players_third_2": (2, 0.2),
-                "width_utilization": (0.8, 0.4),
-                "cluster_ratio": (0.3, 0.3),
-                "line_score": (0.7, 0.4),
-            },
-            Formation.F_4_3_3: {
-                "players_third_0": (4, 0.5),
-                "players_third_1": (3, 0.3),
-                "players_third_2": (3, 0.2),
-                "width_utilization": (0.9, 0.4),
-                "cluster_ratio": (0.35, 0.3),
-                "line_score": (0.65, 0.4),
-            },
-            Formation.F_3_5_2: {
-                "players_third_0": (3, 0.5),
-                "players_third_1": (5, 0.3),
-                "players_third_2": (2, 0.2),
-                "width_utilization": (0.85, 0.4),
-                "cluster_ratio": (0.4, 0.3),
-                "line_score": (0.75, 0.4),
-            },
-            Formation.F_5_3_2: {
-                "players_third_0": (5, 0.5),
-                "players_third_1": (3, 0.3),
-                "players_third_2": (2, 0.2),
-                "width_utilization": (0.75, 0.4),
-                "cluster_ratio": (0.35, 0.3),
-                "line_score": (0.8, 0.4),
-            },
-            Formation.F_4_2_3_1: {
-                "players_third_0": (4, 0.5),
-                "players_third_1": (5, 0.3),
-                "players_third_2": (1, 0.2),
-                "width_utilization": (0.85, 0.4),
-                "cluster_ratio": (0.45, 0.3),
-                "line_score": (0.7, 0.4),
-            },
+        """
+        Calculate similarity between detected positions and a formation template.
+
+        Args:
+            positions: Detected player positions
+            template: Formation template positions
+
+        Returns:
+            Similarity score between 0 and 1
+        """
+        if len(positions) != len(template):
+            # Penalize for different number of players
+            size_penalty = abs(len(positions) - len(template)) / max(len(positions), len(template))
+            base_similarity = max(0, 1 - size_penalty)
+        else:
+            base_similarity = 1.0
+
+        # Calculate minimum distance matching between positions and template
+        pos_array = np.array(positions)
+        template_array = np.array(template)
+
+        # Use Hungarian algorithm-like approach for optimal matching
+        from scipy.optimize import linear_sum_assignment
+        from scipy.spatial.distance import cdist
+
+        # Calculate distance matrix
+        distances = cdist(pos_array, template_array)
+
+        # Find optimal assignment
+        row_indices, col_indices = linear_sum_assignment(distances)
+
+        # Calculate average minimum distance
+        total_distance = distances[row_indices, col_indices].sum()
+        avg_distance = total_distance / len(positions)
+
+        # Convert distance to similarity (lower distance = higher similarity)
+        distance_similarity = max(0, 1 - avg_distance * 5)  # Scale factor of 5
+
+        return base_similarity * distance_similarity
+
+    def _adjust_confidence_for_game(
+        self, base_confidence: float, formation_type: FormationType, game_version: GameVersion
+    ) -> float:
+        """
+        Adjust confidence based on game version characteristics.
+
+        Args:
+            base_confidence: Base confidence score
+            formation_type: Type of formation
+            game_version: Game version
+
+        Returns:
+            Adjusted confidence score
+        """
+        adjustment = 1.0
+
+        if game_version == GameVersion.MADDEN_25:
+            # Madden 25 typically has clearer formation patterns
+            adjustment = 1.1
+        elif game_version == GameVersion.CFB_25:
+            # College football might have more variation
+            adjustment = 0.9
+
+        # Clamp to valid range
+        return min(1.0, max(0.0, base_confidence * adjustment))
+
+    def _update_formation_history(self, formation_type: FormationType, confidence: float):
+        """Update formation history for statistics tracking."""
+        self.formation_history.append((formation_type, confidence))
+
+    def get_formation_stats(self) -> dict:
+        """
+        Get formation analysis statistics.
+
+        Returns:
+            Dictionary containing formation statistics
+        """
+        if not self.formation_history:
+            return {"total_detections": 0, "avg_confidence": 0.0, "formation_types": {}}
+
+        formations, confidences = zip(*self.formation_history)
+
+        # Count formation types
+        formation_counts = {}
+        for formation in formations:
+            formation_counts[formation] = formation_counts.get(formation, 0) + 1
+
+        return {
+            "total_detections": len(self.formation_history),
+            "avg_confidence": np.mean(confidences),
+            "formation_types": formation_counts,
         }
-
-        if formation not in patterns:
-            return 0.0
-
-        pattern = patterns[formation]
-        confidence = 0.0
-        total_weight = 0.0
-
-        for feature, (expected, weight) in pattern.items():
-            if feature in features:
-                # Calculate feature match score
-                value = features[feature]
-                score = 1.0 - min(abs(value - expected) / expected, 1.0)
-                confidence += score * weight
-                total_weight += weight
-
-        return confidence / total_weight if total_weight > 0 else 0.0
-
-    def _analyze_formation_details(
-        self,
-        positions: np.ndarray,
-        metrics: dict[str, Union[float, np.ndarray]],
-    ) -> dict[str, Union[float, list]]:
-        """Generate detailed formation analysis."""
-        analysis = {}
-
-        # Calculate team shape characteristics
-        analysis["shape"] = {
-            "width": np.max(positions[:, 0]) - np.min(positions[:, 0]),
-            "depth": np.max(positions[:, 1]) - np.min(positions[:, 1]),
-            "area": metrics["area"],
-            "compactness": metrics["perimeter"] / (metrics["area"] + 1e-6),
-        }
-
-        # Analyze defensive line
-        defensive_line = positions[positions[:, 1] <= np.percentile(positions[:, 1], 25)]
-        if len(defensive_line) >= 2:
-            analysis["defensive_line"] = {
-                "width": np.max(defensive_line[:, 0]) - np.min(defensive_line[:, 0]),
-                "straightness": self._calculate_line_straightness(defensive_line),
-                "height": np.mean(defensive_line[:, 1]),
-            }
-
-        # Analyze attacking structure
-        attacking_line = positions[positions[:, 1] >= np.percentile(positions[:, 1], 75)]
-        if len(attacking_line) >= 2:
-            analysis["attacking_line"] = {
-                "width": np.max(attacking_line[:, 0]) - np.min(attacking_line[:, 0]),
-                "straightness": self._calculate_line_straightness(attacking_line),
-                "depth": np.mean(attacking_line[:, 1]),
-            }
-
-        # Calculate formation stability
-        if len(self.formation_history) >= 2:
-            analysis["stability"] = {
-                "formation_changes": self._count_formation_changes(),
-                "position_variance": self._calculate_position_variance(),
-            }
-
-        return analysis
-
-    def _calculate_line_straightness(self, positions: np.ndarray) -> float:
-        """Calculate how straight a line of players is."""
-        if len(positions) < 2:
-            return 0.0
-
-        # Fit line to positions
-        coeffs = np.polyfit(positions[:, 0], positions[:, 1], 1)
-        poly = np.poly1d(coeffs)
-
-        # Calculate R² score
-        y_pred = poly(positions[:, 0])
-        r2 = 1 - (
-            np.sum((positions[:, 1] - y_pred) ** 2)
-            / np.sum((positions[:, 1] - np.mean(positions[:, 1])) ** 2)
-        )
-
-        return max(0.0, min(1.0, r2))
-
-    def _count_formation_changes(self) -> int:
-        """Count number of formation changes in history."""
-        changes = 0
-        prev_formation = None
-
-        for formation in self.formation_history:
-            if prev_formation is not None and formation != prev_formation:
-                changes += 1
-            prev_formation = formation
-
-        return changes
-
-    def _calculate_position_variance(self) -> float:
-        """Calculate variance in player positions over time."""
-        if len(self.position_history) < 2:
-            return 0.0
-
-        # Calculate average position change
-        changes = []
-        for i in range(1, len(self.position_history)):
-            if self.position_history[i].shape == self.position_history[i - 1].shape:
-                change = np.mean(
-                    np.sqrt(
-                        np.sum(
-                            (self.position_history[i] - self.position_history[i - 1]) ** 2, axis=1
-                        )
-                    )
-                )
-                changes.append(change)
-
-        return np.mean(changes) if changes else 0.0
 
     def reset(self) -> None:
         """Reset analyzer state."""

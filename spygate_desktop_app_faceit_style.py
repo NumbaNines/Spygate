@@ -438,6 +438,9 @@ class SpygateDesktopFaceItStyle(QMainWindow):
 
         # Add player icons
         self.add_player_icons()
+        
+        # Apply default Gun Bunch formation
+        self.apply_formation_preset("Gun Bunch")
 
         # Enable drag and drop
         self.field_view.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
@@ -634,8 +637,8 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         # Formation preset buttons
         formations = [
             "I-Formation",
-            "Shotgun",
-            "Shotgun Gun Bunch",
+            "Shotgun", 
+            "Gun Bunch",
             "Pistol",
             "Spread",
             "Singleback",
@@ -790,18 +793,18 @@ class SpygateDesktopFaceItStyle(QMainWindow):
                 "RG": (325, 780),
                 "RT": (350, 780),
             },
-                        "Shotgun Gun Bunch": {
-                "QB": (300, 730),  # QB in shotgun formation
-                "RB": (300, 710),  # Running back directly behind QB (slightly behind)
-                "WR1": (100, 780),  # Split end far left on line of scrimmage
-                "WR2": (200, 780),  # Flanker wider left on line of scrimmage  
-                "WR3": (410, 780),  # Bunch formation - tight with TE on right side
-                "TE": (430, 780),  # Tight end in tight bunch with WR3 on right side
-                "LT": (250, 780),  # Offensive line - all on line of scrimmage
-                "LG": (275, 780),
-                "C": (300, 780),
-                "RG": (325, 780),
-                "RT": (350, 780),
+            "Gun Bunch": {
+                "QB": (297, 347),  # QB in shotgun formation
+                "RB": (336, 348),  # Running back positioned behind/beside QB  
+                "WR1": (111, 299),  # Split end on left side
+                "WR2": (414, 300),  # Flanker on right side
+                "WR3": (446, 309),  # Bunch formation with TE
+                "TE": (381, 309),   # Tight end in bunch with WR3
+                "LT": (250, 300),   # Offensive line on line of scrimmage
+                "LG": (275, 300),
+                "C": (300, 300),
+                "RG": (325, 300),
+                "RT": (350, 300),
             },
             "Pistol": {
                 "QB": (300, 740),  # QB closer to line than shotgun

@@ -383,7 +383,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         """Create gameplan content with Play Planner"""
         # Header with toggle button
         header_layout = QHBoxLayout()
-        
+
         header = QLabel("🎯 Play Planner")
         header.setStyleSheet(
             """
@@ -395,7 +395,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         """
         )
         header_layout.addWidget(header)
-        
+
         # Toggle button for sidebar
         self.sidebar_toggle_btn = QPushButton("⚙️ Hide Controls")
         self.sidebar_toggle_btn.setStyleSheet(
@@ -421,7 +421,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         self.sidebar_toggle_btn.clicked.connect(self.toggle_sidebar)
         header_layout.addStretch()
         header_layout.addWidget(self.sidebar_toggle_btn)
-        
+
         header_widget = QWidget()
         header_widget.setLayout(header_layout)
         self.content_layout.addWidget(header_widget)
@@ -441,7 +441,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         self.planner_container = QWidget()
         self.planner_container.setLayout(self.planner_layout)
         self.content_layout.addWidget(self.planner_container)
-        
+
         # Store sidebar visibility state
         self.sidebar_visible = True
 
@@ -505,17 +505,17 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         """Draw official NFL football field with exact specifications"""
         # Official NFL Field Dimensions (scaled for display)
         # Total: 360 feet (120 yards) x 160 feet (53.3 yards)
-        field_width = 800   # 160 feet (53.3 yards) scaled
-        field_height = 1200 # 360 feet (120 yards) scaled
-        
+        field_width = 800  # 160 feet (53.3 yards) scaled
+        field_height = 1200  # 360 feet (120 yards) scaled
+
         # Calculate scaling factors based on official measurements
-        yard_scale = 10      # 10 pixels per yard
+        yard_scale = 10  # 10 pixels per yard
         width_scale = field_width / 53.3  # Pixels per yard horizontally (~15 px/yard)
 
         # Field Background (dark surface per user request)
         field_rect = QGraphicsRectItem(0, 0, field_width, field_height)
         field_rect.setBrush(QBrush(QColor("#151515")))  # Dark field surface
-        field_rect.setPen(QPen(QColor("#29d28c"), 3))   # Green 6-foot sideline
+        field_rect.setPen(QPen(QColor("#29d28c"), 3))  # Green 6-foot sideline
         self.field_scene.addItem(field_rect)
 
         # End Zones (10 yards each = 30 feet)
@@ -528,7 +528,9 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         self.field_scene.addItem(top_endzone)
 
         # Bottom End Zone (110-120 yard line)
-        bottom_endzone = QGraphicsRectItem(0, field_height - end_zone_height, field_width, end_zone_height)
+        bottom_endzone = QGraphicsRectItem(
+            0, field_height - end_zone_height, field_width, end_zone_height
+        )
         bottom_endzone.setBrush(QBrush(QColor("#0f0f0f")))
         bottom_endzone.setPen(QPen(QColor("#29d28c"), 2))
         self.field_scene.addItem(bottom_endzone)
@@ -537,7 +539,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         top_goal = QGraphicsLineItem(0, 100, field_width, 100)
         top_goal.setPen(QPen(QColor("#29d28c"), 4))
         self.field_scene.addItem(top_goal)
-        
+
         bottom_goal = QGraphicsLineItem(0, 1100, field_width, 1100)
         bottom_goal.setPen(QPen(QColor("#29d28c"), 4))
         self.field_scene.addItem(bottom_goal)
@@ -545,11 +547,11 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         # Yard Lines (every 5 yards, 4-inch wide per NFL spec)
         for yard in range(5, 116, 5):
             y = yard * yard_scale
-            
+
             # Skip goal lines (already drawn)
             if yard == 10 or yard == 110:
                 continue
-                
+
             # Major yard lines (every 10 yards) are more prominent
             line_width = 3 if yard % 10 == 0 else 2
             yard_line = QGraphicsLineItem(0, y, field_width, y)
@@ -563,39 +565,39 @@ class SpygateDesktopFaceItStyle(QMainWindow):
 
         # Field Numbers (6 feet high, 4 feet wide per NFL spec)
         # Bottom edge 12 yards from sideline per NFL specification
-        left_number_pos = int(12 * width_scale)    # 12 yards from left sideline
-        right_number_pos = int(41.3 * width_scale) # 12 yards from right sideline
-        
+        left_number_pos = int(12 * width_scale)  # 12 yards from left sideline
+        right_number_pos = int(41.3 * width_scale)  # 12 yards from right sideline
+
         # Numbers 10-40 on first half
         for yard in range(10, 50, 10):
             y = yard * yard_scale
-            
+
             # Left side numbers
             left_num = QGraphicsTextItem(str(yard))
             left_num.setDefaultTextColor(QColor("#29d28c"))
             left_num.setFont(QFont("Minork Sans", 16, QFont.Weight.Bold))
             left_num.setPos(left_number_pos - 15, y - 25)
             self.field_scene.addItem(left_num)
-            
-            # Right side numbers  
+
+            # Right side numbers
             right_num = QGraphicsTextItem(str(yard))
             right_num.setDefaultTextColor(QColor("#29d28c"))
             right_num.setFont(QFont("Minork Sans", 16, QFont.Weight.Bold))
             right_num.setPos(right_number_pos - 15, y - 25)
             self.field_scene.addItem(right_num)
-            
+
         # Numbers 40-10 on second half (counting down from 50)
         for yard in range(60, 110, 10):
             y = yard * yard_scale
             display_num = 110 - yard  # 50, 40, 30, 20, 10
-            
+
             # Left side numbers
             left_num = QGraphicsTextItem(str(display_num))
             left_num.setDefaultTextColor(QColor("#29d28c"))
             left_num.setFont(QFont("Minork Sans", 16, QFont.Weight.Bold))
             left_num.setPos(left_number_pos - 15, y - 25)
             self.field_scene.addItem(left_num)
-            
+
             # Right side numbers
             right_num = QGraphicsTextItem(str(display_num))
             right_num.setDefaultTextColor(QColor("#29d28c"))
@@ -613,44 +615,91 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         # Hash Marks (Inbound Lines) - Official NFL Specification
         # 70 feet 9 inches from each sideline = 23 yards 1 foot 9 inches
         # 18 feet 6 inches apart (same as goalpost width)
-        left_hash_pos = int(23.58 * width_scale)   # 23.58 yards from left
+        left_hash_pos = int(23.58 * width_scale)  # 23.58 yards from left
         right_hash_pos = int(29.75 * width_scale)  # 29.75 yards from left
         hash_length = 8  # 2-foot lines scaled
-        
+
         # Hash marks on every yard in field of play (every 5 yards visible)
         for yard in range(11, 110):
             y = yard * yard_scale
-            
+
             # Only show hash marks on 5-yard intervals for clarity
             if yard % 5 == 0:
                 # Left hash mark (2-foot long, 4-inch wide per NFL)
-                left_hash = QGraphicsLineItem(left_hash_pos - hash_length//2, y, 
-                                            left_hash_pos + hash_length//2, y)
+                left_hash = QGraphicsLineItem(
+                    left_hash_pos - hash_length // 2, y, left_hash_pos + hash_length // 2, y
+                )
                 left_hash.setPen(QPen(QColor("#29d28c"), 2))
                 self.field_scene.addItem(left_hash)
 
                 # Right hash mark
-                right_hash = QGraphicsLineItem(right_hash_pos - hash_length//2, y,
-                                             right_hash_pos + hash_length//2, y)
+                right_hash = QGraphicsLineItem(
+                    right_hash_pos - hash_length // 2, y, right_hash_pos + hash_length // 2, y
+                )
                 right_hash.setPen(QPen(QColor("#29d28c"), 2))
                 self.field_scene.addItem(right_hash)
+
+        # CENTER FIELD HASH MARKS (Left and Right Hash)
+        # These are the crucial hash marks players align to
+        # Show every yard for precise positioning reference
+        center_left_hash = int(26.16 * width_scale)  # Left center hash
+        center_right_hash = int(27.17 * width_scale)  # Right center hash
+        center_hash_length = 12  # Longer for visibility
+
+        for yard in range(11, 110):
+            y = yard * yard_scale
+
+            # Left center hash mark (more prominent)
+            left_center_hash = QGraphicsLineItem(
+                center_left_hash - center_hash_length // 2,
+                y,
+                center_left_hash + center_hash_length // 2,
+                y,
+            )
+            left_center_hash.setPen(QPen(QColor("#29d28c"), 3))  # Thicker line
+            self.field_scene.addItem(left_center_hash)
+
+            # Right center hash mark (more prominent)
+            right_center_hash = QGraphicsLineItem(
+                center_right_hash - center_hash_length // 2,
+                y,
+                center_right_hash + center_hash_length // 2,
+                y,
+            )
+            right_center_hash.setPen(QPen(QColor("#29d28c"), 3))  # Thicker line
+            self.field_scene.addItem(right_center_hash)
+
+        # Hash mark labels at midfield for reference
+        left_hash_label = QGraphicsTextItem("L")
+        left_hash_label.setDefaultTextColor(QColor("#29d28c"))
+        left_hash_label.setFont(QFont("Minork Sans", 10, QFont.Weight.Bold))
+        left_hash_label.setPos(center_left_hash - 5, 590)
+        self.field_scene.addItem(left_hash_label)
+
+        right_hash_label = QGraphicsTextItem("R")
+        right_hash_label.setDefaultTextColor(QColor("#29d28c"))
+        right_hash_label.setFont(QFont("Minork Sans", 10, QFont.Weight.Bold))
+        right_hash_label.setPos(center_right_hash - 5, 590)
+        self.field_scene.addItem(right_hash_label)
 
         # Conversion Spots (2-Point Conversion Lines)
         # 2-foot line at 3-yard line (updated NFL rule)
         conv_length = int(2 * width_scale)  # 2-foot line scaled
         center_x = field_width // 2
-        
+
         # Top conversion spot (3 yards from goal = 13-yard mark)
         top_conv_y = 130
-        top_conv = QGraphicsLineItem(center_x - conv_length//2, top_conv_y,
-                                   center_x + conv_length//2, top_conv_y)
+        top_conv = QGraphicsLineItem(
+            center_x - conv_length // 2, top_conv_y, center_x + conv_length // 2, top_conv_y
+        )
         top_conv.setPen(QPen(QColor("#29d28c"), 3))
         self.field_scene.addItem(top_conv)
-        
-        # Bottom conversion spot (3 yards from goal = 107-yard mark)  
+
+        # Bottom conversion spot (3 yards from goal = 107-yard mark)
         bottom_conv_y = 1070
-        bottom_conv = QGraphicsLineItem(center_x - conv_length//2, bottom_conv_y,
-                                      center_x + conv_length//2, bottom_conv_y)
+        bottom_conv = QGraphicsLineItem(
+            center_x - conv_length // 2, bottom_conv_y, center_x + conv_length // 2, bottom_conv_y
+        )
         bottom_conv.setPen(QPen(QColor("#29d28c"), 3))
         self.field_scene.addItem(bottom_conv)
 
@@ -661,7 +710,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         top_kickoff.setFont(QFont("Minork Sans", 12, QFont.Weight.Bold))
         top_kickoff.setPos(center_x - 6, 350 - 15)
         self.field_scene.addItem(top_kickoff)
-        
+
         # Bottom kickoff (35-yard line from other end = 85-yard line)
         bottom_kickoff = QGraphicsTextItem("✕")
         bottom_kickoff.setDefaultTextColor(QColor("#29d28c"))
@@ -676,7 +725,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         logo_area.setBrush(QBrush(logo_color))
         logo_area.setPen(QPen(QColor("#29d28c"), 1, Qt.PenStyle.DashLine))
         self.field_scene.addItem(logo_area)
-        
+
         # NFL logo placeholder
         logo_text = QGraphicsTextItem("NFL")
         logo_text.setDefaultTextColor(QColor("#29d28c"))
@@ -687,13 +736,13 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         # Red Zone Indicators (20-yard lines per NFL spec)
         red_color = QColor(220, 20, 60)
         red_color.setAlpha(60)
-        
+
         # Top red zone (20-yard line)
         top_red_zone = QGraphicsRectItem(0, 195, field_width, 10)
         top_red_zone.setBrush(QBrush(red_color))
         top_red_zone.setPen(QPen(QColor(220, 20, 60), 1))
         self.field_scene.addItem(top_red_zone)
-        
+
         # Bottom red zone (20-yard line from other end = 100-yard mark)
         bottom_red_zone = QGraphicsRectItem(0, 995, field_width, 10)
         bottom_red_zone.setBrush(QBrush(red_color))
@@ -703,22 +752,30 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         # Sideline Hash Marks (1-yard increments per NFL spec)
         # 2-foot long, 4-inch wide lines, 6 inches inside sideline border
         sideline_hash_length = 6
-        left_sideline_pos = 8   # 6 inches inside border (scaled)
+        left_sideline_pos = 8  # 6 inches inside border (scaled)
         right_sideline_pos = field_width - 8
-        
+
         # Add sideline hash marks every 5 yards for visibility
         for yard in range(0, 121, 5):
             y = yard * yard_scale
-            
+
             # Left sideline hash
-            left_side_hash = QGraphicsLineItem(left_sideline_pos, y - sideline_hash_length//2,
-                                             left_sideline_pos, y + sideline_hash_length//2)
+            left_side_hash = QGraphicsLineItem(
+                left_sideline_pos,
+                y - sideline_hash_length // 2,
+                left_sideline_pos,
+                y + sideline_hash_length // 2,
+            )
             left_side_hash.setPen(QPen(QColor("#29d28c"), 1))
             self.field_scene.addItem(left_side_hash)
-            
+
             # Right sideline hash
-            right_side_hash = QGraphicsLineItem(right_sideline_pos, y - sideline_hash_length//2,
-                                              right_sideline_pos, y + sideline_hash_length//2)
+            right_side_hash = QGraphicsLineItem(
+                right_sideline_pos,
+                y - sideline_hash_length // 2,
+                right_sideline_pos,
+                y + sideline_hash_length // 2,
+            )
             right_side_hash.setPen(QPen(QColor("#29d28c"), 1))
             self.field_scene.addItem(right_side_hash)
 
@@ -729,7 +786,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
 
         # Calculate scaling factor for the wider field (800px vs 600px)
         scale_factor = 800 / 600  # 1.333
-        
+
         # Offensive formation (11 players) - Scaled for wider field
         offensive_positions = [
             ("QB", int(300 * scale_factor), 750),  # Quarterback deeper in own territory
@@ -772,11 +829,11 @@ class SpygateDesktopFaceItStyle(QMainWindow):
 
     def create_player_icon(self, position, x, y, color, is_offensive):
         """Create a draggable player icon"""
-        # Create player circle
-        player = QGraphicsEllipseItem(0, 0, 30, 30)
+        # Create smaller player circle - reduced from 30x30 to 20x20
+        player = QGraphicsEllipseItem(0, 0, 20, 20)
         player.setBrush(QBrush(color))
-        player.setPen(QPen(QColor(255, 255, 255), 2))
-        player.setPos(x - 15, y - 15)  # Center the circle
+        player.setPen(QPen(QColor(255, 255, 255), 1))
+        player.setPos(x - 10, y - 10)  # Center the circle
 
         # Make draggable
         player.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, True)
@@ -785,13 +842,13 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         # Add position label (centered inside circle)
         label = QGraphicsTextItem(position)
         label.setDefaultTextColor(QColor("#29d28c"))  # Green text for position labels
-        label.setFont(QFont("Minork Sans", 8, QFont.Weight.Bold))
+        label.setFont(QFont("Minork Sans", 7, QFont.Weight.Bold))  # Reduced font size
 
-        # Center the text within the 30x30 circle
+        # Center the text within the 20x20 circle
         text_rect = label.boundingRect()
         label.setPos(
-            (30 - text_rect.width()) / 2,  # Center horizontally within circle
-            (30 - text_rect.height()) / 2,  # Center vertically within circle
+            (20 - text_rect.width()) / 2,  # Center horizontally within circle
+            (20 - text_rect.height()) / 2,  # Center vertically within circle
         )
         label.setParentItem(player)
 
@@ -1102,7 +1159,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         # Apply the formation if it exists
         if formation in formations:
             formation_positions = formations[formation]
-            
+
             # Calculate scaling factor for the wider field (800px vs 600px)
             scale_factor = 800 / 600  # 1.333
 

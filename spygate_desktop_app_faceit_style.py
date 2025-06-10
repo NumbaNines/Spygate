@@ -614,20 +614,26 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         
         # 50-yard line logo area (placeholder for team/league logos)
         logo_area = QGraphicsEllipseItem(field_width // 2 - 40, 580, 80, 40)
-        logo_area.setBrush(QBrush(QColor("#29d28c", 30)))  # Semi-transparent green
+        logo_color = QColor("#29d28c")
+        logo_color.setAlpha(30)  # Set transparency
+        logo_area.setBrush(QBrush(logo_color))
         logo_area.setPen(QPen(QColor("#29d28c"), 1, Qt.PenStyle.DashLine))
         self.field_scene.addItem(logo_area)
         
         # Red zone indicators (20-yard lines)
         # Top red zone (y = 200)
         red_zone_top = QGraphicsRectItem(0, 195, field_width, 10)
-        red_zone_top.setBrush(QBrush(QColor(220, 20, 60, 40)))  # Semi-transparent red
+        red_color_top = QColor(220, 20, 60)
+        red_color_top.setAlpha(40)  # Set transparency
+        red_zone_top.setBrush(QBrush(red_color_top))
         red_zone_top.setPen(QPen(QColor(220, 20, 60), 1))
         self.field_scene.addItem(red_zone_top)
         
         # Bottom red zone (y = 1000) 
         red_zone_bottom = QGraphicsRectItem(0, 995, field_width, 10)
-        red_zone_bottom.setBrush(QBrush(QColor(220, 20, 60, 40)))  # Semi-transparent red
+        red_color_bottom = QColor(220, 20, 60)
+        red_color_bottom.setAlpha(40)  # Set transparency
+        red_zone_bottom.setBrush(QBrush(red_color_bottom))
         red_zone_bottom.setPen(QPen(QColor(220, 20, 60), 1))
         self.field_scene.addItem(red_zone_bottom)
 

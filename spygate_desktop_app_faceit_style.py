@@ -780,8 +780,10 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         """Create a draggable player icon"""
         # Create smaller player circle - reduced from 30x30 to 20x20
         player = QGraphicsEllipseItem(0, 0, 20, 20)
-        player.setBrush(QBrush(color))
-        player.setPen(QPen(QColor(255, 255, 255), 1))
+        # Use green background for all players
+        player.setBrush(QBrush(QColor("#29d28c")))
+        # Use dark border for all players
+        player.setPen(QPen(QColor("#151515"), 1))
         player.setPos(x - 10, y - 10)  # Center the circle
 
         # Make draggable
@@ -790,8 +792,9 @@ class SpygateDesktopFaceItStyle(QMainWindow):
 
         # Add position label (centered inside circle)
         label = QGraphicsTextItem(position)
-        label.setDefaultTextColor(QColor("#29d28c"))  # Green text for position labels
-        label.setFont(QFont("Minork Sans", 7, QFont.Weight.Bold))  # Reduced font size
+        # Use dark text for position labels
+        label.setDefaultTextColor(QColor("#151515"))
+        label.setFont(QFont("Minork Sans", 7, QFont.Weight.Bold))  # Using Minork Sans font
 
         # Center the text within the 20x20 circle
         text_rect = label.boundingRect()

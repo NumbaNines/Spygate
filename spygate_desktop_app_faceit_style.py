@@ -564,9 +564,9 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         self.field_scene.addItem(fifty_line)
 
         # Field Numbers (6 feet high, 4 feet wide per NFL spec) - White like in Madden 25
-        # Position numbers like in Madden - between hash marks, rotated for proper viewing
-        left_number_pos = int(21 * width_scale)   # Left of center between hash marks  
-        right_number_pos = int(32 * width_scale)  # Right of center between hash marks
+        # Position numbers like in Madden - closer to sidelines per official NFL specification
+        left_number_pos = int(12 * width_scale)   # 12 yards from left sideline (official NFL spec)
+        right_number_pos = int(41.3 * width_scale)  # 12 yards from right sideline (official NFL spec)
 
         # Numbers 10-40 on first half
         for yard in range(10, 50, 10):

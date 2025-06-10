@@ -118,7 +118,7 @@ export interface GameSituation {
 export enum FormationType {
   // Offensive formations
   SPREAD = 'spread',
-  I_FORMATION = 'i_formation', 
+  I_FORMATION = 'i_formation',
   SHOTGUN = 'shotgun',
   PISTOL = 'pistol',
   UNDER_CENTER = 'under_center',
@@ -127,7 +127,7 @@ export enum FormationType {
   BUNCH = 'bunch',
   EMPTY = 'empty',
   GOAL_LINE = 'goal_line',
-  
+
   // Defensive formations
   FOUR_THREE = '4-3',
   THREE_FOUR = '3-4',
@@ -141,13 +141,13 @@ export enum FormationType {
   COVER_TWO = 'cover_2',
   COVER_THREE = 'cover_3',
   COVER_FOUR = 'cover_4',
-  
+
   // Special formations
   SPECIAL_TEAMS = 'special_teams',
   PUNT = 'punt',
   KICK_RETURN = 'kick_return',
   FIELD_GOAL = 'field_goal',
-  
+
   UNKNOWN = 'unknown',
 }
 
@@ -174,12 +174,12 @@ export interface ClusterData {
 }
 
 // ============================================================================
-// Performance & Benchmarking Types  
+// Performance & Benchmarking Types
 // ============================================================================
 
 export enum PerformanceTier {
   CLUTCH = 'clutch',           // 95-100 points
-  BIG_PLAY = 'big_play',       // 85-94 points  
+  BIG_PLAY = 'big_play',       // 85-94 points
   GOOD_PLAY = 'good_play',     // 75-84 points
   AVERAGE = 'average',         // 60-74 points
   POOR_PLAY = 'poor_play',     // 40-59 points
@@ -394,4 +394,4 @@ export interface CrossGameInsight {
   target_game: GameVersion;
   confidence: number;
   recommendations: string[];
-} 
+}

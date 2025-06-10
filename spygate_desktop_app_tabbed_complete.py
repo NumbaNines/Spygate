@@ -676,7 +676,7 @@ class SpygateDesktopAppTabbed(QMainWindow):
 
     def init_ui(self):
         """Initialize the user interface."""
-        # Central widget with tab system
+        # Central widget with FaceIt-style layout
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
@@ -685,50 +685,141 @@ class SpygateDesktopAppTabbed(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Create tab widget
-        self.tab_widget = QTabWidget()
-        self.tab_widget.setStyleSheet(
+        # Create left sidebar navigation
+        self.create_left_sidebar(main_layout)
+
+        # Create main content area
+        self.content_stack = QStackedWidget()
+        self.content_stack.setStyleSheet("background-color: #0b0c0f;")
+
+        # Create tab content widgets
+        self.analysis_widget = self.create_analysis_widget()
+        self.gameplan_widget = self.create_gameplan_widget()
+
+        # Add content widgets to stack
+        self.content_stack.addWidget(self.analysis_widget)  # 0
+        self.content_stack.addWidget(self.create_dashboard_widget())  # 1
+        self.content_stack.addWidget(self.gameplan_widget)  # 2
+        self.content_stack.addWidget(self.create_learn_widget())  # 3
+
+        main_layout.addWidget(self.content_stack)
+
+        # Set default to Analysis tab
+        self.content_stack.setCurrentIndex(0)
+
+    def create_left_sidebar(self, parent_layout):
+        """Create the FaceIt-style left sidebar navigation."""
+        # Left sidebar
+        left_sidebar = QWidget()
+        left_sidebar.setFixedWidth(250)
+        left_sidebar.setStyleSheet(
             """
-            QTabWidget::pane {
-                border: none;
+            QWidget {
                 background-color: #0b0c0f;
-            }
-            QTabWidget::tab-bar {
-                alignment: left;
-            }
-            QTabBar::tab {
-                background-color: #1a1a1a;
-                color: #ccc;
-                padding: 12px 24px;
-                margin-right: 2px;
-                border-top-left-radius: 8px;
-                border-top-right-radius: 8px;
-                font-family: "Minork Sans", sans-serif;
-                font-size: 14px;
-                font-weight: bold;
-            }
-            QTabBar::tab:selected {
-                background-color: #1ce783;
-                color: #000;
-            }
-            QTabBar::tab:hover:!selected {
-                background-color: #2a2a2a;
-                color: #fff;
+                border-right: 1px solid #1a1a1a;
             }
         """
         )
 
-        # Create tab widgets
-        self.analysis_widget = self.create_analysis_widget()
-        self.gameplan_widget = self.create_gameplan_widget()
+        sidebar_layout = QVBoxLayout(left_sidebar)
+        sidebar_layout.setContentsMargins(0, 0, 0, 0)
+        sidebar_layout.setSpacing(0)
 
-        # Add tabs
-        self.tab_widget.addTab(self.analysis_widget, "📊 Analysis")
-        self.tab_widget.addTab(self.create_dashboard_widget(), "🏠 Dashboard")
-        self.tab_widget.addTab(self.gameplan_widget, "🎯 Gameplan")
-        self.tab_widget.addTab(self.create_learn_widget(), "📚 Learn")
+        # Logo/Title area
+        logo_widget = QWidget()
+        logo_widget.setFixedHeight(80)
+        logo_widget.setStyleSheet("background-color: #0b0c0f; border-bottom: 1px solid #1a1a1a;")
+        
+        logo_layout = QHBoxLayout(logo_widget)
+        logo_layout.setContentsMargins(20, 0, 20, 0)
+        
+        logo_label = QLabel("🏈 SpygateAI")
+        logo_label.setStyleSheet(
+            """
+            color: #ffffff;
+            font-family: 'Minork Sans', Arial, sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+        """
+        )
+        logo_layout.addWidget(logo_label)
+        sidebar_layout.addWidget(logo_widget)
 
-        main_layout.addWidget(self.tab_widget)
+        # Navigation area
+        nav_widget = QWidget()
+        nav_layout = QVBoxLayout(nav_widget)
+        nav_layout.setContentsMargins(0, 20, 0, 0)
+        nav_layout.setSpacing(2)
+
+        # Navigation items
+        nav_items = [
+            ("📊", "Analysis"),
+            ("🏠", "Dashboard"), 
+            ("🎯", "Gameplan"),
+            ("📚", "Learn")
+        ]
+
+        # Store nav buttons for selection management
+        self.nav_buttons = []
+        
+        for i, (icon, text) in enumerate(nav_items):
+            nav_button = self.create_nav_button(icon, text, i)
+            nav_layout.addWidget(nav_button)
+            self.nav_buttons.append(nav_button)
+
+        # Set Analysis as default selected
+        self.nav_buttons[0].setChecked(True)
+
+        nav_layout.addStretch()
+        sidebar_layout.addWidget(nav_widget)
+
+        parent_layout.addWidget(left_sidebar)
+
+    def create_nav_button(self, icon, text, index):
+        """Create a navigation button with FaceIt styling."""
+        button = QPushButton(f"{icon}  {text}")
+        button.setFixedHeight(45)
+        button.setCheckable(True)
+        button.setStyleSheet(
+            f"""
+            QPushButton {{
+                background-color: transparent;
+                color: #767676;
+                font-size: 16px;
+                font-weight: bold;
+                font-family: 'Minork Sans', Arial, sans-serif;
+                text-align: left;
+                padding-left: 20px;
+                border: none;
+                border-radius: 0px;
+            }}
+            QPushButton:hover {{
+                background-color: #1a1a1a;
+                color: #1ce783;
+            }}
+            QPushButton:pressed {{
+                background-color: #1ce783;
+                color: #0b0c0f;
+            }}
+            QPushButton:checked {{
+                background-color: #1a1a1a;
+                color: #ffffff;
+            }}
+        """
+        )
+        
+        # Connect button click to handle selection and content switching
+        button.clicked.connect(lambda: self.handle_nav_selection(button, index))
+        return button
+
+    def handle_nav_selection(self, selected_button, index):
+        """Handle navigation tab selection - only one tab selected at a time."""
+        for button in self.nav_buttons:
+            button.setChecked(False)
+        selected_button.setChecked(True)
+        
+        # Switch content
+        self.content_stack.setCurrentIndex(index)
 
     def create_analysis_widget(self):
         """Create the analysis tab widget."""

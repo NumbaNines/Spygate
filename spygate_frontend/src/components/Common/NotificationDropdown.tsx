@@ -6,9 +6,9 @@ interface NotificationDropdownProps {
   unreadCount: number;
 }
 
-const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ 
-  notifications, 
-  unreadCount 
+const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
+  notifications,
+  unreadCount
 }) => {
   return (
     <div className="relative">
@@ -24,4 +24,4 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   );
 };
 
-export default NotificationDropdown; 
+export default NotificationDropdown;

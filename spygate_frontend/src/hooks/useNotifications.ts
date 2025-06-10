@@ -29,7 +29,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     if (isAuthenticated) {
       refreshNotifications();
-      
+
       // Set up polling for new notifications every 30 seconds
       const interval = setInterval(refreshNotifications, 30000);
       return () => clearInterval(interval);
@@ -38,7 +38,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const refreshNotifications = async () => {
     if (!isAuthenticated) return;
-    
+
     try {
       setLoading(true);
       const response = await apiClient.getNotifications();
@@ -53,9 +53,9 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   const markAsRead = async (id: number) => {
     try {
       await apiClient.markNotificationRead(id);
-      setNotifications(prev => 
-        prev.map(notification => 
-          notification.id === id 
+      setNotifications(prev =>
+        prev.map(notification =>
+          notification.id === id
             ? { ...notification, is_read: true }
             : notification
         )
@@ -68,7 +68,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   const markAllAsRead = async () => {
     try {
       await apiClient.markAllNotificationsRead();
-      setNotifications(prev => 
+      setNotifications(prev =>
         prev.map(notification => ({ ...notification, is_read: true }))
       );
     } catch (error) {
@@ -98,4 +98,4 @@ export const useNotifications = (): NotificationsContextType => {
     throw new Error('useNotifications must be used within a NotificationsProvider');
   }
   return context;
-}; 
+};

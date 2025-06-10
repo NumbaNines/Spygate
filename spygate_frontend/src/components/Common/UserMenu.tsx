@@ -14,7 +14,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onLogout }) => {
       <div className="text-sm text-dark-text">
         {user.first_name || user.username}
       </div>
-      <button 
+      <button
         onClick={onLogout}
         className="text-xs text-dark-text-muted hover:text-dark-text"
       >
@@ -24,4 +24,4 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onLogout }) => {
   );
 };
 
-export default UserMenu; 
+export default UserMenu;

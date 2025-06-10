@@ -16,7 +16,7 @@ module.exports = {
           'orange-dark': '#e55a2b',
           'orange-light': '#ff8b55',
         },
-        
+
         // Dark theme backgrounds (FACEIT-inspired)
         dark: {
           bg: '#0f0f0f',
@@ -27,7 +27,7 @@ module.exports = {
           'text-secondary': '#cccccc',
           'text-muted': '#888888',
         },
-        
+
         // Status colors for performance tiers
         tier: {
           clutch: '#10b981',    // Green for clutch plays
@@ -37,21 +37,21 @@ module.exports = {
           poor: '#ef4444',      // Red for poor plays
           turnover: '#dc2626',  // Dark red for turnovers
         },
-        
+
         // Game-specific colors
         game: {
           madden: '#1e40af',
           cfb: '#dc2626',
           universal: '#6366f1',
         },
-        
+
         // Status indicators
         success: '#10b981',
         warning: '#f59e0b',
         error: '#ef4444',
         info: '#3b82f6',
       },
-      
+
       // Typography scale
       fontSize: {
         'xs': ['0.75rem', { lineHeight: '1rem' }],
@@ -63,34 +63,34 @@ module.exports = {
         '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
         '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
       },
-      
+
       // Spacing for consistent layout
       spacing: {
         '18': '4.5rem',
         '88': '22rem',
         '120': '30rem',
       },
-      
+
       // Border radius for modern design
       borderRadius: {
         'xl': '0.75rem',
         '2xl': '1rem',
         '3xl': '1.5rem',
       },
-      
+
       // Box shadows for depth
       boxShadow: {
         'spygate': '0 4px 6px -1px rgba(255, 107, 53, 0.1), 0 2px 4px -1px rgba(255, 107, 53, 0.06)',
         'dark': '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
       },
-      
+
       // Animation for smooth interactions
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
-      
+
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0' },
@@ -101,7 +101,7 @@ module.exports = {
           '100%': { transform: 'translateY(0)', opacity: '1' },
         },
       },
-      
+
       // Backdrop blur for modals
       backdropBlur: {
         'xs': '2px',
@@ -113,4 +113,4 @@ module.exports = {
     require('@tailwindcss/typography'),
   ],
   darkMode: 'class',
-}; 
+};

@@ -6,13 +6,13 @@ interface GameVersionSelectorProps {
   onGameChange: (game: GameVersion) => void;
 }
 
-const GameVersionSelector: React.FC<GameVersionSelectorProps> = ({ 
-  selectedGame, 
-  onGameChange 
+const GameVersionSelector: React.FC<GameVersionSelectorProps> = ({
+  selectedGame,
+  onGameChange
 }) => {
   return (
-    <select 
-      value={selectedGame} 
+    <select
+      value={selectedGame}
       onChange={(e) => onGameChange(e.target.value as GameVersion)}
       className="bg-dark-elevated text-dark-text border border-dark-border rounded px-3 py-1"
     >
@@ -23,4 +23,4 @@ const GameVersionSelector: React.FC<GameVersionSelectorProps> = ({
   );
 };
 
-export default GameVersionSelector; 
+export default GameVersionSelector;

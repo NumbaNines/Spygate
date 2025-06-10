@@ -17,7 +17,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <Component {...pageProps} />
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 4000,
@@ -30,4 +30,4 @@ export default function App({ Component, pageProps }: AppProps) {
       />
     </QueryClientProvider>
   );
-} 
+}

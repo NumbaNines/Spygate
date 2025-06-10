@@ -18,7 +18,7 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      
+
       <div className="min-h-screen bg-dark-bg flex items-center justify-center">
         <div className="text-center">
           <div className="h-16 w-16 bg-spygate-orange rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -30,4 +30,4 @@ export default function Home() {
       </div>
     </>
   );
-} 
+}

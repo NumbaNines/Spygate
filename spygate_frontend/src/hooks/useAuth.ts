@@ -55,10 +55,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const tokens = await apiClient.login(credentials);
       const userData = await apiClient.getCurrentUser();
-      
+
       setUser(userData);
       toast.success(`Welcome back, ${userData.first_name || userData.username}!`);
-      
+
       // Redirect to dashboard
       router.push('/dashboard');
       return true;
@@ -79,10 +79,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const tokens = await apiClient.register(data);
       const userData = await apiClient.getCurrentUser();
-      
+
       setUser(userData);
       toast.success(`Welcome to SpygateAI, ${userData.first_name || userData.username}!`);
-      
+
       // Redirect to onboarding or dashboard
       router.push('/onboarding');
       return true;
@@ -147,4 +147,4 @@ export const useAuth = (): AuthContextType => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}; 
+};

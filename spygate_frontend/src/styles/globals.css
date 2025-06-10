@@ -7,24 +7,24 @@
   html {
     @apply dark;
   }
-  
+
   body {
     @apply bg-dark-bg text-dark-text antialiased;
   }
-  
+
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     @apply w-2;
   }
-  
+
   ::-webkit-scrollbar-track {
     @apply bg-dark-surface;
   }
-  
+
   ::-webkit-scrollbar-thumb {
     @apply bg-dark-border rounded-full;
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-spygate-orange;
   }
@@ -35,39 +35,39 @@
   .btn-primary {
     @apply bg-spygate-orange hover:bg-spygate-orange-dark text-white px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-spygate-orange focus:ring-offset-2 focus:ring-offset-dark-bg;
   }
-  
+
   .btn-secondary {
     @apply bg-dark-elevated hover:bg-dark-border text-dark-text px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-dark-border focus:ring-offset-2 focus:ring-offset-dark-bg;
   }
-  
+
   .card {
     @apply bg-dark-surface border border-dark-border rounded-xl p-6 shadow-dark;
   }
-  
+
   .input {
     @apply bg-dark-elevated border border-dark-border text-dark-text placeholder-dark-text-muted px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-spygate-orange focus:border-transparent;
   }
-  
+
   .badge-tier-clutch {
     @apply bg-tier-clutch/20 text-tier-clutch px-2 py-1 rounded-full text-xs font-medium;
   }
-  
+
   .badge-tier-big {
     @apply bg-tier-big/20 text-tier-big px-2 py-1 rounded-full text-xs font-medium;
   }
-  
+
   .badge-tier-good {
     @apply bg-tier-good/20 text-tier-good px-2 py-1 rounded-full text-xs font-medium;
   }
-  
+
   .badge-tier-average {
     @apply bg-tier-average/20 text-tier-average px-2 py-1 rounded-full text-xs font-medium;
   }
-  
+
   .badge-tier-poor {
     @apply bg-tier-poor/20 text-tier-poor px-2 py-1 rounded-full text-xs font-medium;
   }
-  
+
   .badge-tier-turnover {
     @apply bg-tier-turnover/20 text-tier-turnover px-2 py-1 rounded-full text-xs font-medium;
   }
@@ -78,11 +78,11 @@
   .animate-spin-slow {
     animation: spin 3s linear infinite;
   }
-  
+
   .text-gradient {
     background: linear-gradient(135deg, #ff6b35, #ff8b55);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-} 
+}

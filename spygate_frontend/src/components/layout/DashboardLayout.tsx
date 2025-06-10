@@ -6,9 +6,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { 
-  HomeIcon, 
-  VideoCameraIcon, 
+import {
+  HomeIcon,
+  VideoCameraIcon,
   ChartBarIcon,
   UserGroupIcon,
   Cog6ToothIcon,
@@ -43,10 +43,10 @@ interface NavItem {
   description?: string;
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
-  children, 
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({
+  children,
   title = 'Dashboard',
-  subtitle 
+  subtitle
 }) => {
   const router = useRouter();
   const { user, logout } = useAuth();
@@ -123,7 +123,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
           <div className="fixed inset-y-0 left-0 w-64 bg-dark-surface border-r border-dark-border">
-            <SidebarContent 
+            <SidebarContent
               navigation={navigation}
               secondaryNavigation={secondaryNavigation}
               user={user}
@@ -138,7 +138,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:w-64">
         <div className="flex h-full flex-col bg-dark-surface border-r border-dark-border">
-          <SidebarContent 
+          <SidebarContent
             navigation={navigation}
             secondaryNavigation={secondaryNavigation}
             user={user}
@@ -178,7 +178,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               />
 
               {/* Notifications */}
-              <NotificationDropdown 
+              <NotificationDropdown
                 notifications={notifications}
                 unreadCount={unreadCount}
               />
@@ -259,8 +259,8 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
               <div className="flex items-center mt-1">
                 <span className={`
                   inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                  ${user.tier === 'professional' 
-                    ? 'bg-tier-clutch/20 text-tier-clutch' 
+                  ${user.tier === 'professional'
+                    ? 'bg-tier-clutch/20 text-tier-clutch'
                     : user.tier === 'premium'
                     ? 'bg-tier-big/20 text-tier-big'
                     : 'bg-tier-average/20 text-tier-average'
@@ -289,11 +289,11 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
               }
             `}
           >
-            <item.icon 
+            <item.icon
               className={`
                 mr-3 h-5 w-5 flex-shrink-0
                 ${item.current ? 'text-white' : 'text-dark-text-muted'}
-              `} 
+              `}
             />
             <span className="flex-1">{item.name}</span>
             {item.badge && item.badge > 0 && (
@@ -321,11 +321,11 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
               }
             `}
           >
-            <item.icon 
+            <item.icon
               className={`
                 mr-3 h-5 w-5 flex-shrink-0
                 ${item.current ? 'text-white' : 'text-dark-text-muted'}
-              `} 
+              `}
             />
             {item.name}
           </Link>
@@ -349,4 +349,4 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
   );
 };
 
-export default DashboardLayout; 
+export default DashboardLayout;

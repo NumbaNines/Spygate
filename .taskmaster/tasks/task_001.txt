@@ -95,4 +95,3 @@ Create new GitHub repository for documentation. Set up initial structure for API
 ### Description: Set up local development environment guidelines
 ### Details:
 Create guide for setting up local dev environment. Include steps for cloning, installing dependencies, and running the project locally.
-

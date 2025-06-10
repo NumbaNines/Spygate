@@ -559,7 +559,7 @@ QTimer.singleShot(0, lambda p=progress, m=message: self.analysis_progress.emit(p
 - Import related dependencies and utilities
 
 **2. Replace Simulation Method:**
-- Remove `_simulate_enhanced_situation_detection()` 
+- Remove `_simulate_enhanced_situation_detection()`
 - Create real situation analysis pipeline
 - Integrate with existing frame processing workflow
 
@@ -581,4 +581,3 @@ QTimer.singleShot(0, lambda p=progress, m=message: self.analysis_progress.emit(p
 - Real game clock detection ("2:30 4th QTR")
 - Genuine Red Zone, Two Minute Warning detection
 - Authentic football situation analysis
-

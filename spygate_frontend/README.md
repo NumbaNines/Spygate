@@ -46,7 +46,7 @@ This is the web collaboration hub component of SpygateAI, designed to complement
    ```bash
    cp .env.example .env.local
    ```
-   
+
    Configure the following variables:
    ```env
    NEXT_PUBLIC_API_BASE_URL=http://localhost:8000

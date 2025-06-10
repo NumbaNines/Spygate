@@ -529,46 +529,59 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         bottom_endzone.setPen(QPen(QColor("#29d28c"), 2))  # Green border
         self.field_scene.addItem(bottom_endzone)
 
-        # Yard lines (every 10 yards) - Now horizontal lines
-        for yard in range(0, 121, 10):
+        # Yard lines (every 5 yards per NFL specifications) - Horizontal lines
+        for yard in range(0, 121, 5):
             y = yard * 10
+            # Thicker lines for major yard markers (every 10 yards)
+            line_width = 3 if yard % 10 == 0 else 1
             yard_line = QGraphicsLineItem(0, y, field_width, y)
-            yard_line.setPen(QPen(QColor("#29d28c"), 2))  # Green yard lines
+            yard_line.setPen(QPen(QColor("#29d28c"), line_width))  # Green yard lines
             self.field_scene.addItem(yard_line)
 
-            # Yard numbers
+            # Yard numbers (only on 10-yard intervals)
             if 10 <= yard <= 110 and yard % 10 == 0:
-                yard_num = (
-                    min(yard // 10, 10, 110 // 10 - yard // 10 + 1) if yard > 50 else yard // 10
-                )
-                if yard != 50:  # Don't duplicate 50-yard line
-                    yard_text = QGraphicsTextItem(
-                        str(yard_num * 10) if yard <= 50 else str(110 - yard)
-                    )
+                # Calculate proper yard number display
+                if yard <= 50:
+                    display_num = yard
+                else:
+                    display_num = 110 - yard
+                
+                if yard != 50:  # Don't duplicate 50-yard line number
+                    yard_text = QGraphicsTextItem(str(display_num))
                     yard_text.setDefaultTextColor(QColor("#29d28c"))  # Green yard numbers
                     yard_text.setFont(QFont("Minork Sans", 12, QFont.Weight.Bold))
                     yard_text.setPos(field_width // 2 - 15, y - 20)
                     self.field_scene.addItem(yard_text)
 
-        # 50-yard line (special) - Now horizontal
+        # 50-yard line (special) - Horizontal line at midfield
         fifty_line = QGraphicsLineItem(0, 600, field_width, 600)
-        fifty_line.setPen(QPen(QColor("#29d28c"), 3))  # Green 50-yard line (more prominent)
+        fifty_line.setPen(QPen(QColor("#29d28c"), 4))  # Green 50-yard line (most prominent)
         self.field_scene.addItem(fifty_line)
+        
+        # Add "50" yard marker
+        fifty_text = QGraphicsTextItem("50")
+        fifty_text.setDefaultTextColor(QColor("#29d28c"))
+        fifty_text.setFont(QFont("Minork Sans", 14, QFont.Weight.Bold))
+        fifty_text.setPos(field_width // 2 - 20, 580)
+        self.field_scene.addItem(fifty_text)
 
-        # Hash marks - Now vertical, positioned left and right
-        hash_spacing = field_width // 4  # Automatically scales with field width
-        hash_length = int(20 * (field_width / 600))  # Scale hash mark length proportionally
-        for yard in range(1, 120):
+        # Hash marks - NFL specification: 20 yards from each sideline
+        # Field width represents 53.3 yards, hash marks at 20 yards from each side
+        left_hash_pos = int((20.0 / 53.3) * field_width)  # ~300px from left
+        right_hash_pos = int((33.3 / 53.3) * field_width)  # ~500px from left (20 yards from right)
+        hash_length = 6  # Short hash mark length
+        
+        # Hash marks on every 5-yard line (excluding goal lines and 50-yard line)
+        for yard in range(5, 116, 5):
             y = yard * 10
-            # Inner hash marks (vertical lines)
-            hash1 = QGraphicsLineItem(hash_spacing, y, hash_spacing + hash_length, y)
-            hash1.setPen(QPen(QColor("#29d28c"), 1))  # Green hash marks
+            # Left hash mark
+            hash1 = QGraphicsLineItem(left_hash_pos - hash_length//2, y, left_hash_pos + hash_length//2, y)
+            hash1.setPen(QPen(QColor("#29d28c"), 2))  # Green hash marks
             self.field_scene.addItem(hash1)
 
-            hash2 = QGraphicsLineItem(
-                field_width - hash_spacing - hash_length, y, field_width - hash_spacing, y
-            )
-            hash2.setPen(QPen(QColor("#29d28c"), 1))  # Green hash marks
+            # Right hash mark  
+            hash2 = QGraphicsLineItem(right_hash_pos - hash_length//2, y, right_hash_pos + hash_length//2, y)
+            hash2.setPen(QPen(QColor("#29d28c"), 2))  # Green hash marks
             self.field_scene.addItem(hash2)
 
     def add_player_icons(self):

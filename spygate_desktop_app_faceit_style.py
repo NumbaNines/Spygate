@@ -619,68 +619,23 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         right_hash_pos = int(29.75 * width_scale)  # 29.75 yards from left
         hash_length = 8  # 2-foot lines scaled
 
-        # Hash marks on every yard in field of play (every 5 yards visible)
+        # Hash marks on EVERY yard in field of play (players use these for positioning)
         for yard in range(11, 110):
             y = yard * yard_scale
 
-            # Only show hash marks on 5-yard intervals for clarity
-            if yard % 5 == 0:
-                # Left hash mark (2-foot long, 4-inch wide per NFL)
-                left_hash = QGraphicsLineItem(
-                    left_hash_pos - hash_length // 2, y, left_hash_pos + hash_length // 2, y
-                )
-                left_hash.setPen(QPen(QColor("#29d28c"), 2))
-                self.field_scene.addItem(left_hash)
-
-                # Right hash mark
-                right_hash = QGraphicsLineItem(
-                    right_hash_pos - hash_length // 2, y, right_hash_pos + hash_length // 2, y
-                )
-                right_hash.setPen(QPen(QColor("#29d28c"), 2))
-                self.field_scene.addItem(right_hash)
-
-        # CENTER FIELD HASH MARKS (Left and Right Hash)
-        # These are the crucial hash marks players align to
-        # Show every yard for precise positioning reference
-        center_left_hash = int(26.16 * width_scale)  # Left center hash
-        center_right_hash = int(27.17 * width_scale)  # Right center hash
-        center_hash_length = 12  # Longer for visibility
-
-        for yard in range(11, 110):
-            y = yard * yard_scale
-
-            # Left center hash mark (more prominent)
-            left_center_hash = QGraphicsLineItem(
-                center_left_hash - center_hash_length // 2,
-                y,
-                center_left_hash + center_hash_length // 2,
-                y,
+            # Left hash mark (2-foot long, 4-inch wide per NFL)
+            left_hash = QGraphicsLineItem(
+                left_hash_pos - hash_length // 2, y, left_hash_pos + hash_length // 2, y
             )
-            left_center_hash.setPen(QPen(QColor("#29d28c"), 3))  # Thicker line
-            self.field_scene.addItem(left_center_hash)
+            left_hash.setPen(QPen(QColor("#29d28c"), 2))
+            self.field_scene.addItem(left_hash)
 
-            # Right center hash mark (more prominent)
-            right_center_hash = QGraphicsLineItem(
-                center_right_hash - center_hash_length // 2,
-                y,
-                center_right_hash + center_hash_length // 2,
-                y,
+            # Right hash mark
+            right_hash = QGraphicsLineItem(
+                right_hash_pos - hash_length // 2, y, right_hash_pos + hash_length // 2, y
             )
-            right_center_hash.setPen(QPen(QColor("#29d28c"), 3))  # Thicker line
-            self.field_scene.addItem(right_center_hash)
-
-        # Hash mark labels at midfield for reference
-        left_hash_label = QGraphicsTextItem("L")
-        left_hash_label.setDefaultTextColor(QColor("#29d28c"))
-        left_hash_label.setFont(QFont("Minork Sans", 10, QFont.Weight.Bold))
-        left_hash_label.setPos(center_left_hash - 5, 590)
-        self.field_scene.addItem(left_hash_label)
-
-        right_hash_label = QGraphicsTextItem("R")
-        right_hash_label.setDefaultTextColor(QColor("#29d28c"))
-        right_hash_label.setFont(QFont("Minork Sans", 10, QFont.Weight.Bold))
-        right_hash_label.setPos(center_right_hash - 5, 590)
-        self.field_scene.addItem(right_hash_label)
+            right_hash.setPen(QPen(QColor("#29d28c"), 2))
+            self.field_scene.addItem(right_hash)
 
         # Conversion Spots (2-Point Conversion Lines)
         # 2-foot line at 3-yard line (updated NFL rule)

@@ -584,6 +584,53 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             hash2.setPen(QPen(QColor("#29d28c"), 2))  # Green hash marks
             self.field_scene.addItem(hash2)
 
+        # NFL Special Field Markings
+        
+        # 2-yard line conversion markers (3-foot lines parallel to goal line at center)
+        # Top end zone 2-yard line
+        conversion_line_top = QGraphicsLineItem(field_width // 2 - 18, 120, field_width // 2 + 18, 120)
+        conversion_line_top.setPen(QPen(QColor("#29d28c"), 2))
+        self.field_scene.addItem(conversion_line_top)
+        
+        # Bottom end zone 2-yard line
+        conversion_line_bottom = QGraphicsLineItem(field_width // 2 - 18, 1080, field_width // 2 + 18, 1080)
+        conversion_line_bottom.setPen(QPen(QColor("#29d28c"), 2))
+        self.field_scene.addItem(conversion_line_bottom)
+        
+        # 35-yard line kickoff spots (small X marks at center)
+        # Top 35-yard line (y = 350)
+        x_mark_top = QGraphicsTextItem("X")
+        x_mark_top.setDefaultTextColor(QColor("#29d28c"))
+        x_mark_top.setFont(QFont("Minork Sans", 10, QFont.Weight.Bold))
+        x_mark_top.setPos(field_width // 2 - 5, 340)
+        self.field_scene.addItem(x_mark_top)
+        
+        # Bottom 35-yard line (y = 850) 
+        x_mark_bottom = QGraphicsTextItem("X")
+        x_mark_bottom.setDefaultTextColor(QColor("#29d28c"))
+        x_mark_bottom.setFont(QFont("Minork Sans", 10, QFont.Weight.Bold))
+        x_mark_bottom.setPos(field_width // 2 - 5, 840)
+        self.field_scene.addItem(x_mark_bottom)
+        
+        # 50-yard line logo area (placeholder for team/league logos)
+        logo_area = QGraphicsEllipseItem(field_width // 2 - 40, 580, 80, 40)
+        logo_area.setBrush(QBrush(QColor("#29d28c", 30)))  # Semi-transparent green
+        logo_area.setPen(QPen(QColor("#29d28c"), 1, Qt.PenStyle.DashLine))
+        self.field_scene.addItem(logo_area)
+        
+        # Red zone indicators (20-yard lines)
+        # Top red zone (y = 200)
+        red_zone_top = QGraphicsRectItem(0, 195, field_width, 10)
+        red_zone_top.setBrush(QBrush(QColor(220, 20, 60, 40)))  # Semi-transparent red
+        red_zone_top.setPen(QPen(QColor(220, 20, 60), 1))
+        self.field_scene.addItem(red_zone_top)
+        
+        # Bottom red zone (y = 1000) 
+        red_zone_bottom = QGraphicsRectItem(0, 995, field_width, 10)
+        red_zone_bottom.setBrush(QBrush(QColor(220, 20, 60, 40)))  # Semi-transparent red
+        red_zone_bottom.setPen(QPen(QColor(220, 20, 60), 1))
+        self.field_scene.addItem(red_zone_bottom)
+
     def add_player_icons(self):
         """Add draggable player icons to the field"""
         self.offensive_players = {}

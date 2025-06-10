@@ -673,20 +673,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         bottom_kickoff.setPos(center_x - 6, 850 - 15)
         self.field_scene.addItem(bottom_kickoff)
 
-        # 50-Yard Line Logo Area (NFL specification)
-        logo_color = QColor("#29d28c")
-        logo_color.setAlpha(40)
-        logo_area = QGraphicsEllipseItem(center_x - 50, 580, 100, 40)
-        logo_area.setBrush(QBrush(logo_color))
-        logo_area.setPen(QPen(QColor("#29d28c"), 1, Qt.PenStyle.DashLine))
-        self.field_scene.addItem(logo_area)
-
-        # NFL logo placeholder
-        logo_text = QGraphicsTextItem("NFL")
-        logo_text.setDefaultTextColor(QColor("#29d28c"))
-        logo_text.setFont(QFont("Minork Sans", 10, QFont.Weight.Bold))
-        logo_text.setPos(center_x - 15, 590)
-        self.field_scene.addItem(logo_text)
+        # 50-Yard Line Logo Area - Removed per user request
 
         # Red Zone Indicators (20-yard lines per NFL spec)
         red_color = QColor(220, 20, 60)

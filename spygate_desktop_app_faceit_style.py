@@ -546,13 +546,13 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         bottom_endzone_back.setPen(QPen(QColor("#29d28c"), 4))
         self.field_scene.addItem(bottom_endzone_back)
 
-        # Goal Lines (4-inch wide per NFL spec) - White like in Madden
+        # Goal Lines (4-inch wide per NFL spec) - Green like field markings
         top_goal = QGraphicsLineItem(0, 100, field_width, 100)
-        top_goal.setPen(QPen(QColor("#ffffff"), 4))
+        top_goal.setPen(QPen(QColor("#29d28c"), 4))
         self.field_scene.addItem(top_goal)
 
         bottom_goal = QGraphicsLineItem(0, 1100, field_width, 1100)
-        bottom_goal.setPen(QPen(QColor("#ffffff"), 4))
+        bottom_goal.setPen(QPen(QColor("#29d28c"), 4))
         self.field_scene.addItem(bottom_goal)
 
         # Yard Lines (every 5 yards, 4-inch wide per NFL spec)

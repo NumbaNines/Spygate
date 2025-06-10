@@ -421,8 +421,8 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         self.field_view.setStyleSheet(
             """
             QGraphicsView {
-                background-color: #1a1a1a;
-                border: 2px solid #2a2a2a;
+                background-color: #151515;
+                border: 2px solid #29d28c;
                 border-radius: 8px;
             }
         """
@@ -452,34 +452,34 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         field_width = 600  # Width (53.3 yards)
         field_height = 1200  # Height (120 yards)
 
-        # Field background (green)
+        # Field background - Updated color scheme
         field_rect = QGraphicsRectItem(0, 0, field_width, field_height)
-        field_rect.setBrush(QBrush(QColor(34, 139, 34)))  # Forest green
-        field_rect.setPen(QPen(QColor(255, 255, 255), 2))
+        field_rect.setBrush(QBrush(QColor("#151515")))  # Dark background as requested
+        field_rect.setPen(QPen(QColor("#29d28c"), 2))  # Green border
         self.field_scene.addItem(field_rect)
 
-        # End zones (darker green) - Now top and bottom
+        # End zones (darker) - Now top and bottom
         end_zone_height = 100  # 10 yards
 
         # Top end zone
         top_endzone = QGraphicsRectItem(0, 0, field_width, end_zone_height)
-        top_endzone.setBrush(QBrush(QColor(25, 100, 25)))
-        top_endzone.setPen(QPen(QColor(255, 255, 255), 2))
+        top_endzone.setBrush(QBrush(QColor("#0f0f0f")))  # Even darker for end zones
+        top_endzone.setPen(QPen(QColor("#29d28c"), 2))  # Green border
         self.field_scene.addItem(top_endzone)
 
         # Bottom end zone
         bottom_endzone = QGraphicsRectItem(
             0, field_height - end_zone_height, field_width, end_zone_height
         )
-        bottom_endzone.setBrush(QBrush(QColor(25, 100, 25)))
-        bottom_endzone.setPen(QPen(QColor(255, 255, 255), 2))
+        bottom_endzone.setBrush(QBrush(QColor("#0f0f0f")))  # Even darker for end zones
+        bottom_endzone.setPen(QPen(QColor("#29d28c"), 2))  # Green border
         self.field_scene.addItem(bottom_endzone)
 
         # Yard lines (every 10 yards) - Now horizontal lines
         for yard in range(0, 121, 10):
             y = yard * 10
             yard_line = QGraphicsLineItem(0, y, field_width, y)
-            yard_line.setPen(QPen(QColor(255, 255, 255), 2))
+            yard_line.setPen(QPen(QColor("#29d28c"), 2))  # Green yard lines
             self.field_scene.addItem(yard_line)
 
             # Yard numbers
@@ -491,14 +491,14 @@ class SpygateDesktopFaceItStyle(QMainWindow):
                     yard_text = QGraphicsTextItem(
                         str(yard_num * 10) if yard <= 50 else str(110 - yard)
                     )
-                    yard_text.setDefaultTextColor(QColor(255, 255, 255))
+                    yard_text.setDefaultTextColor(QColor("#29d28c"))  # Green yard numbers
                     yard_text.setFont(QFont("Minork Sans", 12, QFont.Weight.Bold))
                     yard_text.setPos(field_width // 2 - 15, y - 20)
                     self.field_scene.addItem(yard_text)
 
         # 50-yard line (special) - Now horizontal
         fifty_line = QGraphicsLineItem(0, 600, field_width, 600)
-        fifty_line.setPen(QPen(QColor(255, 215, 0), 3))  # Gold
+        fifty_line.setPen(QPen(QColor("#29d28c"), 3))  # Green 50-yard line (more prominent)
         self.field_scene.addItem(fifty_line)
 
         # Hash marks - Now vertical, positioned left and right
@@ -507,13 +507,13 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             y = yard * 10
             # Inner hash marks (vertical lines)
             hash1 = QGraphicsLineItem(hash_spacing, y, hash_spacing + 20, y)
-            hash1.setPen(QPen(QColor(255, 255, 255), 1))
+            hash1.setPen(QPen(QColor("#29d28c"), 1))  # Green hash marks
             self.field_scene.addItem(hash1)
 
             hash2 = QGraphicsLineItem(
                 field_width - hash_spacing - 20, y, field_width - hash_spacing, y
             )
-            hash2.setPen(QPen(QColor(255, 255, 255), 1))
+            hash2.setPen(QPen(QColor("#29d28c"), 1))  # Green hash marks
             self.field_scene.addItem(hash2)
 
     def add_player_icons(self):
@@ -537,7 +537,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         ]
 
         for pos, x, y in offensive_positions:
-            player = self.create_player_icon(pos, x, y, QColor(70, 130, 180), True)  # Steel blue
+            player = self.create_player_icon(pos, x, y, QColor("#bfbfc1"), True)  # Light gray for offense indicators
             self.offensive_players[pos] = player
 
         # Defensive formation (11 players) - Red - Vertical field orientation - NOW DEFENDING UPFIELD
@@ -573,7 +573,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
 
         # Add position label (centered inside circle)
         label = QGraphicsTextItem(position)
-        label.setDefaultTextColor(QColor(255, 255, 255))
+        label.setDefaultTextColor(QColor("#29d28c"))  # Green text for position labels
         label.setFont(QFont("Minork Sans", 8, QFont.Weight.Bold))
 
         # Center the text within the 30x30 circle

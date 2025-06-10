@@ -572,19 +572,24 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         for yard in range(10, 50, 10):
             y = yard * yard_scale
 
-            # Left side numbers (upright orientation)
+            # Left side numbers - positioned so center of text aligns with yard line
             left_num = QGraphicsTextItem(str(yard))
             left_num.setDefaultTextColor(QColor("#ffffff"))
             left_num.setFont(QFont("Minork Sans", 18, QFont.Weight.Bold))
-            left_num.setPos(left_number_pos - 12, y - 30)
+            
+            # Calculate text bounds to center it properly on the yard line
+            text_rect = left_num.boundingRect()
+            left_num.setPos(left_number_pos - text_rect.width() / 2, y - text_rect.height() / 2)
             self.field_scene.addItem(left_num)
 
-            # Right side numbers (flipped 180 degrees like in Madden)
+            # Right side numbers - positioned so center of text aligns with yard line
             right_num = QGraphicsTextItem(str(yard))
             right_num.setDefaultTextColor(QColor("#ffffff"))
             right_num.setFont(QFont("Minork Sans", 18, QFont.Weight.Bold))
-            right_num.setRotation(180)  # Flip the number
-            right_num.setPos(right_number_pos + 12, y + 30)
+            
+            # Calculate text bounds to center it properly on the yard line
+            text_rect = right_num.boundingRect()
+            right_num.setPos(right_number_pos - text_rect.width() / 2, y - text_rect.height() / 2)
             self.field_scene.addItem(right_num)
 
         # Numbers 40-10 on second half (counting down from 50)
@@ -592,19 +597,24 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             y = yard * yard_scale
             display_num = 110 - yard  # 50, 40, 30, 20, 10
 
-            # Left side numbers (upright orientation)
+            # Left side numbers - positioned so center of text aligns with yard line
             left_num = QGraphicsTextItem(str(display_num))
             left_num.setDefaultTextColor(QColor("#ffffff"))
             left_num.setFont(QFont("Minork Sans", 18, QFont.Weight.Bold))
-            left_num.setPos(left_number_pos - 12, y - 30)
+            
+            # Calculate text bounds to center it properly on the yard line
+            text_rect = left_num.boundingRect()
+            left_num.setPos(left_number_pos - text_rect.width() / 2, y - text_rect.height() / 2)
             self.field_scene.addItem(left_num)
 
-            # Right side numbers (flipped 180 degrees like in Madden)
+            # Right side numbers - positioned so center of text aligns with yard line
             right_num = QGraphicsTextItem(str(display_num))
             right_num.setDefaultTextColor(QColor("#ffffff"))
             right_num.setFont(QFont("Minork Sans", 18, QFont.Weight.Bold))
-            right_num.setRotation(180)  # Flip the number
-            right_num.setPos(right_number_pos + 12, y + 30)
+            
+            # Calculate text bounds to center it properly on the yard line
+            text_rect = right_num.boundingRect()
+            right_num.setPos(right_number_pos - text_rect.width() / 2, y - text_rect.height() / 2)
             self.field_scene.addItem(right_num)
 
         # 50-Yard Line Number - Removed per user request

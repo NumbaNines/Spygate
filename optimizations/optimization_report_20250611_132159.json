@@ -1,0 +1,71 @@
+{
+  "timestamp": "2025-06-11T13:21:59.833855",
+  "system_info": {
+    "cpu_cores": 16,
+    "memory_gb": 31.218311309814453,
+    "memory_available_gb": 15.856502532958984,
+    "gpu_available": true,
+    "gpu_name": "NVIDIA GeForce RTX 4070 SUPER",
+    "gpu_memory_gb": 11.99365234375
+  },
+  "performance_analysis": {
+    "gpu_performance": {
+      "efficiency_percent": 48.45,
+      "memory_gb": 11.99365234375,
+      "optimal": false
+    },
+    "yolo_performance": {
+      "best_model": "yolov8s.pt",
+      "best_fps": 6.4,
+      "models_tested": [
+        "yolov8n.pt",
+        "yolov8s.pt",
+        "yolov8m.pt"
+      ]
+    },
+    "video_performance": {
+      "frame_fps": 88.7,
+      "real_time_capable": true
+    },
+    "optimization_opportunities": [
+      "GPU underperforming - check memory fragmentation",
+      "YOLO FPS too low for real-time - consider optimization"
+    ],
+    "recommended_settings": {
+      "yolo_model": "yolov8s.pt"
+    }
+  },
+  "optimization_config": {
+    "model_settings": {
+      "preferred_yolo_model": "yolov8s.pt",
+      "gpu_acceleration": true,
+      "mixed_precision": true,
+      "batch_size": 2
+    },
+    "memory_settings": {
+      "gpu_memory_fraction": 0.85,
+      "cpu_workers": 8,
+      "prefetch_factor": 2,
+      "pin_memory": true
+    },
+    "performance_settings": {
+      "target_fps": 30,
+      "max_resolution": "1920x1080",
+      "quality_preset": "balanced",
+      "enable_caching": true
+    },
+    "monitoring": {
+      "log_performance": true,
+      "alert_on_low_fps": true,
+      "fps_threshold": 15,
+      "memory_threshold": 0.9
+    }
+  },
+  "implementation_notes": [
+    "Use spygate_optimized.py for best performance",
+    "Recommended model: yolov8s.pt",
+    "Batch size optimized for 12.0GB GPU",
+    "Monitor GPU memory usage during operation",
+    "Consider model quantization for production deployment"
+  ]
+}

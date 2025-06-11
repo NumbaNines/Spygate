@@ -237,23 +237,87 @@ class TierOptimizer:
         }
 
     def get_current_params(self) -> dict[str, any]:
-        """Get current optimization parameters as a dictionary."""
+        """Get current optimization parameters."""
         return {
             "hardware_tier": self.hardware.tier.name,
+            "gpu_available": self.hardware.has_gpu(),
+            "memory_limit": self.profile.max_memory_usage,
+            "target_fps": self.profile.target_fps,
             "batch_size": self.profile.batch_size,
             "num_workers": self.profile.num_workers,
             "use_gpu": self.profile.use_gpu,
             "enable_caching": self.profile.enable_caching,
             "enable_parallel": self.profile.enable_parallel,
             "enable_advanced_features": self.profile.enable_advanced_features,
-            "max_memory_usage_mb": self.profile.max_memory_usage,
-            "target_fps": self.profile.target_fps,
-            "min_fps": self.profile.min_fps,
             "quality_scale": self.profile.quality_scale,
-            "prefetch_size": self.profile.prefetch_size,
-            "cleanup_interval": self.profile.cleanup_interval,
-            "max_prediction_age": self.profile.max_prediction_age,
         }
+
+    def get_model_config(self, model_type: str) -> dict[str, any]:
+        """Get model-specific configuration for YOLO or other models."""
+        # Use half precision for medium+ tiers
+        use_half_precision = self.hardware.tier in [HardwareTier.MEDIUM, HardwareTier.HIGH, HardwareTier.ULTRA]
+        
+        base_config = {
+            "device": "cuda" if self.should_use_gpu(model_type) else "cpu",
+            "batch_size": self.get_batch_size(model_type),
+            "half": use_half_precision,
+            "verbose": False,
+            "max_memory": self.profile.max_memory_usage,
+            "workers": self.get_worker_count(model_type),
+            "enable_preprocessing": True,
+            "enable_postprocessing": True,
+        }
+        
+        # Model-specific configurations
+        if model_type.lower() in ["yolov8", "yolo"]:
+            yolo_config = {
+                "imgsz": 640,  # Standard YOLO input size
+                "conf": 0.25,  # Confidence threshold
+                "iou": 0.45,   # IoU threshold
+                "agnostic_nms": False,
+                "max_det": 1000,
+                "retina_masks": True,
+                "save": False,
+                "save_txt": False,
+                "save_conf": False,
+                "save_crop": False,
+                "show": False,
+                "show_labels": True,
+                "show_conf": True,
+                "vid_stride": 1,
+                "stream_buffer": False,
+                "line_width": None,
+            }
+            
+            # Adjust based on hardware tier
+            if self.hardware.tier == HardwareTier.ULTRA:
+                yolo_config.update({
+                    "imgsz": 640,
+                    "conf": 0.25,
+                    "max_det": 1000,
+                })
+            elif self.hardware.tier == HardwareTier.HIGH:
+                yolo_config.update({
+                    "imgsz": 640,
+                    "conf": 0.3,
+                    "max_det": 500,
+                })
+            elif self.hardware.tier == HardwareTier.MEDIUM:
+                yolo_config.update({
+                    "imgsz": 480,
+                    "conf": 0.35,
+                    "max_det": 300,
+                })
+            else:  # LOW
+                yolo_config.update({
+                    "imgsz": 320,
+                    "conf": 0.4,
+                    "max_det": 100,
+                })
+            
+            base_config.update(yolo_config)
+        
+        return base_config
 
     def update_profile(self, hardware: Optional[HardwareDetector] = None):
         """Update optimization profile with new hardware info."""

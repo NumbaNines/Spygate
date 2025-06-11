@@ -1,0 +1,27 @@
+# COMPREHENSIVE HUD ELEMENT ANALYSIS
+
+# DETECTION SUMMARY
+# Total detections found: 6
+# Accepted after filtering: 3
+
+# ALL DETECTIONS (with low confidence threshold)
+# possession_triangle_area: confidence=0.884, bbox=[179, 677, 715, 717]
+# hud: confidence=0.561, bbox=[80, 677, 1037, 717]
+# territory_triangle_area: confidence=0.246, bbox=[1052, 677, 1102, 717]
+# hud: confidence=0.170, bbox=[455, 678, 1239, 716]
+# territory_triangle_area: confidence=0.157, bbox=[1052, 677, 1173, 717]
+# territory_triangle_area: confidence=0.067, bbox=[1051, 677, 1280, 717]
+
+# ACCEPTED DETECTIONS - READY TO USE
+# POSSESSION_TRIANGLE_AREA (confidence: 0.884)
+possession_triangle_area_coordinates = [0.140, 0.559, 0.940, 0.996]  # x_start, x_end, y_start, y_end
+
+# TERRITORY_TRIANGLE_AREA (confidence: 0.246)
+territory_triangle_area_coordinates = [0.822, 0.861, 0.940, 0.996]  # x_start, x_end, y_start, y_end
+
+# HUD (confidence: 0.561)
+hud_coordinates = [0.062, 0.810, 0.940, 0.996]  # x_start, x_end, y_start, y_end
+
+# EXISTING DOWN/DISTANCE (for reference)
+down_distance_coordinates = [0.750, 0.900, 0.200, 0.800]  # x_start, x_end, y_start, y_end
+

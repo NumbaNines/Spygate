@@ -1,0 +1,95 @@
+{
+  "version": "5.2.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "hud",
+      "points": [
+        [
+          1252.3870849609375,
+          75.57675170898438
+        ],
+        [
+          1920.0,
+          136.7397003173828
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {},
+      "description": "AI suggested (conf: 0.40)"
+    },
+    {
+      "label": "hud",
+      "points": [
+        [
+          51.721282958984375,
+          649.8370971679688
+        ],
+        [
+          938.94970703125,
+          681.7528076171875
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {},
+      "description": "AI suggested (conf: 0.37)"
+    },
+    {
+      "label": "hud",
+      "points": [
+        [
+          1200.4078369140625,
+          92.03767395019531
+        ],
+        [
+          1920.0,
+          137.31500244140625
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {},
+      "description": "AI suggested (conf: 0.30)"
+    },
+    {
+      "label": "possession_indicator",
+      "points": [
+        [
+          1394.8251342773438,
+          81.69304656982422
+        ],
+        [
+          1443.7554931640625,
+          130.62340545654297
+        ]
+      ],
+      "group_id": null,
+      "description": "TEMPLATE - Left side triangle (possession)",
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "territory_indicator",
+      "points": [
+        [
+          1828.7735290527344,
+          81.69304656982422
+        ],
+        [
+          1877.7038879394531,
+          130.62340545654297
+        ]
+      ],
+      "group_id": null,
+      "description": "TEMPLATE - Right side triangle (territory)",
+      "shape_type": "rectangle",
+      "flags": {}
+    }
+  ],
+  "imagePath": "monitor3_screenshot_20250608_021507_58.png",
+  "imageData": null,
+  "imageHeight": 1080,
+  "imageWidth": 1920
+}

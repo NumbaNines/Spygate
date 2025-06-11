@@ -1,0 +1,22 @@
+SpygateAI Desktop - End User License Agreement
+
+Copyright (c) 2024 SpygateAI. All rights reserved.
+
+This software is licensed, not sold. By installing and using SpygateAI Desktop, you agree to the following terms:
+
+1. LICENSE GRANT
+   Subject to the terms of this agreement, SpygateAI grants you a non-exclusive license to use SpygateAI Desktop.
+
+2. RESTRICTIONS
+   You may not distribute, modify, reverse engineer, or create derivative works of this software.
+
+3. PRIVACY
+   SpygateAI respects your privacy. User data is stored locally on your device.
+
+4. SUPPORT
+   Technical support is available at support@spygateai.com
+
+5. WARRANTIES
+   This software is provided "as is" without warranty of any kind.
+
+By installing this software, you acknowledge that you have read and agree to these terms.

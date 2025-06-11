@@ -53,18 +53,10 @@ logger = logging.getLogger(__name__)
 # UI Classes for HUD detection - Essential elements for game situation analysis
 UI_CLASSES = [
     "hud",  # Main HUD bar (dark/black bar at bottom containing all game info)
-    "score_bug",  # Overall score display area within HUD (contains team info, scores, timeouts)
-    "away_team",  # Away team abbreviation and score (leftmost team on screen)
-    "home_team",  # Home team abbreviation and score (rightmost team abbreviation on screen)
-    "down_distance",  # Down and distance indicator (e.g., "1st & 10", "4th")
-    "game_clock",  # Game time remaining (e.g., "1:57")
-    "play_clock",  # Play clock countdown (e.g., ":04") - visible PRE-SNAP only
-    "yards_to_goal",  # Numeric yard line display in HUD next to territory indicator (e.g., "25", "3", "1")
-    "qb_position",  # QB/ball position indicating hash mark placement (left hash, right hash, center)
-    "left_hash_mark",  # Left hash mark line on field for positional analysis
-    "right_hash_mark",  # Right hash mark line on field for positional analysis
-    "possession_indicator",  # Triangle on LEFT side between team abbreviations (shows ball possession)
-    "territory_indicator",  # Triangle on FAR RIGHT side (▲ = opponent territory, ▼ = own territory)
+    "possession_triangle_area",  # Left triangle area between team abbreviations (shows ball possession)
+    "territory_triangle_area",  # Right triangle area next to yard line (▲ = opponent territory, ▼ = own territory)
+    "preplay_indicator",  # Bottom left indicator shown only pre-play (indicates play about to start)
+    "play_call_screen",  # Play call screen overlay (indicates play has ended)
 ]
 
 # Enhanced hardware-tier specific model configurations with optimization features

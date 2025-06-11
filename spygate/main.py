@@ -127,9 +127,9 @@ def check_imports():
                 )
                 layout.addWidget(header)
 
-                # Status with YOLOv8 info
+                # Status with SpygateAI HUD Detection info
                 yolo_status = (
-                    "✅ YOLOv8 Analysis Ready"
+                    "✅ SpygateAI HUD Detection Ready (5-class model)"
                     if AVAILABLE_MODULES.get("yolov8")
                     else "❌ YOLOv8 Unavailable"
                 )
@@ -147,7 +147,7 @@ def check_imports():
                 {'✅' if AVAILABLE_MODULES.get('database') else '❌'} Database Module<br>
                 {'✅' if AVAILABLE_MODULES.get('main_window') else '❌'} Full Main Window<br>
                 {'✅' if AVAILABLE_MODULES.get('services') else '❌'} Analysis Services<br>
-                {'✅' if AVAILABLE_MODULES.get('yolov8') else '❌'} YOLOv8 AI Analysis<br>
+                {'✅' if AVAILABLE_MODULES.get('yolov8') else '❌'} SpygateAI HUD Detection (5-class)<br>
                 """
 
                 status_label = QLabel(status_text)
@@ -162,11 +162,11 @@ def check_imports():
                 buttons_layout.addWidget(test_btn)
 
                 if AVAILABLE_MODULES.get("yolov8"):
-                    yolo_btn = QPushButton("🤖 Test YOLOv8 Analysis")
+                    yolo_btn = QPushButton("🤖 Test SpygateAI HUD Detection")
                     yolo_btn.clicked.connect(self._test_yolo)
                     buttons_layout.addWidget(yolo_btn)
 
-                    analyze_btn = QPushButton("📹 Analyze Video/Image")
+                    analyze_btn = QPushButton("📹 Analyze Video/Image for HUD Elements")
                     analyze_btn.clicked.connect(self._analyze_file)
                     buttons_layout.addWidget(analyze_btn)
 
@@ -191,9 +191,9 @@ def check_imports():
 Working Directory: {Path.cwd()}
 Available Modules: {AVAILABLE_MODULES}
 PyQt6: ✅ Available
-YOLOv8: {'✅ Ready for Analysis' if AVAILABLE_MODULES.get('yolov8') else '❌ Not Available'}
+SpygateAI HUD Detection: {'✅ Ready for Analysis' if AVAILABLE_MODULES.get('yolov8') else '❌ Not Available'}
 
-{f'🤖 AI ANALYSIS READY: YOLOv8 loaded and ready for football analysis!' if AVAILABLE_MODULES.get('yolov8') else 'Install YOLOv8 dependencies for AI analysis capabilities.'}
+{f'🤖 HUD DETECTION READY: SpygateAI 5-class model loaded and ready for HUD analysis!' if AVAILABLE_MODULES.get('yolov8') else 'Install YOLOv8 dependencies for HUD analysis capabilities.'}
                 """.strip()
 
             def _test_functionality(self):
@@ -213,7 +213,7 @@ YOLOv8: {'✅ Ready for Analysis' if AVAILABLE_MODULES.get('yolov8') else '❌ N
                     return
 
                 try:
-                    self._log("🤖 Testing YOLOv8 integration...")
+                    self._log("🤖 Testing SpygateAI HUD Detection...")
                     self.progress_bar.setVisible(True)
                     self.progress_bar.setValue(20)
 
@@ -221,33 +221,50 @@ YOLOv8: {'✅ Ready for Analysis' if AVAILABLE_MODULES.get('yolov8') else '❌ N
                     from ultralytics import YOLO
 
                     self.progress_bar.setValue(40)
-                    model = YOLO("yolov8n.pt")
+                    # Use SpygateAI's custom 5-class HUD detection model
+                    model_path = "../hud_region_training/runs/hud_regions_fresh_1749629437/weights/best.pt"
+                    model = YOLO(model_path)
                     self.progress_bar.setValue(60)
+                    
+                    # Define the 5 custom classes
+                    class_names = {
+                        0: "hud",
+                        1: "possession_triangle_area", 
+                        2: "territory_triangle_area",
+                        3: "preplay_indicator",
+                        4: "play_call_screen"
+                    }
 
                     # Test with demo image if available
                     demo_path = Path("demo_frame.jpg")
                     if demo_path.exists():
                         results = model(str(demo_path))
                         self.progress_bar.setValue(80)
-                        self._log(f"✅ YOLOv8 test successful! Processed {demo_path.name}")
-                        self._log(
-                            f"   Detected {len(results[0].boxes) if results[0].boxes is not None else 0} objects"
-                        )
+                        self._log(f"✅ SpygateAI HUD Detection successful! Processed {demo_path.name}")
+                        if results[0].boxes is not None:
+                            self._log(f"   Detected {len(results[0].boxes)} HUD elements")
+                            for i, box in enumerate(results[0].boxes):
+                                cls_id = int(box.cls[0].item())
+                                conf = box.conf[0].item()
+                                cls_name = class_names.get(cls_id, f"class_{cls_id}")
+                                self._log(f"     {cls_name}: {conf:.3f}")
+                        else:
+                            self._log("   No HUD elements detected")
                     else:
-                        self._log("✅ YOLOv8 model loaded successfully!")
+                        self._log("✅ SpygateAI HUD Detection model loaded successfully!")
 
                     self.progress_bar.setValue(100)
                     self._log(f"   PyTorch: {torch.__version__}")
                     self._log(f"   CUDA Available: {torch.cuda.is_available()}")
 
                 except Exception as e:
-                    self._log(f"❌ YOLOv8 test failed: {e}")
+                    self._log(f"❌ SpygateAI HUD Detection test failed: {e}")
                 finally:
                     self.progress_bar.setVisible(False)
 
             def _analyze_file(self):
                 if not AVAILABLE_MODULES.get("yolov8"):
-                    self._log("❌ YOLOv8 not available for analysis")
+                    self._log("❌ SpygateAI HUD Detection not available for analysis")
                     return
 
                 file_path, _ = QFileDialog.getOpenFileName(
@@ -265,8 +282,19 @@ YOLOv8: {'✅ Ready for Analysis' if AVAILABLE_MODULES.get('yolov8') else '❌ N
 
                         from ultralytics import YOLO
 
-                        model = YOLO("yolov8n.pt")
+                        # Use SpygateAI's custom 5-class HUD detection model
+                        model_path = "../hud_region_training/runs/hud_regions_fresh_1749629437/weights/best.pt"
+                        model = YOLO(model_path)
                         self.progress_bar.setValue(30)
+                        
+                        # Define the 5 custom classes
+                        class_names = {
+                            0: "hud",
+                            1: "possession_triangle_area", 
+                            2: "territory_triangle_area",
+                            3: "preplay_indicator",
+                            4: "play_call_screen"
+                        }
 
                         results = model(file_path)
                         self.progress_bar.setValue(70)
@@ -274,16 +302,15 @@ YOLOv8: {'✅ Ready for Analysis' if AVAILABLE_MODULES.get('yolov8') else '❌ N
                         if results and len(results) > 0:
                             boxes = results[0].boxes
                             if boxes is not None:
-                                self._log(f"✅ Analysis complete! Found {len(boxes)} objects")
+                                self._log(f"✅ HUD Analysis complete! Found {len(boxes)} HUD elements")
                                 for i, box in enumerate(boxes):
                                     conf = box.conf[0].item()
-                                    cls = int(box.cls[0].item())
-                                    cls_name = model.names[cls]
-                                    self._log(
-                                        f"   Object {i+1}: {cls_name} (confidence: {conf:.2f})"
-                                    )
+                                    cls_id = int(box.cls[0].item())
+                                    cls_name = class_names.get(cls_id, f"class_{cls_id}")
+                                    coords = box.xyxy[0].tolist()
+                                    self._log(f"   {cls_name}: {conf:.3f} at [{coords[0]:.0f},{coords[1]:.0f},{coords[2]:.0f},{coords[3]:.0f}]")
                             else:
-                                self._log("✅ Analysis complete! No objects detected")
+                                self._log("✅ Analysis complete! No HUD elements detected")
 
                         self.progress_bar.setValue(100)
 

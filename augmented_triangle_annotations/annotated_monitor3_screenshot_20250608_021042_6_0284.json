@@ -1,0 +1,68 @@
+{
+  "version": "5.2.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "hud",
+      "points": [
+        [
+          2.917647058823711,
+          1012.9004901960784
+        ],
+        [
+          1909.5253711201108,
+          1078.8
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "possession_indicator",
+      "points": [
+        [
+          667.5,
+          1035.4
+        ],
+        [
+          668.8,
+          1053.3
+        ],
+        [
+          689.0,
+          1044.5
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "polygon",
+      "flags": {}
+    },
+    {
+      "label": "territory_indicator",
+      "points": [
+        [
+          1585.9,
+          1050.5
+        ],
+        [
+          1599.5,
+          1050.2
+        ],
+        [
+          1592.1,
+          1036.8
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "polygon",
+      "flags": {}
+    }
+  ],
+  "imagePath": "annotated_monitor3_screenshot_20250608_021042_6_0284.jpg",
+  "imageHeight": 1080,
+  "imageWidth": 1920
+}

@@ -1,0 +1,78 @@
+{
+  "version": "5.2.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "hud",
+      "points": [
+        [
+          1366.873779296875,
+          14.905707359313965
+        ],
+        [
+          1920.0,
+          59.50491714477539
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {},
+      "description": "AI suggested (conf: 0.45)"
+    },
+    {
+      "label": "hud",
+      "points": [
+        [
+          1248.6640625,
+          13.91157341003418
+        ],
+        [
+          1920.0,
+          55.97365188598633
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {},
+      "description": "AI suggested (conf: 0.35)"
+    },
+    {
+      "label": "possession_indicator",
+      "points": [
+        [
+          1487.3156505584716,
+          19.365628337860105
+        ],
+        [
+          1522.995018386841,
+          55.044996166229254
+        ]
+      ],
+      "group_id": null,
+      "description": "TEMPLATE - Left side triangle (possession)",
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "territory_indicator",
+      "points": [
+        [
+          1846.8476940155028,
+          19.365628337860105
+        ],
+        [
+          1882.5270618438722,
+          55.044996166229254
+        ]
+      ],
+      "group_id": null,
+      "description": "TEMPLATE - Right side triangle (territory)",
+      "shape_type": "rectangle",
+      "flags": {}
+    }
+  ],
+  "imagePath": "monitor3_screenshot_20250608_030254_85.png",
+  "imageData": null,
+  "imageHeight": 1080,
+  "imageWidth": 1920
+}

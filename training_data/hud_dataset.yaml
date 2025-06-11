@@ -1,0 +1,18 @@
+names:
+- hud
+- qb_position
+- left_hash_mark
+- right_hash_mark
+- preplay
+- playcall
+- possession_indicator
+- territory_indicator
+- score_bug
+- down_distance
+- game_clock
+- play_clock
+- yards_to_goal
+nc: 13
+path: C:\Users\Nines\Spygate\training_data
+train: train/images
+val: val/images

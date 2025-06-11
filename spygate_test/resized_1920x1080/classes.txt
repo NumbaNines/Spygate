@@ -1,7 +1,0 @@
-hud
-gamertag
-preplay
-playcall
-d
-no huddle
-audible

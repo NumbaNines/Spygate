@@ -1,0 +1,61 @@
+{
+  "version": "5.2.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "hud",
+      "points": [
+        [
+          1218.98291015625,
+          316.8812255859375
+        ],
+        [
+          1920.0,
+          351.1780090332031
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {},
+      "description": "AI suggested (conf: 0.50)"
+    },
+    {
+      "label": "possession_indicator",
+      "points": [
+        [
+          1380.5184692382813,
+          320.31090393066404
+        ],
+        [
+          1407.9558959960937,
+          347.7483306884766
+        ]
+      ],
+      "group_id": null,
+      "description": "TEMPLATE - Left side triangle (possession)",
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "territory_indicator",
+      "points": [
+        [
+          1836.179577636719,
+          320.31090393066404
+        ],
+        [
+          1863.6170043945312,
+          347.7483306884766
+        ]
+      ],
+      "group_id": null,
+      "description": "TEMPLATE - Right side triangle (territory)",
+      "shape_type": "rectangle",
+      "flags": {}
+    }
+  ],
+  "imagePath": "monitor3_screenshot_20250608_021042_6_copy_0088.png",
+  "imageData": null,
+  "imageHeight": 1080,
+  "imageWidth": 1920
+}

@@ -12,8 +12,8 @@ from ultralytics import YOLO
 def create_dataset_config():
     """Create YOLO dataset configuration file."""
     config = {
-        "names": ["hud", "qb_position", "left_hash_mark", "right_hash_mark"],
-        "nc": 4,
+        "names": ["hud", "qb_position", "left_hash_mark", "right_hash_mark", "preplay", "playcall"],
+        "nc": 6,
         "path": str(Path("training_data").absolute()),
         "train": "images",
         "val": "images",

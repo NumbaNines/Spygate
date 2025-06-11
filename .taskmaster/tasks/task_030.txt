@@ -1,0 +1,78 @@
+# Task ID: 30
+# Title: Project Space Optimization - Clean Up Unused Model Files
+# Status: pending
+# Dependencies: 28, 29
+# Priority: medium
+# Description: Clean up unused model files and training runs to optimize project storage space, removing old triangle training directories while preserving production HUD model, essential base models, and all training datasets.
+# Details:
+1. Identify and document current storage usage:
+   - Run disk usage analysis on the project directory using `du -h --max-depth=2`
+   - Document current storage footprint before cleanup
+   - Create a spreadsheet to track storage before/after for reporting
+
+2. Identify unused model files for removal:
+   - Focus on triangle training directories (approximately 1.72GB)
+   - Review model version history and identify obsolete iterations
+   - Confirm with team which models are no longer needed for production or reference
+   - Create a list of directories and files to be removed
+
+3. Preserve essential models and datasets:
+   - Ensure the production HUD model remains untouched
+   - Identify and mark essential base models for preservation
+   - Verify all training datasets are preserved regardless of usage status
+   - Document the preservation strategy with clear reasoning
+
+4. Implement backup strategy before deletion:
+   - Create a compressed archive of files to be deleted
+   - Store the archive on an external backup system
+   - Document the backup location and restoration procedure
+   - Ensure the backup is verified before proceeding with deletion
+
+5. Clean up triangle training directories:
+   - Remove identified directories using appropriate commands
+   - Document each removal with size information
+   - Track cumulative space savings
+   - Verify removal doesn't impact any production systems
+
+6. Update model loading paths:
+   - Check for any hardcoded paths in the codebase that might reference removed files
+   - Update configuration files to point to current production models
+   - Test model loading functionality after path updates
+   - Document any code changes made
+
+7. Document optimization results:
+   - Create a final report showing space saved (1.72GB)
+   - Document which files were removed and which were preserved
+   - Update project documentation to reflect the new storage structure
+   - Share optimization results with the team
+
+# Test Strategy:
+1. Verify system functionality after cleanup:
+   - Run the complete application workflow to ensure all features work correctly
+   - Test the HUD detection system specifically to confirm the production model loads properly
+   - Verify that all game detection pipelines function as expected
+   - Run a batch of test videos through the system to confirm end-to-end functionality
+
+2. Validate storage optimization:
+   - Run disk usage analysis again to confirm the expected 1.72GB reduction
+   - Compare before/after storage metrics to verify optimization goals were met
+   - Check that no essential files were accidentally removed
+   - Verify all training datasets are intact and accessible
+
+3. Test model loading performance:
+   - Measure application startup time before and after cleanup
+   - Compare model loading times to ensure no performance regression
+   - Check memory usage during model loading to identify any changes
+   - Document any performance improvements resulting from the cleanup
+
+4. Verify backup integrity:
+   - Test restoring a sample file from the backup archive
+   - Verify the restored file matches the original using checksums
+   - Document the backup restoration procedure for future reference
+   - Ensure the backup is properly cataloged in the project documentation
+
+5. Regression testing:
+   - Run the existing test suite to ensure no functionality was broken
+   - Perform manual testing of key features that depend on model files
+   - Verify that all supported games still function correctly
+   - Document test results in the project management system

@@ -94,7 +94,7 @@ def main():
     
     try:
         # Import and run the main application
-        from spygate_desktop_app_faceit_style import SpygateDesktopFaceItStyle
+        from spygate_desktop_app_faceit_style import SpygateDesktop
         from PyQt6.QtWidgets import QApplication
         
         # Create QApplication
@@ -105,7 +105,7 @@ def main():
         print("✅ Dependencies loaded successfully")
         print("🚀 Launching SpygateAI Desktop...")
         
-        window = SpygateDesktopFaceItStyle()
+        window = SpygateDesktop()
         window.show()
         
         # Run the application

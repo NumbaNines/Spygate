@@ -1,0 +1,21 @@
+{
+  "version": "5.2.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "hud",
+      "points": [
+        [287.4767150878906, 313.5085144042969],
+        [1182.8072509765625, 360.4964904785156]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {},
+      "description": "AI suggested (conf: 0.62)"
+    }
+  ],
+  "imagePath": "monitor3_screenshot_20250608_021402_45.png",
+  "imageData": null,
+  "imageHeight": 1080,
+  "imageWidth": 1920
+}

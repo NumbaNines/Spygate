@@ -36,17 +36,23 @@ try:
     from spygate.core.optimizer import TierOptimizer
     from spygate.core.performance_monitor import PerformanceMonitor
 
+    # Import real detection classes
+    from spygate.ml.situation_detector import SituationDetector
+    from spygate.ml.hud_detector import HUDDetector
+
     print("🏈 SpygateAI Desktop - Initializing Core Systems...")
+    REAL_DETECTION_AVAILABLE = True
 
 except ImportError as e:
     print(f"❌ Missing dependencies: {e}")
     print("Install with: pip install PyQt6 opencv-python ultralytics")
     sys.exit(1)
+    REAL_DETECTION_AVAILABLE = False
 
 
 @dataclass
 class ClipData:
-    """Data structure for detected clips."""
+    """Data structure for detected clips with real situation data."""
 
     start_frame: int
     end_frame: int
@@ -54,10 +60,13 @@ class ClipData:
     confidence: float
     timestamp: str
     approved: bool = False
+    # Real detection data
+    hud_info: Dict[str, Any] = None
+    detection_metadata: Dict[str, Any] = None
 
 
 class AutoClipDetector(QObject):
-    """Auto-clip detection engine using YOLOv8 with speed optimizations."""
+    """Auto-clip detection using real SituationDetector."""
 
     clip_detected = pyqtSignal(ClipData)
     analysis_progress = pyqtSignal(int, str)
@@ -66,263 +75,367 @@ class AutoClipDetector(QObject):
     def __init__(self):
         super().__init__()
         self.is_analyzing = False
+        self.config = {}
         self.detected_clips = []
-        self.scene_change_threshold = 0.3
-        self.frame_cache = {}
-        self.previous_frame = None
-        self.last_scene_check = 0
 
-    def setup_optimization_settings(self, hardware_tier: str):
+        # Initialize real detection components if available
+        if REAL_DETECTION_AVAILABLE:
+            self.hardware = HardwareDetector()
+            self.optimizer = TierOptimizer(self.hardware)
+            self.situation_detector = None
+            self.hud_detector = None
+            self._initialize_real_detection()
+        else:
+            print("⚠️ Real detection unavailable - using fallback mode")
+
+    def _initialize_real_detection(self):
+        """Initialize the real detection components."""
+        try:
+            # Initialize HUD detector
+            self.hud_detector = HUDDetector()
+            print("✅ HUDDetector initialized")
+
+            # Initialize situation detector with enhanced capabilities
+            self.situation_detector = SituationDetector()
+            if hasattr(self.situation_detector, "initialize"):
+                self.situation_detector.initialize()
+            print("✅ SituationDetector initialized")
+
+        except Exception as e:
+            print(f"❌ Error initializing real detection: {e}")
+            self.situation_detector = None
+            self.hud_detector = None
+
+    def setup_optimization_config(self, hardware_tier: str):
         """Configure optimization settings based on hardware tier."""
-        optimization_configs = {
-            "low": {
-                "frame_skip": 90,  # Skip 90 frames (3 seconds at 30fps)
-                "scene_check_interval": 30,  # Check scene changes every 30 frames
-                "analysis_resolution": (640, 360),  # Lower resolution for faster processing
-                "confidence_threshold": 0.8,  # Higher threshold to reduce false positives
-                "max_clips_per_minute": 2,  # Limit clips to reduce processing
-            },
-            "medium": {
-                "frame_skip": 60,  # Skip 60 frames (2 seconds at 30fps)
-                "scene_check_interval": 20,
-                "analysis_resolution": (854, 480),
-                "confidence_threshold": 0.7,
-                "max_clips_per_minute": 3,
-            },
-            "high": {
-                "frame_skip": 30,  # Skip 30 frames (1 second at 30fps)
-                "scene_check_interval": 15,
-                "analysis_resolution": (1280, 720),
+        if not REAL_DETECTION_AVAILABLE:
+            # Fallback configuration
+            self.config = {
+                "frame_skip": 30,
+                "target_resolution": (640, 360),
+                "confidence_threshold": 0.5,
+                "max_clips_per_minute": 2,
+            }
+            return
+
+        # Get tier-specific configuration
+        tier_configs = {
+            "ULTRA": {
+                "frame_skip": 15,
+                "target_resolution": (1920, 1080),
                 "confidence_threshold": 0.6,
                 "max_clips_per_minute": 5,
             },
-            "ultra": {
-                "frame_skip": 15,  # Skip 15 frames (0.5 seconds at 30fps)
-                "scene_check_interval": 10,
-                "analysis_resolution": (1920, 1080),
+            "HIGH": {
+                "frame_skip": 30,
+                "target_resolution": (1280, 720),
+                "confidence_threshold": 0.55,
+                "max_clips_per_minute": 4,
+            },
+            "MEDIUM": {
+                "frame_skip": 60,
+                "target_resolution": (854, 480),
                 "confidence_threshold": 0.5,
-                "max_clips_per_minute": 8,
+                "max_clips_per_minute": 3,
+            },
+            "LOW": {
+                "frame_skip": 90,
+                "target_resolution": (640, 360),
+                "confidence_threshold": 0.45,
+                "max_clips_per_minute": 2,
             },
         }
 
-        self.config = optimization_configs.get(
-            hardware_tier.lower(), optimization_configs["medium"]
-        )
-        print(
-            f"🚀 Auto-clip detection optimized for {hardware_tier} tier: frame skip {self.config['frame_skip']}, max clips/min {self.config['max_clips_per_minute']}"
-        )
-
-    def detect_scene_change(self, frame1: np.ndarray, frame2: np.ndarray) -> bool:
-        """
-        Fast scene change detection using histogram comparison.
-
-        Args:
-            frame1: Previous frame
-            frame2: Current frame
-
-        Returns:
-            bool: True if significant scene change detected
-        """
-        if frame1 is None or frame2 is None:
-            return True
-
-        # Resize frames for faster processing
-        h, w = frame1.shape[:2]
-        small_size = (w // 4, h // 4)  # Quarter resolution for speed
-
-        small1 = cv2.resize(frame1, small_size)
-        small2 = cv2.resize(frame2, small_size)
-
-        # Convert to grayscale for faster histogram calculation
-        gray1 = cv2.cvtColor(small1, cv2.COLOR_BGR2GRAY)
-        gray2 = cv2.cvtColor(small2, cv2.COLOR_BGR2GRAY)
-
-        # Calculate histograms
-        hist1 = cv2.calcHist([gray1], [0], None, [32], [0, 256])  # Reduced bins for speed
-        hist2 = cv2.calcHist([gray2], [0], None, [32], [0, 256])
-
-        # Compare histograms using correlation
-        correlation = cv2.compareHist(hist1, hist2, cv2.HISTCMP_CORREL)
-
-        # Scene change if correlation is below threshold
-        return correlation < (1.0 - self.scene_change_threshold)
+        self.config = tier_configs.get(hardware_tier, tier_configs["MEDIUM"])
+        print(f"🔧 Optimization configured for {hardware_tier} tier")
+        print(f"   Frame skip: {self.config['frame_skip']}")
+        print(f"   Target resolution: {self.config['target_resolution']}")
 
     def preprocess_frame(self, frame: np.ndarray) -> np.ndarray:
-        """
-        Preprocess frame for faster analysis.
-
-        Args:
-            frame: Input frame
-
-        Returns:
-            np.ndarray: Preprocessed frame
-        """
-        # Resize to analysis resolution for speed
-        target_resolution = self.config["analysis_resolution"]
-        return cv2.resize(frame, target_resolution)
+        """Preprocess frame for faster analysis."""
+        target_res = self.config.get("target_resolution", (640, 360))
+        if frame.shape[:2][::-1] != target_res:
+            frame = cv2.resize(frame, target_res)
+        return frame
 
     def analyze_video(self, video_path: str, hardware_tier: str):
-        """Analyze video for key moments and create clips with speed optimizations."""
+        """Analyze video with real situation detection."""
+        if self.is_analyzing:
+            return
+
         self.is_analyzing = True
         self.detected_clips = []
-        self.setup_optimization_settings(hardware_tier)
+        self.setup_optimization_config(hardware_tier)
 
+        def analysis_thread():
+            self._run_real_analysis(video_path, hardware_tier)
+
+        thread = threading.Thread(target=analysis_thread, daemon=True)
+        thread.start()
+
+    def _run_real_analysis(self, video_path: str, hardware_tier: str):
+        """Run the actual video analysis with real detection."""
         try:
             cap = cv2.VideoCapture(video_path)
+            if not cap.isOpened():
+                print(f"❌ Could not open video: {video_path}")
+                return
+
+            # Video properties
             total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            fps = cap.get(cv2.CAP_PROP_FPS)
+            fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+            frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-            print(f"🎬 Starting optimized analysis: {total_frames} frames at {fps} FPS")
-            print(
-                f"⚡ Frame skip: {self.config['frame_skip']}, Scene check: {self.config['scene_check_interval']}"
-            )
-
-            # Optimization tracking
-            import time
-
-            start_time = time.time()
+            print(f"📹 Video: {frame_width}x{frame_height}, {total_frames} frames at {fps:.1f} FPS")
+            
+            # Analysis variables
+            frame_count = 0
             frames_processed = 0
             frames_skipped = 0
-            scene_changes_detected = 0
             clips_detected = 0
+            scene_changes_detected = 0
+            last_histogram = None
 
-            frame_count = 0
-            self.previous_frame = None
-            self.last_scene_check = 0
+            start_time = time.time()
 
-            while cap.isOpened() and self.is_analyzing:
+            while frame_count < total_frames and self.is_analyzing:
                 ret, frame = cap.read()
                 if not ret:
                     break
 
                 frame_count += 1
 
-                # Smart frame skipping with scene change detection
-                if frame_count % self.config["scene_check_interval"] == 0:
-                    # Check for scene change
-                    if self.previous_frame is not None:
-                        scene_changed = self.detect_scene_change(self.previous_frame, frame)
-                        if scene_changed:
-                            scene_changes_detected += 1
-                            # Process this frame due to scene change
-                            should_process = True
-                        else:
-                            # No scene change, apply frame skipping
-                            should_process = (frame_count % self.config["frame_skip"]) == 0
-                    else:
-                        should_process = True
+                # Scene change detection (histogram-based)
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
 
-                    self.last_scene_check = frame_count
-                else:
-                    # Apply standard frame skipping between scene checks
-                    should_process = (frame_count % self.config["frame_skip"]) == 0
+                scene_change = False
+                if last_histogram is not None:
+                    correlation = cv2.compareHist(last_histogram, hist, cv2.HISTCMP_CORREL)
+                    if correlation < 0.8:  # Scene change threshold
+                        scene_change = True
+                        scene_changes_detected += 1
 
-                if should_process:
-                    frames_processed += 1
+                last_histogram = hist
 
-                    # Preprocess frame for faster analysis
-                    processed_frame = self.preprocess_frame(frame)
+                # Smart frame skipping with scene change consideration
+                should_process = (
+                    frame_count % self.config["frame_skip"] == 0
+                    or scene_change
+                    or frame_count == 1
+                    or frame_count == total_frames
+                )
 
-                    # Update progress
-                    progress = int((frame_count / total_frames) * 100)
-                    self.analysis_progress.emit(
-                        progress,
-                        f"Analyzing frame {frame_count}/{total_frames} (processed: {frames_processed}, skipped: {frames_skipped})",
-                    )
-
-                    # Simulate enhanced situation detection (replace with actual YOLOv8 logic)
-                    situation = self._simulate_enhanced_situation_detection(
-                        frame_count, fps, processed_frame
-                    )
-                    if situation and self._is_significant_situation(situation):
-                        # Check clips per minute limit
-                        timestamp = frame_count / fps
-                        clips_in_last_minute = len(
-                            [
-                                clip
-                                for clip in self.detected_clips
-                                if hasattr(clip, "start_frame")
-                                and clip.start_frame > (frame_count - 60 * fps)
-                            ]
-                        )
-
-                        if clips_in_last_minute < self.config["max_clips_per_minute"]:
-                            clip_data = ClipData(
-                                start_frame=max(0, frame_count - 150),  # 5 seconds before
-                                end_frame=min(total_frames, frame_count + 150),  # 5 seconds after
-                                situation=situation,
-                                confidence=min(0.85 + (np.random.random() * 0.1), 0.95),
-                                timestamp=self._frame_to_timestamp(frame_count, fps),
-                            )
-                            self.detected_clips.append(clip_data)
-                            self.clip_detected.emit(clip_data)
-                            clips_detected += 1
-
-                    self.previous_frame = frame.copy()
-                else:
+                if not should_process:
                     frames_skipped += 1
+                    continue
+
+                frames_processed += 1
+
+                # Preprocess frame for faster analysis
+                processed_frame = self.preprocess_frame(frame)
+
+                # Update progress
+                progress = int((frame_count / total_frames) * 100)
+                self.analysis_progress.emit(
+                    progress,
+                    f"Analyzing frame {frame_count}/{total_frames} (processed: {frames_processed}, skipped: {frames_skipped})",
+                )
+
+                # Real situation detection
+                situation_result = self._analyze_frame_with_real_detection(
+                    processed_frame, frame_count, fps
+                )
+
+                if situation_result and self._is_significant_situation(situation_result):
+                    # Create clip data with real detection results
+                    clip_data = ClipData(
+                        start_frame=max(0, frame_count - 150),
+                        end_frame=min(total_frames, frame_count + 150),
+                        situation=situation_result.get("situation", "Unknown"),
+                        confidence=situation_result.get("confidence", 0.0),
+                        timestamp=self._frame_to_timestamp(frame_count, fps),
+                        hud_info=situation_result.get("hud_info", {}),
+                        detection_metadata=situation_result.get("metadata", {}),
+                    )
+
+                    self.detected_clips.append(clip_data)
+                    clips_detected += 1
+
+                    self.clip_detected.emit(clip_data)
+                    print(f"🎬 Real Clip detected: {clip_data.situation} at {clip_data.timestamp} (confidence: {clip_data.confidence:.2f})")
 
             cap.release()
 
-            # Calculate and log performance metrics
+            # Analysis complete
             end_time = time.time()
-            total_time = end_time - start_time
-            processing_rate = frames_processed / total_time if total_time > 0 else 0
+            processing_time = end_time - start_time
+            processing_rate = frames_processed / processing_time if processing_time > 0 else 0
 
-            print(f"🎯 Optimization Results:")
-            print(f"  Total time: {total_time:.2f}s")
-            print(
-                f"  Frames processed: {frames_processed}/{total_frames} ({frames_processed/total_frames*100:.1f}%)"
-            )
+            print(f"✅ Real Analysis complete in {processing_time:.2f}s")
+            print(f"  Frames processed: {frames_processed} of {total_frames} ({frames_processed/total_frames*100:.1f}%)")
             print(f"  Frames skipped: {frames_skipped} ({frames_skipped/total_frames*100:.1f}%)")
             print(f"  Scene changes detected: {scene_changes_detected}")
-            print(f"  Clips detected: {clips_detected}")
+            print(f"  Real clips detected: {clips_detected}")
             print(f"  Processing rate: {processing_rate:.1f} frames/sec")
 
             self.analysis_complete.emit(self.detected_clips)
 
         except Exception as e:
-            print(f"Error in optimized video analysis: {e}")
+            print(f"❌ Error in real video analysis: {e}")
+            import traceback
+            traceback.print_exc()
         finally:
             self.is_analyzing = False
 
-    def _simulate_enhanced_situation_detection(
-        self, frame_count: int, fps: float, frame: np.ndarray
-    ) -> Optional[str]:
-        """Enhanced situation detection with frame analysis."""
+    def _analyze_frame_with_real_detection(
+        self, frame: np.ndarray, frame_count: int, fps: float
+    ) -> Optional[Dict[str, Any]]:
+        """Analyze frame using real situation detection."""
+        if not REAL_DETECTION_AVAILABLE or not self.situation_detector:
+            # Fallback to enhanced simulation
+            return self._enhanced_fallback_detection(frame, frame_count, fps)
+
+        try:
+            # REAL SITUATION DETECTION INTEGRATION
+            print(f"🔍 Running real detection on frame {frame_count}")
+            
+            result = self.situation_detector.detect_situations(frame, frame_count, fps)
+
+            if result and result.get("situations"):
+                situations = result["situations"]
+                
+                # Filter for high-confidence situations
+                high_confidence_situations = [
+                    s for s in situations 
+                    if s.get("confidence", 0) >= self.config.get("confidence_threshold", 0.5)
+                ]
+                
+                if high_confidence_situations:
+                    # Get the best situation
+                    best_situation = max(high_confidence_situations, key=lambda x: x.get("confidence", 0))
+                    
+                    # Format situation type for display
+                    situation_type = best_situation.get("type", "Unknown")
+                    situation_display = self._format_situation_for_display(situation_type, result.get("hud_info", {}))
+
+                    return {
+                        "situation": situation_display,
+                        "confidence": best_situation.get("confidence", 0.0),
+                        "hud_info": result.get("hud_info", {}),
+                        "metadata": result.get("metadata", {}),
+                        "frame_number": frame_count,
+                        "timestamp": frame_count / fps,
+                        "raw_situations": situations,  # Include all detected situations
+                    }
+
+            return None
+
+        except Exception as e:
+            print(f"⚠️ Real detection error on frame {frame_count}: {e}")
+            return self._enhanced_fallback_detection(frame, frame_count, fps)
+
+    def _format_situation_for_display(self, situation_type: str, hud_info: Dict[str, Any]) -> str:
+        """Format situation type for user-friendly display."""
+        # Extract HUD data
+        down = hud_info.get("down")
+        distance = hud_info.get("distance")
+        yard_line = hud_info.get("yard_line") or hud_info.get("field_position")
+        score_home = hud_info.get("score_home")
+        score_away = hud_info.get("score_away")
+        game_clock = hud_info.get("game_clock")
+
+        # Format based on situation type
+        if situation_type == "third_and_long":
+            if down and distance:
+                return f"3rd & {distance} (Real HUD)"
+            return "3rd & Long (Real HUD)"
+        elif situation_type == "third_and_short":
+            if down and distance:
+                return f"3rd & {distance} (Real HUD)"
+            return "3rd & Short (Real HUD)"
+        elif situation_type == "fourth_down":
+            if down and distance:
+                return f"4th & {distance} (Real HUD)"
+            return "4th Down (Real HUD)"
+        elif situation_type == "red_zone":
+            return f"Red Zone (Real HUD)"
+        elif situation_type == "two_minute_warning":
+            return f"Two Minute Warning (Real HUD)"
+        elif "goal" in situation_type.lower():
+            return f"Goal Line (Real HUD)"
+        elif "close_game" in situation_type:
+            if score_home is not None and score_away is not None:
+                return f"Close Game {score_home}-{score_away} (Real HUD)"
+            return "Close Game (Real HUD)"
+        else:
+            # Generic formatting
+            formatted = situation_type.replace("_", " ").title()
+            return f"{formatted} (Real HUD)"
+
+    def _enhanced_fallback_detection(
+        self, frame: np.ndarray, frame_count: int, fps: float
+    ) -> Optional[Dict[str, Any]]:
+        """Enhanced fallback detection when real detection is unavailable."""
         # Calculate frame variance for action detection
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         frame_variance = np.var(gray)
 
         situations = [
-            "3rd & Long",
-            "Red Zone Opportunity",
-            "Turnover",
-            "Scoring Play",
-            "Defensive Stop",
-            "Big Play",
+            "1st & 10 (Simulated)",
+            "2nd & 5 (Simulated)",
+            "3rd & Long (Simulated)",
+            "4th & Goal (Simulated)",
+            "Red Zone Opportunity (Simulated)",
+            "Two Minute Warning (Simulated)",
+            "Turnover (Simulated)",
+            "Scoring Play (Simulated)",
+            "Defensive Stop (Simulated)",
         ]
 
         # Enhanced detection logic based on frame characteristics
         if frame_variance > 1000:  # High action frame
-            if np.random.random() > 0.4:  # Higher chance for high-action frames
-                return np.random.choice(situations)
+            if np.random.random() > 0.6:  # Moderate chance for high-action frames
+                situation = np.random.choice(situations)
+                return {
+                    "situation": situation,
+                    "confidence": 0.7 + (np.random.random() * 0.2),
+                    "hud_info": {"detection_mode": "fallback", "frame_variance": float(frame_variance)},
+                    "metadata": {"analysis_version": "fallback-enhanced"},
+                    "frame_number": frame_count,
+                    "timestamp": frame_count / fps,
+                }
         elif frame_count % 300 == 0:  # Periodic detection for static frames
-            if np.random.random() > 0.6:
-                return np.random.choice(situations)
+            if np.random.random() > 0.7:
+                situation = np.random.choice(situations)
+                return {
+                    "situation": situation,
+                    "confidence": 0.6 + (np.random.random() * 0.25),
+                    "hud_info": {"detection_mode": "fallback", "frame_variance": float(frame_variance)},
+                    "metadata": {"analysis_version": "fallback-periodic"},
+                    "frame_number": frame_count,
+                    "timestamp": frame_count / fps,
+                }
 
         return None
 
-    def _is_significant_situation(self, situation: str) -> bool:
+    def _is_significant_situation(self, situation_result: Dict[str, Any]) -> bool:
         """Determine if situation is significant enough for clipping."""
-        high_value_situations = ["3rd & Long", "Red Zone Opportunity", "Turnover", "Scoring Play"]
-        return situation in high_value_situations
+        if not situation_result:
+            return False
 
-    def _simulate_situation_detection(self, frame_count: int, fps: float) -> Optional[str]:
-        """Legacy method for compatibility."""
-        return self._simulate_enhanced_situation_detection(
-            frame_count, fps, np.zeros((100, 100, 3), dtype=np.uint8)
-        )
+        confidence = situation_result.get("confidence", 0.0)
+        situation = situation_result.get("situation", "")
+
+        # High-value situations (lower confidence threshold)
+        high_value_keywords = ["3rd", "4th", "Red Zone", "Two Minute", "Turnover", "Scoring", "Goal"]
+
+        if any(keyword in situation for keyword in high_value_keywords):
+            return confidence > 0.6
+
+        # Regular situations need higher confidence
+        return confidence > 0.75
 
     def _frame_to_timestamp(self, frame: int, fps: float) -> str:
         """Convert frame number to timestamp."""
@@ -330,10 +443,6 @@ class AutoClipDetector(QObject):
         minutes = int(seconds // 60)
         seconds = int(seconds % 60)
         return f"{minutes:02d}:{seconds:02d}"
-
-    def _get_skip_frames(self, tier: str) -> int:
-        """Legacy method - now handled by optimization config."""
-        return self.config.get("frame_skip", 30)
 
     def stop_analysis(self):
         """Stop the analysis process."""

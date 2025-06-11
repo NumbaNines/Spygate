@@ -1,0 +1,11 @@
+# HUD Element Coordinates (detected via YOLO)
+
+# HUD
+hud_coordinates = [0.062, 0.810, 0.940, 0.996]  # x_start, x_end, y_start, y_end
+
+# POSSESSION_TRIANGLE
+possession_triangle_coordinates = [0.140, 0.559, 0.940, 0.996]  # x_start, x_end, y_start, y_end
+
+# EXISTING DOWN/DISTANCE (for reference)
+down_distance_coordinates = [0.750, 0.900, 0.200, 0.800]  # x_start, x_end, y_start, y_end
+

@@ -1,156 +1,162 @@
 #!/usr/bin/env python3
 """
-Convert labelme JSON annotations to YOLO format for SpygateAI HUD training.
-
-This script converts labelme JSON files to YOLO format for training the YOLOv8 model
-with the 4 classes: hud, qb_position, left_hash_mark, right_hash_mark
+Convert LabelMe JSON annotations to YOLO format for SpygateAI HUD detection.
+Converts NEW MADDEN DATA folder to hud_region_training/dataset
 """
 
-import argparse
 import json
 import os
-import sys
+import shutil
 from pathlib import Path
-from typing import List, Tuple
+from PIL import Image
+import random
 
+# Class mapping for our 5-class system
+CLASS_MAPPING = {
+    'hud': 0,
+    'possession_triangle_area': 1,
+    'territory_triangle_area': 2,
+    'preplay_indicator': 3,
+    'play_call_screen': 4
+}
 
-def load_classes(classes_file: str) -> dict:
-    """Load class names and create class to index mapping."""
-    try:
-        with open(classes_file) as f:
-            classes = [line.strip() for line in f.readlines() if line.strip()]
-
-        class_to_idx = {cls_name: idx for idx, cls_name in enumerate(classes)}
-        print(f"Loaded {len(classes)} classes: {classes}")
-        return class_to_idx
-    except FileNotFoundError:
-        print(f"Classes file not found: {classes_file}")
-        return {}
-
-
-def polygon_to_bbox(points: list[list[float]]) -> tuple[float, float, float, float]:
-    """Convert polygon points to bounding box (x_min, y_min, x_max, y_max)."""
-    x_coords = [point[0] for point in points]
-    y_coords = [point[1] for point in points]
-
-    x_min, x_max = min(x_coords), max(x_coords)
-    y_min, y_max = min(y_coords), max(y_coords)
-
-    return x_min, y_min, x_max, y_max
-
-
-def convert_to_yolo_format(
-    bbox: tuple[float, float, float, float], img_width: int, img_height: int
-) -> tuple[float, float, float, float]:
-    """Convert bounding box to YOLO format (normalized center_x, center_y, width, height)."""
-    x_min, y_min, x_max, y_max = bbox
-
-    # Calculate center point and dimensions
-    center_x = (x_min + x_max) / 2.0
-    center_y = (y_min + y_max) / 2.0
-    width = x_max - x_min
-    height = y_max - y_min
-
-    # Normalize to [0, 1]
-    center_x /= img_width
-    center_y /= img_height
-    width /= img_width
-    height /= img_height
-
-    return center_x, center_y, width, height
-
-
-def convert_labelme_json(json_file: str, class_to_idx: dict, output_dir: str) -> bool:
-    """Convert a single labelme JSON file to YOLO format."""
-    try:
-        with open(json_file) as f:
-            data = json.load(f)
-
-        # Get image dimensions
-        img_height = data["imageHeight"]
-        img_width = data["imageWidth"]
-
-        # Extract annotations
-        annotations = []
-        for shape in data["shapes"]:
-            label = shape["label"]
-            if label not in class_to_idx:
-                print(f"Warning: Unknown class '{label}' in {json_file}, skipping...")
-                continue
-
-            class_idx = class_to_idx[label]
-            points = shape["points"]
-
-            # Convert polygon to bounding box
-            bbox = polygon_to_bbox(points)
-
-            # Convert to YOLO format
-            yolo_bbox = convert_to_yolo_format(bbox, img_width, img_height)
-
-            # Format: class_id center_x center_y width height
-            annotation = f"{class_idx} {yolo_bbox[0]:.6f} {yolo_bbox[1]:.6f} {yolo_bbox[2]:.6f} {yolo_bbox[3]:.6f}"
-            annotations.append(annotation)
-
-        # Save YOLO format file
-        json_path = Path(json_file)
-        output_file = Path(output_dir) / f"{json_path.stem}.txt"
-
-        with open(output_file, "w") as f:
-            f.write("\n".join(annotations))
-
-        print(f"Converted {json_file} -> {output_file} ({len(annotations)} annotations)")
-        return True
-
-    except Exception as e:
-        print(f"Error converting {json_file}: {e}")
-        return False
-
+def convert_labelme_to_yolo(labelme_json_path, image_path, output_txt_path):
+    """Convert a single LabelMe JSON to YOLO format."""
+    with open(labelme_json_path, 'r') as f:
+        data = json.load(f)
+    
+    # Get image dimensions
+    with Image.open(image_path) as img:
+        img_width, img_height = img.size
+    
+    yolo_annotations = []
+    
+    for shape in data['shapes']:
+        label = shape['label']
+        if label not in CLASS_MAPPING:
+            print(f"Warning: Unknown label '{label}' in {labelme_json_path}")
+            continue
+            
+        class_id = CLASS_MAPPING[label]
+        points = shape['points']
+        
+        # Convert polygon to bounding box
+        x_coords = [p[0] for p in points]
+        y_coords = [p[1] for p in points]
+        
+        x_min, x_max = min(x_coords), max(x_coords)
+        y_min, y_max = min(y_coords), max(y_coords)
+        
+        # Convert to YOLO format (normalized center x, center y, width, height)
+        center_x = (x_min + x_max) / 2 / img_width
+        center_y = (y_min + y_max) / 2 / img_height
+        width = (x_max - x_min) / img_width
+        height = (y_max - y_min) / img_height
+        
+        yolo_annotations.append(f"{class_id} {center_x:.6f} {center_y:.6f} {width:.6f} {height:.6f}")
+    
+    # Write YOLO annotation file
+    with open(output_txt_path, 'w') as f:
+        f.write('\n'.join(yolo_annotations))
+    
+    return len(yolo_annotations)
 
 def main():
-    parser = argparse.ArgumentParser(description="Convert labelme JSON to YOLO format")
-    parser.add_argument(
-        "--input-dir",
-        default="training_data/images",
-        help="Directory containing labelme JSON files",
-    )
-    parser.add_argument(
-        "--output-dir", default="training_data/labels", help="Directory to save YOLO format files"
-    )
-    parser.add_argument(
-        "--classes-file", default="training_data/classes.txt", help="File containing class names"
-    )
+    """Main conversion process."""
+    input_dir = Path("NEW MADDEN DATA")
+    output_dir = Path("hud_region_training/dataset")
+    
+    # Create output directories
+    train_img_dir = output_dir / "images" / "train"
+    val_img_dir = output_dir / "images" / "val"
+    train_label_dir = output_dir / "labels" / "train"
+    val_label_dir = output_dir / "labels" / "val"
+    
+    for dir_path in [train_img_dir, val_img_dir, train_label_dir, val_label_dir]:
+        dir_path.mkdir(parents=True, exist_ok=True)
+    
+    # Find all image files
+    image_files = []
+    for ext in ['*.png', '*.jpg', '*.jpeg']:
+        image_files.extend(list(input_dir.glob(ext)))
+    
+    print(f"Found {len(image_files)} images")
+    
+    # Shuffle and split 80/20 train/val
+    random.shuffle(image_files)
+    split_idx = int(len(image_files) * 0.8)
+    train_images = image_files[:split_idx]
+    val_images = image_files[split_idx:]
+    
+    print(f"Train: {len(train_images)}, Val: {len(val_images)}")
+    
+    total_annotations = 0
+    processed = 0
+    
+    # Process training set
+    for img_path in train_images:
+        json_path = img_path.with_suffix('.json')
+        if not json_path.exists():
+            continue
+            
+        # Copy image
+        dst_img = train_img_dir / img_path.name
+        shutil.copy2(img_path, dst_img)
+        
+        # Convert annotations
+        dst_txt = train_label_dir / img_path.with_suffix('.txt').name
+        annotations = convert_labelme_to_yolo(json_path, img_path, dst_txt)
+        total_annotations += annotations
+        processed += 1
+        
+        if processed % 50 == 0:
+            print(f"Processed {processed} files...")
+    
+    # Process validation set
+    for img_path in val_images:
+        json_path = img_path.with_suffix('.json')
+        if not json_path.exists():
+            continue
+            
+        # Copy image
+        dst_img = val_img_dir / img_path.name
+        shutil.copy2(img_path, dst_img)
+        
+        # Convert annotations
+        dst_txt = val_label_dir / img_path.with_suffix('.txt').name
+        annotations = convert_labelme_to_yolo(json_path, img_path, dst_txt)
+        total_annotations += annotations
+        processed += 1
+    
+    print(f"Conversion complete!")
+    print(f"Processed {processed} images")
+    print(f"Total annotations: {total_annotations}")
+    print(f"Train images: {len(list(train_img_dir.glob('*')))}")
+    print(f"Val images: {len(list(val_img_dir.glob('*')))}")
+    
+    # Update dataset.yaml
+    yaml_content = f"""# SpygateAI HUD Region Detection Dataset
+path: ./hud_region_training/dataset
+train: images/train
+val: images/val
 
-    args = parser.parse_args()
+# Classes
+nc: 5  # number of classes
+names: ['hud', 'possession_triangle_area', 'territory_triangle_area', 'preplay_indicator', 'play_call_screen']
 
-    # Load classes
-    class_to_idx = load_classes(args.classes_file)
-    if not class_to_idx:
-        print("No classes loaded. Please check your classes file.")
-        return
-
-    # Create output directory
-    os.makedirs(args.output_dir, exist_ok=True)
-
-    # Find all JSON files
-    input_path = Path(args.input_dir)
-    json_files = list(input_path.glob("*.json"))
-
-    if not json_files:
-        print(f"No JSON files found in {input_path}")
-        print("Make sure you've saved your labelme annotations as JSON files.")
-        return
-
-    print(f"Found {len(json_files)} JSON files to convert...")
-
-    # Convert each JSON file
-    success_count = 0
-    for json_file in json_files:
-        if convert_labelme_json(str(json_file), class_to_idx, args.output_dir):
-            success_count += 1
-
-    print(f"\nConversion complete: {success_count}/{len(json_files)} files successfully converted")
-    print(f"YOLO format files saved to: {args.output_dir}")
-
+# Class mapping:
+# 0: hud - Main HUD bar region
+# 1: possession_triangle_area - Left triangle area (between team names)
+# 2: territory_triangle_area - Right triangle area (next to yard marker)
+# 3: preplay_indicator - Pre-play indicator elements
+# 4: play_call_screen - Play selection screen elements
+"""
+    
+    yaml_path = output_dir / "dataset.yaml"
+    with open(yaml_path, 'w') as f:
+        f.write(yaml_content)
+    
+    print(f"Updated dataset.yaml at {yaml_path}")
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,7 @@
+train: train/images
+val: train/images
+nc: 3
+names:
+  0: hud
+  1: possession_indicator
+  2: territory_indicator

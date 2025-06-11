@@ -1,0 +1,89 @@
+# Task ID: 29
+# Title: Backend Architecture Documentation
+# Status: done
+# Dependencies: 26
+# Priority: medium
+# Description: Document the complete backend architecture including the 5-class model system, enhanced YOLOv8 pipeline with hardware optimization, HUD detector with OCR processing, game state extraction logic, and cross-game universal detection architecture.
+# Details:
+1. Document the 5-class model system:
+   - Create comprehensive UML diagrams showing class relationships and inheritance
+   - Document the VideoProcessor, HardwareDetector, TierOptimizer, GameDetector, and SituationDetector classes
+   - Detail method signatures, parameters, return types, and class attributes
+   - Explain design patterns used (Factory, Strategy, Observer patterns)
+
+2. Document the enhanced YOLOv8 pipeline:
+   - Detail the model architecture modifications for HUD element detection
+   - Document the hardware optimization techniques implemented
+   - Explain the frame sampling strategy based on hardware tier
+   - Document the integration points with OpenCV and PyTorch
+   - Include performance benchmarks across different hardware configurations
+
+3. Document the HUD detector with OCR processing:
+   - Detail the OCR engine integration (Tesseract)
+   - Document preprocessing steps for text recognition optimization
+   - Explain confidence scoring and validation mechanisms
+   - Document the text parsing and normalization algorithms
+   - Include game-specific OCR configurations and adaptations
+
+4. Document game state extraction logic:
+   - Detail the state machine implementation for tracking game progression
+   - Document the event detection and classification system
+   - Explain the temporal analysis for situation detection
+   - Document the data structures used for state representation
+   - Include error handling and recovery mechanisms
+
+5. Document cross-game universal detection architecture:
+   - Detail the abstraction layers enabling cross-game compatibility
+   - Document the configuration system for game-specific adaptations
+   - Explain the interface mapping between different game versions
+   - Document the feature detection fallback mechanisms
+   - Include extension points for adding new game support
+
+6. Create comprehensive API documentation:
+   - Document all public methods with parameters and return values
+   - Include usage examples for each major component
+   - Document configuration options and their effects
+   - Explain error codes and troubleshooting approaches
+
+7. Include system diagrams:
+   - Create data flow diagrams showing information passing between components
+   - Document the processing pipeline from video input to situation detection
+   - Include sequence diagrams for key operations
+   - Create component diagrams showing system boundaries and interfaces
+
+# Test Strategy:
+1. Documentation completeness verification:
+   - Create a checklist of all required documentation sections
+   - Verify each section is complete with appropriate diagrams, code examples, and explanations
+   - Ensure all classes, methods, and attributes are documented
+   - Validate that all integration points between components are clearly explained
+
+2. Technical accuracy verification:
+   - Have at least two senior developers review the documentation for technical accuracy
+   - Cross-reference documentation against actual implementation code
+   - Verify that all described algorithms match the implemented code
+   - Ensure performance claims are backed by benchmark data
+   - Check that all diagrams correctly represent the actual system architecture
+
+3. Documentation usability testing:
+   - Have a developer unfamiliar with the system attempt to understand it using only the documentation
+   - Ask them to identify any unclear sections or missing information
+   - Have them attempt to explain the system architecture back to the team
+   - Document and address any areas of confusion
+
+4. Integration with existing documentation:
+   - Verify that the new documentation integrates with existing project documentation
+   - Ensure consistent terminology and formatting
+   - Check for contradictions with existing documentation
+   - Update any outdated information in related documentation
+
+5. Documentation accessibility:
+   - Ensure documentation is available in the project wiki or documentation system
+   - Verify that all diagrams have text alternatives for accessibility
+   - Check that code examples are properly formatted and syntax highlighted
+   - Ensure documentation follows the project's style guide
+
+6. Version control and maintenance plan:
+   - Establish a process for keeping documentation updated as the system evolves
+   - Create a documentation review checklist for future code changes
+   - Set up automated reminders for documentation reviews after significant changes

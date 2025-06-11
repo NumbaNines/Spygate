@@ -73,3 +73,4 @@ Implement functionality to add text annotations, markers, and region selections 
 ### Description: Optimize the VideoTimeline component for performance and conduct comprehensive testing
 ### Details:
 Profile and optimize video rendering and timeline interactions for smooth performance. Implement the detailed test strategy, including unit tests, integration tests, and user acceptance testing.
+

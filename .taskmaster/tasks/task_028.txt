@@ -1,0 +1,74 @@
+# Task ID: 28
+# Title: UI/UX Improvements for Desktop Application
+# Status: done
+# Dependencies: 26
+# Priority: medium
+# Description: Implement multiple UI/UX enhancements to the desktop application including emoji removal, button resizing, repositioning elements, updating navigation redirects, and adding rounded corners for a more modern appearance.
+# Details:
+1. Remove emoji from upload interface:
+   - Locate and modify the upload interface components in the PyQt6 codebase
+   - Remove all emoji characters from labels, buttons, and tooltips
+   - Ensure text-only interface maintains clarity without emoji support
+
+2. Resize stop button to match browse files button:
+   - Identify the current dimensions of the browse files button
+   - Modify the stop button's size properties to match (width, height, padding)
+   - Ensure consistent styling (font size, colors) between both buttons
+   - Update any related CSS/QSS styling to maintain consistency
+
+3. Reposition browse files button in analyze tab:
+   - Locate the analyze tab layout in the codebase
+   - Adjust the position of the browse files button for better UX
+   - Ensure proper alignment with other UI elements
+   - Test different layouts to determine optimal positioning
+
+4. Update dashboard navigation redirects:
+   - Modify the "Upload New Video" button to redirect to the analyze tab instead of its current destination
+   - Update the "Play Builder" button to redirect to the gameplan tab
+   - Ensure proper signal/slot connections for these navigation actions
+   - Update any related tooltips or documentation to reflect new navigation paths
+
+5. Add rounded corners to main window:
+   - Implement rounded corners on the main application window using PyQt6 styling
+   - Use QSS to define border-radius property for the main window
+   - Ensure compatibility across operating systems (Windows, macOS, Linux)
+   - Test different radius values (8px, 10px, 12px) to determine the most visually appealing option
+
+6. Implementation considerations:
+   - Maintain the existing FACEIT-style dark theme (#0f0f0f, #1a1a1a backgrounds with #ff6b35 accent)
+   - Ensure all UI changes are responsive and maintain proper layout at different window sizes
+   - Follow existing styling patterns for consistency
+   - Document all UI changes in code comments and update any relevant UI documentation
+
+# Test Strategy:
+1. Visual inspection testing:
+   - Verify emoji removal from all parts of the upload interface
+   - Confirm stop button and browse files button have identical dimensions
+   - Check that browse files button is properly positioned in the analyze tab
+   - Verify navigation redirects work correctly for both "Upload New Video" and "Play Builder" buttons
+   - Confirm main window displays with properly rounded corners on all supported platforms
+
+2. Responsive design testing:
+   - Test the UI at multiple window sizes (800x600, 1280x720, 1920x1080)
+   - Verify all elements maintain proper alignment and proportions when resizing
+   - Check that rounded corners render correctly at different window sizes
+
+3. Cross-platform testing:
+   - Test UI changes on Windows 10/11, macOS, and Ubuntu Linux
+   - Verify consistent appearance across all supported platforms
+   - Document any platform-specific rendering issues
+
+4. User flow testing:
+   - Create test scenarios for common user journeys
+   - Verify that the new navigation redirects improve user workflow
+   - Time completion of common tasks before and after changes to measure improvement
+
+5. Accessibility testing:
+   - Verify that all UI elements remain accessible with keyboard navigation
+   - Check that button sizes meet minimum touch/click target guidelines
+   - Ensure sufficient color contrast is maintained for all UI elements
+
+6. Regression testing:
+   - Verify that existing functionality continues to work correctly
+   - Ensure no new UI bugs are introduced by these changes
+   - Test integration with all dependent components

@@ -2,9 +2,60 @@
 
 #### **Product Requirements Document (PRD)**
 
-**Version**: 6.8 - Multi-Game Foundation Integration
-**Date**: June 7, 2025
-**Status**: Final Review
+**Version**: 6.9 - Desktop UI Enhancement
+**Date**: June 11, 2025
+**Status**: Production UI Updates
+
+### **0. Recent Updates (Version 6.9)**
+
+#### **Desktop Application UI Enhancements - Completed June 11, 2025**
+
+**Production-Ready Interface Improvements**:
+
+1. **Clean Upload Interface**: Removed emoji clutter from upload interface for professional appearance
+2. **Consistent Button Sizing**: Harmonized stop button and browse files button dimensions for visual consistency  
+3. **Improved Navigation Flow**: 
+   - "Upload New Video" button now directs users to analyze tab for streamlined workflow
+   - "Play Builder" button redirects to gameplan tab for logical feature access
+4. **Modern Window Styling**: Added subtle rounded corners (12px) to main window for contemporary appearance
+5. **Strategic Button Positioning**: Repositioned browse files button to match stop button location for consistent user experience
+
+**Technical Implementation**:
+- Enhanced PyQt6 desktop application (`spygate_desktop_app_faceit_style.py`)
+- Maintained FACEIT-style dark theme consistency
+- Preserved all existing functionality while improving UX
+- Git commit `972a4c1` successfully deployed to production
+
+**Backend Architecture Implementation - Completed June 11, 2025**:
+
+1. **5-Class YOLOv8 Model System**: 
+   - Streamlined detection model focusing on essential HUD elements
+   - Classes: `hud`, `possession_triangle_area`, `territory_triangle_area`, `preplay_indicator`, `play_call_screen`
+   - Enhanced accuracy with focused class structure vs previous 8-class system
+
+2. **Enhanced YOLOv8 Pipeline** (`spygate/ml/yolov8_model.py`):
+   - Hardware-adaptive performance optimization across 5 hardware tiers
+   - Dynamic model switching and batch size optimization
+   - GPU memory management with RTX 4070 SUPER validation
+   - Performance monitoring and auto-optimization features
+
+3. **Advanced HUD Detection System** (`spygate/ml/hud_detector.py`):
+   - Enhanced OCR processing with multi-engine fallback
+   - Game state extraction from HUD elements
+   - Possession and territory triangle detection logic
+   - Error handling and retry mechanisms for robust operation
+
+4. **Cross-Game Universal Architecture**:
+   - Game-agnostic detection pipeline supporting Madden 25 and CFB 25
+   - Universal concept mapping between EA football games
+   - Adaptive hardware tier system ensuring compatibility across all device types
+   - Preparation for seamless Madden 26 integration
+
+**Business Impact**:
+- Improved first-time user experience with cleaner, more professional interface
+- Reduced user confusion through logical navigation flow
+- Enhanced brand perception with modern, polished appearance
+- Maintained full backward compatibility with existing features
 
 ### **1. Executive Summary**
 
@@ -278,6 +329,174 @@ performance_tracking = {
 - **Coaching Tools**: Shareable analysis reports for team preparation
 
 ### **4. Technical Architecture**
+
+#### **4.0 Production Backend Implementation (June 2025)**
+
+**5-Class YOLOv8 Detection System**: SpygateAI implements a streamlined 5-class detection model that focuses on essential HUD elements for maximum accuracy and performance:
+
+```python
+# Core Detection Classes - Universal across EA Football Games
+UI_CLASSES = [
+    "hud",                      # Main HUD bar containing game situation data
+    "possession_triangle_area",  # Left triangle region (shows ball possession)
+    "territory_triangle_area",  # Right triangle region (field territory context)
+    "preplay_indicator",        # Pre-play state indicator
+    "play_call_screen",         # Play call screen overlay
+]
+```
+
+**Enhanced YOLOv8 Pipeline Architecture** (`spygate/ml/yolov8_model.py`):
+
+The `EnhancedYOLOv8` class provides hardware-adaptive optimization with 5-tier performance scaling:
+
+```python
+# Hardware Tier Configuration Matrix
+HARDWARE_TIERS = {
+    "ULTRA_LOW": {
+        "model_size": "n", "img_size": 320, "batch_size": 1,
+        "device": "cpu", "conf": 0.4, "target_fps": 0.2
+    },
+    "LOW": {
+        "model_size": "n", "img_size": 416, "batch_size": 2,
+        "device": "auto", "conf": 0.3, "target_fps": 0.5
+    },
+    "MEDIUM": {
+        "model_size": "s", "img_size": 640, "batch_size": 4,
+        "half": True, "quantize": True, "target_fps": 1.0
+    },
+    "HIGH": {
+        "model_size": "m", "img_size": 832, "batch_size": 8,
+        "compile": True, "target_fps": 2.0
+    },
+    "ULTRA": {
+        "model_size": "l", "img_size": 1280, "batch_size": 16,
+        "optimize": True, "target_fps": 2.5
+    }
+}
+```
+
+**Key Backend Features Implemented**:
+
+1. **Dynamic Model Switching**: Automatically switches to smaller models if performance degrades
+2. **Adaptive Batch Sizing**: Optimizes batch size based on available GPU memory
+3. **Performance Monitoring**: Real-time tracking of inference times and memory usage
+4. **GPU Memory Management**: Advanced memory optimization for RTX GPUs and lower-tier hardware
+5. **Auto-Optimization**: Background optimization based on performance thresholds
+
+**Advanced HUD Detection Logic** (`spygate/ml/hud_detector.py`):
+
+The `EnhancedHUDDetector` class implements sophisticated game state extraction:
+
+```python
+# Game State Extraction Pipeline
+def detect_hud_elements(frame) -> dict:
+    """Extract comprehensive game state from HUD elements."""
+    
+    # 1. YOLOv8 Detection - Locate HUD regions
+    detection_results = self.model.detect_hud_elements(frame)
+    
+    # 2. OCR Processing - Extract text from detected regions
+    for detection in detection_results:
+        if detection['type'] == 'hud':
+            game_state.update(self._parse_hud_text(ocr_text))
+        elif detection['type'] == 'possession_triangle_area':
+            game_state['possession'] = self._parse_possession_triangle(ocr_text)
+        elif detection['type'] == 'territory_triangle_area':
+            game_state['territory'] = self._parse_territory_triangle(ocr_text)
+    
+    # 3. Game State Validation and Standardization
+    return self._validate_and_standardize_game_state(game_state)
+```
+
+**Multi-Engine OCR Processing**:
+
+```python
+# Enhanced OCR with Fallback Chain
+class EnhancedHUDDetector:
+    def _extract_text_with_error_handling(self, frame, bbox, element_type):
+        """Multi-engine OCR with intelligent fallback."""
+        
+        # Primary: Enhanced OCR System
+        if self.ocr_system:
+            text, confidence = self.ocr_system.extract_text(
+                frame, bbox, element_type
+            )
+            if confidence > 0.7:
+                return text, confidence
+        
+        # Fallback: EasyOCR
+        if self.easyocr_reader:
+            return self._basic_text_extraction(frame, bbox, element_type)
+        
+        # Final Fallback: Template Matching
+        return self._template_based_extraction(frame, bbox, element_type)
+```
+
+**Error Handling and Resilience**:
+
+```python
+# Comprehensive Error Management
+class HUDDetectionError(Exception): pass
+class ModelInitializationError(HUDDetectionError): pass  
+class OCRProcessingError(HUDDetectionError): pass
+class ValidationError(HUDDetectionError): pass
+
+# Retry Logic with Exponential Backoff
+def detect_with_retry(self, frame, max_retries=3):
+    """Robust detection with intelligent retry logic."""
+    for attempt in range(max_retries):
+        try:
+            return self.detect_hud_elements(frame)
+        except HUDDetectionError as e:
+            if attempt == max_retries - 1:
+                raise
+            time.sleep(2 ** attempt)  # Exponential backoff
+```
+
+**Performance Metrics and Monitoring**:
+
+The system tracks comprehensive performance metrics:
+
+```python
+# Real-time Performance Tracking
+@dataclass 
+class PerformanceMetrics:
+    inference_times: deque = field(default_factory=lambda: deque(maxlen=100))
+    memory_usage: deque = field(default_factory=lambda: deque(maxlen=100))
+    accuracy_scores: deque = field(default_factory=lambda: deque(maxlen=50))
+    gpu_utilization: deque = field(default_factory=lambda: deque(maxlen=100))
+    
+    def get_average_metrics(self) -> dict:
+        return {
+            "avg_inference_time": np.mean(self.inference_times),
+            "avg_memory_usage": np.mean(self.memory_usage),
+            "avg_accuracy": np.mean(self.accuracy_scores),
+            "total_inferences": len(self.inference_times)
+        }
+```
+
+**Cross-Game Compatibility Architecture**:
+
+The universal detection pipeline supports multiple EA football games:
+
+```python
+# Universal Game Detection and Processing
+def analyze_any_football_game(video_input):
+    # 1. Auto-detect game version (Madden 25, CFB 25, future games)
+    game_version = detect_game_type(video_input)
+    
+    # 2. Load game-specific configuration while maintaining universal classes
+    game_config = get_game_config(game_version)
+    
+    # 3. Apply universal 5-class detection model
+    universal_detections = self.model.detect_hud_elements(frame)
+    
+    # 4. Map to game-specific context while preserving universal concepts
+    game_analysis = map_to_game_context(universal_detections, game_version)
+    
+    # 5. Return standardized analysis format
+    return create_standardized_analysis(game_analysis)
+```
 
 #### **4.1 Initial Data Seeding & Day-1 Value**
 

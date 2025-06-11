@@ -1,34 +1,105 @@
-# Core
-Django>=5.2.2
-djangorestframework>=3.14.0
-django-cors-headers>=4.3.1
-channels>=4.0.0
-daphne>=4.0.0
-python-dotenv>=1.0.0
+# SpygateAI Requirements
+# ====================
+# Production requirements for SpygateAI football analysis system
+# Last updated: January 2025
+# Environment: Python 3.11+ with CUDA 12.1 support
 
-# Production
-psycopg2-binary>=2.9.9  # PostgreSQL adapter
-channels-redis>=4.1.0  # Redis channel layer
-django-storages>=1.14.2  # S3 storage backend
-boto3>=1.34.0  # AWS SDK
-gunicorn>=21.2.0  # WSGI server
-whitenoise>=6.6.0  # Static file serving
-sentry-sdk>=1.39.0  # Error tracking
+# ===== CORE AI/ML DEPENDENCIES =====
+# PyTorch with CUDA support
+torch==2.5.1+cu121
+torchvision==0.20.1+cu121
+# YOLOv8 and computer vision
+ultralytics==8.3.153
+opencv-python==4.11.0.86
+# Additional CV dependencies
+scikit-image==0.25.2
+imageio==2.37.0
+Pillow==11.0.0
 
-# Development
-django-debug-toolbar>=4.2.0
-black>=23.12.0  # Code formatting
-flake8>=7.0.0  # Code linting
-pytest>=7.4.3  # Testing
-pytest-django>=4.7.0  # Django test integration
-coverage>=7.3.2  # Code coverage
-factory-boy>=3.3.0  # Test data generation
+# ===== OCR DEPENDENCIES =====
+# Tesseract OCR integration
+pytesseract==0.3.13
+# EasyOCR (alternative OCR engine)
+easyocr==1.7.2
+python-bidi==0.6.6
+Shapely==2.1.1
+pyclipper==1.3.0.post6
 
-# Added from the code block
-ultralytics>=8.0.0
-opencv-python>=4.8.0
-numpy>=1.24.0
-PyQt6>=6.5.0
-mss>=9.0.0
-pytesseract>=0.3.10
-Pillow>=10.0.0
+# ===== GUI FRAMEWORK =====
+# PyQt6 for desktop application
+PyQt6==6.9.1
+PyQt6-Qt6==6.9.1
+PyQt6-sip==13.10.2
+
+# ===== DATABASE DEPENDENCIES =====
+# SQLAlchemy ORM and database migrations
+SQLAlchemy==2.0.41
+alembic==1.16.1
+greenlet==3.2.3
+
+# ===== SCIENTIFIC COMPUTING =====
+# NumPy and SciPy for numerical operations
+numpy==2.1.2
+scipy==1.15.3
+pandas==2.3.0
+
+# ===== VISUALIZATION =====
+# Matplotlib for plotting and visualization
+matplotlib==3.10.3
+contourpy==1.3.2
+cycler==0.12.1
+fonttools==4.58.2
+kiwisolver==1.4.8
+
+# ===== UTILITY LIBRARIES =====
+# Progress bars and system monitoring
+tqdm==4.67.1
+psutil==7.0.0
+py-cpuinfo==9.0.0
+# Configuration and data handling
+PyYAML==6.0.2
+requests==2.32.4
+packaging==25.0
+
+# ===== DEVELOPMENT DEPENDENCIES =====
+# Template engine for dynamic content
+Mako==1.3.10
+# Lazy loading utilities
+lazy-loader==0.4
+# Image format support
+tifffile==2025.6.1
+
+# ===== PYTORCH DEPENDENCIES =====
+# Core PyTorch dependencies
+filelock==3.13.1
+typing-extensions==4.12.2
+networkx==3.3
+jinja2==3.1.4
+fsspec==2024.6.1
+sympy==1.13.1
+mpmath==1.3.0
+MarkupSafe==2.1.5
+
+# ===== NETWORK & SECURITY =====
+# HTTP requests and security
+charset-normalizer==3.4.2
+idna==3.10
+urllib3==2.4.0
+certifi==2025.4.26
+
+# ===== TIME & LOCALE =====
+# Date/time handling
+python-dateutil==2.9.0.post0
+pytz==2025.2
+tzdata==2025.2
+six==1.17.0
+
+# ===== MISCELLANEOUS =====
+# Parsing utilities
+pyparsing==3.2.3
+# Console colors
+colorama==0.4.6
+# Neural network profiling
+ultralytics-thop==2.0.14
+# Build tools
+ninja==1.11.1.4

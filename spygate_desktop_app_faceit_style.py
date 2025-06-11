@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 """
-SpygateAI Desktop Application - FaceIt Style Layout
-===================================================
+SpygateAI Desktop Application
+=============================
 
-Exact FaceIt layout with SpygateAI functionality and content.
+Modern desktop application with SpygateAI functionality and sleek UI design.
 """
 
 import json
+import math
 import os
 import sys
 import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Set, Tuple
+import subprocess
+import shutil
 
 # Add project paths
 current_dir = Path(__file__).parent
@@ -25,6 +28,9 @@ from profile_picture_manager import ProfilePictureManager, is_emoji_profile
 # Import user database
 from user_database import User, UserDatabase
 
+# Import formation editor
+from formation_editor import FormationEditor
+
 try:
     import cv2
     import numpy as np
@@ -32,6 +38,8 @@ try:
     from PyQt6.QtCore import *
     from PyQt6.QtGui import *
     from PyQt6.QtWidgets import *
+    from PyQt6.QtSvg import QSvgRenderer
+    from PyQt6.QtSvgWidgets import QSvgWidget
 
     print("✅ Core imports successful")
 except ImportError as e:
@@ -53,10 +61,50 @@ class DetectedClip:
     approved: Optional[bool] = None
 
 
-class SpygateDesktopFaceItStyle(QMainWindow):
+class HoverableLogoLabel(QLabel):
+    """Custom QLabel that changes logo on hover"""
+    
+    def __init__(self, default_logo_path, hover_logo_path):
+        super().__init__()
+        self.default_logo_path = default_logo_path
+        self.hover_logo_path = hover_logo_path
+        
+        # Load and set default logo
+        self.load_logo(self.default_logo_path)
+        self.setToolTip("SpygateAI Desktop")
+        
+    def load_logo(self, logo_path):
+        """Load and set a logo image"""
+        try:
+            pixmap = QPixmap(logo_path)
+            if not pixmap.isNull():
+                # Scale logo to fit nicely in header (max 180x50)
+                scaled_pixmap = pixmap.scaled(
+                    180,
+                    50,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+                self.setPixmap(scaled_pixmap)
+                return True
+        except Exception as e:
+            print(f"❌ Failed to load logo from {logo_path}: {e}")
+        return False
+        
+    def enterEvent(self, event):
+        """Mouse enters the logo area - show hover logo"""
+        self.load_logo(self.hover_logo_path)
+        super().enterEvent(event)
+        
+    def leaveEvent(self, event):
+        """Mouse leaves the logo area - show default logo"""
+        self.load_logo(self.default_logo_path)
+        super().leaveEvent(event)
+
+class SpygateDesktop(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("SpygateAI Desktop - FaceIt Style")
+        self.setWindowTitle("SpygateAI Desktop")
         self.setGeometry(100, 100, 1400, 900)
 
         # Make window frameless for custom controls
@@ -68,13 +116,14 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         # Setup keyboard shortcuts
         self.setup_shortcuts()
 
-        # Set dark background
+        # Set dark background with rounded corners
         self.setStyleSheet(
             f"""
             QMainWindow {{
                 background-color: #0b0c0f;
                 color: #ffffff;
                 font-family: 'Minork Sans', Arial, sans-serif;
+                border-radius: 12px;
             }}
         """
         )
@@ -97,12 +146,349 @@ class SpygateDesktopFaceItStyle(QMainWindow):
 
         # Update last login
         self.user_db.update_last_login(self.current_user.user_id)
-
+        
         # Initialize formation data
         self.players = {}
         self.formation_presets = self.load_formation_presets()
-
+        
         self.init_ui()
+
+    def load_formation_presets(self):
+        """Load formation presets from JSON file or return defaults"""
+        presets_file = Path("assets/formations/formation_presets.json")
+
+        # Default formations if file doesn't exist
+        default_formations = {
+            "Gun Bunch": {
+                "description": "3 WR bunch formation",
+                "positions": {
+                    "QB": (396, 347),
+                    "RB": (448, 348),
+                    "WR1": (148, 299),
+                    "WR2": (552, 300),
+                    "WR3": (594, 309),
+                    "TE": (508, 309),
+                    "LT": (333, 300),
+                    "LG": (366, 300),
+                    "C": (400, 300),
+                    "RG": (433, 300),
+                    "RT": (466, 300),
+                },
+            },
+            "I-Formation": {
+                "description": "Traditional I-Formation",
+                "positions": {
+                    "QB": (396, 347),
+                    "RB": (396, 380),
+                    "FB": (396, 365),
+                    "WR1": (148, 299),
+                    "WR2": (644, 299),
+                    "TE": (508, 309),
+                    "LT": (333, 300),
+                    "LG": (366, 300),
+                    "C": (400, 300),
+                    "RG": (433, 300),
+                    "RT": (466, 300),
+                },
+            },
+        }
+
+        try:
+            if presets_file.exists():
+                with open(presets_file) as f:
+                    formations = json.load(f)
+                print(f"✅ Loaded formations from: {presets_file}")
+                return formations
+        except Exception as e:
+            print(f"❌ Error loading formations: {e}")
+
+        print("📝 Using default formations")
+        return default_formations
+
+    def browse_file(self):
+        """Open file browser to select video files for analysis"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select Video File",
+            "",
+            "Video Files (*.mp4 *.avi *.mov *.mkv *.wmv *.flv);;All Files (*)",
+        )
+
+        if file_path:
+            print(f"🎬 Processing video: {file_path}")
+            # Start the enhanced video analysis with multi-strategy detection
+            self.start_video_analysis(file_path)
+
+    def start_video_analysis(self, video_path):
+        """Start video analysis with multi-strategy 3rd down detection"""
+        from spygate_desktop_app_with_viewer import AnalysisWorker
+        
+        try:
+            print("🎬 Starting animation creation...")
+            
+            # Create analyzing text label
+            self.analyzing_text = QLabel("Analyzing", self)
+            print("🎬 Analyzing text created")
+            self.analyzing_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.analyzing_text.setStyleSheet("""
+                QLabel {
+                    color: #ffffff;
+                    font-family: 'Minork Sans', Arial, sans-serif;
+                    font-size: 16px;
+                    font-weight: bold;
+                    background: transparent;
+                }
+            """)
+            self.analyzing_text.setFixedSize(120, 25)
+            
+            # Create and show centered animation overlay
+            self.animation_overlay = QLabel(self)
+            print("🎬 Animation QLabel created")
+            self.animation_overlay.setFixedSize(60, 60)  # Smaller size
+            self.animation_overlay.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            # Remove setScaledContents to preserve image quality
+            
+            # Load animation images 1.png, 2.png, 3.png, 4.png
+            self.animation_images = []
+            self.animation_index = 0
+            
+            for i in range(1, 5):  # 1, 2, 3, 4
+                image_path = f"assets/other/{i}.png"
+                if os.path.exists(image_path):
+                    pixmap = QPixmap(image_path)
+                    if not pixmap.isNull():
+                        # Scale to fit the overlay size with smooth scaling
+                        scaled_pixmap = pixmap.scaled(
+                            60, 60,
+                            Qt.AspectRatioMode.KeepAspectRatio,
+                            Qt.TransformationMode.SmoothTransformation
+                        )
+                        self.animation_images.append(scaled_pixmap)
+                        print(f"🎬 Loaded animation image: {image_path}")
+                else:
+                    print(f"⚠️ Animation image not found: {image_path}")
+            
+            # Only proceed if we have images loaded
+            if self.animation_images:
+                # Set initial image
+                self.animation_overlay.setPixmap(self.animation_images[0])
+                print(f"✅ Animation setup complete with {len(self.animation_images)} images")
+            else:
+                print("⚠️ No animation images found, animation will not show")
+                return  # Exit early if no images to animate
+            
+            # Style the overlay with transparency
+            self.animation_overlay.setStyleSheet("""
+                QLabel {
+                    background-color: transparent;
+                }
+            """)
+            
+            # Create stop button with same styling as browse button
+            self.stop_button = QPushButton("Stop Analysis", self)
+            print("🎬 Stop button created")
+            self.stop_button.setStyleSheet("""
+                QPushButton {
+                    background-color: #1ce783;
+                    color: #e3e3e3;
+                    padding: 12px 24px;
+                    border: none;
+                    border-radius: 6px;
+                    font-family: "Minork Sans", sans-serif;
+                    font-weight: bold;
+                    font-size: 14px;
+                }
+                QPushButton:hover { background-color: #17d474; }
+            """)
+            # Remove fixed size to match browse button auto-sizing
+            self.stop_button.clicked.connect(self.stop_analysis)
+            
+            # Show stop button always (not just during analysis)
+            self.stop_button.show()
+            self.stop_button.raise_()
+            
+            # Center the animation on the main window and bring it to front
+            self.center_animation_overlay()
+            print("🎬 Animation centered")
+            # Show both text and animation
+            self.analyzing_text.show()
+            self.animation_overlay.show()
+            print("🎬 Animation and text shown")
+            
+            # Bring both to front
+            self.analyzing_text.raise_()
+            self.animation_overlay.raise_()
+            print("🎬 Animation and text raised to front")
+            
+            # Make sure it's above all other widgets
+            self.animation_overlay.setParent(self)
+            self.animation_overlay.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+            
+            # Start animation timer - cycle every 1 second (1000ms)
+            self.animation_timer = QTimer()
+            self.animation_timer.timeout.connect(self.animate_images)
+            self.animation_timer.start(1000)  # Update every 1000ms (1 second)
+            
+            print(f"🎬 Animation overlay shown at position: {self.animation_overlay.pos()}")
+            print(f"🎬 Animation overlay size: {self.animation_overlay.size()}")
+            print(f"🎬 Main window size: {self.size()}")
+            print("🎬 Animation setup complete!")
+            
+        except Exception as e:
+            print(f"❌ Error creating animation: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        # Create and start analysis worker
+        self.analysis_worker = AnalysisWorker(video_path)
+        self.analysis_worker.progress_updated.connect(self.update_analysis_progress)
+        self.analysis_worker.analysis_finished.connect(self.on_analysis_complete)
+        self.analysis_worker.start()
+
+    def center_animation_overlay(self):
+        """Center the animation overlay, text, and stop button on the main window"""
+        if hasattr(self, 'animation_overlay') and hasattr(self, 'analyzing_text') and hasattr(self, 'stop_button'):
+            # Get the center position of the main window
+            main_rect = self.rect()
+            animation_size = self.animation_overlay.size()
+            text_size = self.analyzing_text.size()
+            button_size = self.stop_button.size()
+            
+            # Calculate center position for animation
+            anim_x = (main_rect.width() - animation_size.width()) // 2
+            anim_y = (main_rect.height() - animation_size.height()) // 2
+            
+            # Calculate position for text (above animation with 10px gap)
+            text_x = (main_rect.width() - text_size.width()) // 2
+            text_y = anim_y - text_size.height() - 10
+            
+            # Calculate position for stop button (below animation with 20px gap)
+            button_x = (main_rect.width() - button_size.width()) // 2
+            button_y = anim_y + animation_size.height() + 20
+            
+            # Position all elements
+            self.animation_overlay.move(anim_x, anim_y)
+            self.analyzing_text.move(text_x, text_y)
+            self.stop_button.move(button_x, button_y)
+            print(f"🎬 Animation centered at ({anim_x}, {anim_y})")
+            print(f"🎬 Text positioned at ({text_x}, {text_y})")
+            print(f"🎬 Stop button positioned at ({button_x}, {button_y})")
+    
+    def animate_images(self):
+        """Cycle through the 4 animation images"""
+        if hasattr(self, 'animation_overlay') and self.animation_overlay.isVisible():
+            if self.animation_images:
+                # Move to next image
+                self.animation_index = (self.animation_index + 1) % len(self.animation_images)
+                self.animation_overlay.setPixmap(self.animation_images[self.animation_index])
+                
+                # Make sure animation stays visible and on top
+                self.animation_overlay.raise_()
+                
+                print(f"🎬 Showing image {self.animation_index + 1}")
+            # No emoji fallback - if no images found, animation won't show
+    
+    def resizeEvent(self, event):
+        """Handle window resize to keep animation centered"""
+        super().resizeEvent(event)
+        if hasattr(self, 'animation_overlay') and self.animation_overlay.isVisible():
+            self.center_animation_overlay()
+
+    def update_analysis_progress(self, progress, message):
+        """Update analysis progress - no dialog needed with clock overlay"""
+        # Progress is shown through the animated clock overlay
+        pass
+            
+    def stop_analysis(self):
+        """Stop the video analysis process"""
+        print("🛑 Stopping video analysis...")
+        
+        # Stop the analysis worker if it exists
+        if hasattr(self, 'analysis_worker') and self.analysis_worker:
+            self.analysis_worker.terminate()
+            self.analysis_worker.wait()  # Wait for thread to finish
+            print("🛑 Analysis worker stopped")
+        
+        # Stop animation and hide overlays
+        if hasattr(self, 'animation_timer'):
+            self.animation_timer.stop()
+        if hasattr(self, 'animation_overlay'):
+            self.animation_overlay.hide()
+        if hasattr(self, 'analyzing_text'):
+            self.analyzing_text.hide()
+            print("🛑 Animation stopped and hidden")
+        
+        # Hide stop button during non-analysis times
+        if hasattr(self, 'stop_button'):
+            self.stop_button.hide()
+    
+    def on_analysis_complete(self, video_path, clips_data):
+        """Handle analysis completion"""
+        # Stop animation and hide overlays
+        if hasattr(self, 'animation_timer'):
+            self.animation_timer.stop()
+        if hasattr(self, 'animation_overlay'):
+            self.animation_overlay.hide()
+        if hasattr(self, 'analyzing_text'):
+            self.analyzing_text.hide()
+            print("🎬 Animation and text stopped and hidden")
+        
+        # Store clips data for viewing
+        self.current_video_path = video_path
+        self.detected_clips = clips_data if clips_data else []
+        
+        # Show results
+        num_clips = len(self.detected_clips)
+        result_msg = f"Analysis complete!\n\nVideo: {Path(video_path).name}\nDetected clips: {num_clips}"
+        
+        if num_clips > 0:
+            result_msg += f"\n\nClips detected with multi-strategy 3rd down detection:\n"
+            for i, clip in enumerate(self.detected_clips[:5]):  # Show first 5
+                start_time = clip.get('start_time', 0)
+                situation = clip.get('situation', 'Unknown')
+                result_msg += f"• {start_time:.1f}s - {situation}\n"
+            if num_clips > 5:
+                result_msg += f"... and {num_clips - 5} more clips"
+            
+            result_msg += "\n\nClick OK to view and export your clips!"
+        
+        # Show analysis completion dialog
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("Analysis Complete")
+        msg_box.setText(result_msg)
+        msg_box.setIcon(QMessageBox.Icon.Information)
+        
+        if num_clips > 0:
+            # Add "View Clips" button
+            view_clips_btn = msg_box.addButton("View Clips", QMessageBox.ButtonRole.AcceptRole)
+            msg_box.addButton("Close", QMessageBox.ButtonRole.RejectRole)
+            
+            msg_box.exec()
+            
+            # If user clicked "View Clips", switch to analysis tab and show clips
+            if msg_box.clickedButton() == view_clips_btn:
+                self.switch_to_tab('analysis')
+                self.show_clips_viewer()
+        else:
+            msg_box.addButton(QMessageBox.StandardButton.Ok)
+            msg_box.exec()
+
+    def show_clips_viewer(self):
+        """Show clips viewer with detected clips"""
+        print(f"🎬 Showing clips viewer with {len(self.detected_clips)} clips")
+        # Refresh the analysis content to show clips
+        self.update_main_content()
+
+    def show_play_builder(self):
+        """Show the play builder interface"""
+        print("🏈 Opening Play Builder...")
+        # This would open your formation editor or play builder
+        QMessageBox.information(
+            self,
+            "Play Builder",
+            "Play Builder interface will be implemented here.\n\nThis will integrate with your formation editor.",
+            QMessageBox.StandardButton.Ok,
+        )
 
     def setup_shortcuts(self):
         """Setup keyboard shortcuts"""
@@ -1204,37 +1590,56 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         parent_layout.addWidget(left_sidebar)
 
     def create_logo_widget(self):
-        """Create logo widget - tries to load image logo, falls back to text"""
-        logo_paths = [
+        """Create hoverable logo widget - tries to load image logos, falls back to text"""
+        # Define paths for default and hover logos
+        default_logo_paths = [
             "assets/logo/spygate-logo.png",
             "assets/logo/spygate_logo.png",
             "assets/spygate-logo.png",
             "logo.png",
         ]
 
-        # Try to load image logo
-        for logo_path in logo_paths:
+        hover_logo_path = "assets/logo/SpygateAI2.png"
+
+        # Try to find default logo
+        default_logo = None
+        for logo_path in default_logo_paths:
             if Path(logo_path).exists():
-                try:
-                    logo_label = QLabel()
-                    pixmap = QPixmap(logo_path)
+                default_logo = logo_path
+                break
 
-                    if not pixmap.isNull():
-                        # Scale logo to fit nicely in header (max 180x50)
-                        scaled_pixmap = pixmap.scaled(
-                            180,
-                            50,
-                            Qt.AspectRatioMode.KeepAspectRatio,
-                            Qt.TransformationMode.SmoothTransformation,
-                        )
-                        logo_label.setPixmap(scaled_pixmap)
-                        logo_label.setToolTip("SpygateAI Desktop")
-                        print(f"✅ Loaded logo from: {logo_path}")
-                        return logo_label
+        # Check if both logos exist for hover functionality
+        if default_logo and Path(hover_logo_path).exists():
+            try:
+                # Create hoverable logo widget
+                logo_label = HoverableLogoLabel(default_logo, hover_logo_path)
+                print(f"✅ Loaded hoverable logo: {default_logo} → {hover_logo_path}")
+                return logo_label
+                
+            except Exception as e:
+                print(f"❌ Failed to create hoverable logo: {e}")
 
-                except Exception as e:
-                    print(f"❌ Failed to load logo from {logo_path}: {e}")
-                    continue
+                # Fallback: try regular logo without hover
+                if default_logo:
+                    try:
+                        logo_label = QLabel()
+                        pixmap = QPixmap(default_logo)
+
+                        if not pixmap.isNull():
+                            # Scale logo to fit nicely in header (max 180x50)
+                            scaled_pixmap = pixmap.scaled(
+                                180,
+                                50,
+                                Qt.AspectRatioMode.KeepAspectRatio,
+                                Qt.TransformationMode.SmoothTransformation,
+                            )
+                            logo_label.setPixmap(scaled_pixmap)
+                            logo_label.setToolTip("SpygateAI Desktop")
+                            print(f"✅ Loaded logo from: {default_logo} (no hover)")
+                            return logo_label
+
+                    except Exception as e:
+                        print(f"❌ Failed to load logo from {default_logo}: {e}")
 
         # Fallback to text logo
         print("📝 Using text logo (no image found)")
@@ -1251,88 +1656,6 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         )
         logo_label.setToolTip("SpygateAI Desktop")
         return logo_label
-
-    def load_formation_presets(self):
-        """Load formation presets from JSON file or return defaults"""
-        presets_file = Path("assets/formations/formation_presets.json")
-
-        # Default formations if file doesn't exist
-        default_formations = {
-            "Gun Bunch": {
-                "description": "3 WR bunch formation",
-                "positions": {
-                    "QB": (396, 347),
-                    "RB": (448, 348),
-                    "WR1": (148, 299),
-                    "WR2": (552, 300),
-                    "WR3": (594, 309),
-                    "TE": (508, 309),
-                    "LT": (333, 300),
-                    "LG": (366, 300),
-                    "C": (400, 300),
-                    "RG": (433, 300),
-                    "RT": (466, 300),
-                },
-            },
-            "I-Formation": {
-                "description": "Traditional I-Formation",
-                "positions": {
-                    "QB": (396, 347),
-                    "RB": (396, 380),
-                    "FB": (396, 365),
-                    "WR1": (148, 299),
-                    "WR2": (644, 299),
-                    "TE": (508, 309),
-                    "LT": (333, 300),
-                    "LG": (366, 300),
-                    "C": (400, 300),
-                    "RG": (433, 300),
-                    "RT": (466, 300),
-                },
-            },
-        }
-
-        try:
-            if presets_file.exists():
-                with open(presets_file) as f:
-                    formations = json.load(f)
-                print(f"✅ Loaded formations from: {presets_file}")
-                return formations
-        except Exception as e:
-            print(f"❌ Error loading formations: {e}")
-
-        print("📝 Using default formations")
-        return default_formations
-
-    def browse_file(self):
-        """Open file browser to select video files for analysis"""
-        file_path, _ = QFileDialog.getOpenFileName(
-            self,
-            "Select Video File",
-            "",
-            "Video Files (*.mp4 *.avi *.mov *.mkv *.wmv *.flv);;All Files (*)",
-        )
-
-        if file_path:
-            print(f"🎬 Processing video: {file_path}")
-            # Here you would integrate with your video processing logic
-            QMessageBox.information(
-                self,
-                "Video Selected",
-                f"Selected video: {Path(file_path).name}\n\nVideo processing will be implemented here.",
-                QMessageBox.StandardButton.Ok,
-            )
-
-    def show_play_builder(self):
-        """Show the play builder interface"""
-        print("🏈 Opening Play Builder...")
-        # This would open your formation editor or play builder
-        QMessageBox.information(
-            self,
-            "Play Builder",
-            "Play Builder interface will be implemented here.\n\nThis will integrate with your formation editor.",
-            QMessageBox.StandardButton.Ok,
-        )
 
     def create_nav_button(self, icon, text):
         button = QPushButton(text if not icon else f"{icon}  {text}")
@@ -1435,14 +1758,269 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             self.content_layout.addWidget(content_widget)
 
     def create_analysis_content(self):
-        """Create the analysis tab content with FaceIt styling"""
+        """Create the analysis tab content - either clips viewer or upload interface"""
         content = QWidget()
         layout = QVBoxLayout(content)
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(20)
-
+        
+        # Check if we have detected clips to show
+        if hasattr(self, 'detected_clips') and self.detected_clips:
+            return self.create_clips_viewer_content()
+        else:
+            return self.create_upload_interface_content()
+            
+    def create_clips_viewer_content(self):
+        """Create clips viewer showing detected plays"""
+        content = QWidget()
+        layout = QVBoxLayout(content)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(20)
+        
+        # Header with video info
+        header_layout = QHBoxLayout()
+        
+        header = QLabel(f"🎬 Detected Clips: {len(self.detected_clips)} plays found")
+        header.setStyleSheet(
+            """
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: bold;
+            font-family: 'Minork Sans', Arial, sans-serif;
+        """
+        )
+        header_layout.addWidget(header)
+        
+        header_layout.addStretch()
+        
+        # New video button
+        new_video_btn = QPushButton("📤 Analyze New Video")
+        new_video_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #29d28c;
+                color: #151515;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-family: 'Minork Sans', Arial, sans-serif;
+                font-weight: bold;
+                font-size: 14px;
+            }
+            QPushButton:hover { background-color: #34e89a; }
+        """
+        )
+        new_video_btn.clicked.connect(self.browse_file)
+        header_layout.addWidget(new_video_btn)
+        
+        header_widget = QWidget()
+        header_widget.setLayout(header_layout)
+        layout.addWidget(header_widget)
+        
+        # Video info
+        if hasattr(self, 'current_video_path'):
+            video_info = QLabel(f"📁 {Path(self.current_video_path).name}")
+            video_info.setStyleSheet(
+                """
+                color: #767676;
+                font-size: 14px;
+                font-family: 'Minork Sans', Arial, sans-serif;
+                padding: 5px 0;
+            """
+            )
+            layout.addWidget(video_info)
+        
+        # Clips list in scrollable area
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setStyleSheet(
+            """
+            QScrollArea {
+                border: none;
+                background-color: transparent;
+            }
+            QScrollBar::vertical {
+                background-color: #2a2a2a;
+                width: 12px;
+                border-radius: 6px;
+            }
+            QScrollBar::handle:vertical {
+                background-color: #565656;
+                border-radius: 6px;
+                min-height: 20px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background-color: #767676;
+            }
+        """
+        )
+        
+        clips_widget = QWidget()
+        clips_layout = QVBoxLayout(clips_widget)
+        clips_layout.setSpacing(10)
+        
+        # Create clips list
+        for i, clip in enumerate(self.detected_clips):
+            clip_item = self.create_clip_item(i, clip)
+            clips_layout.addWidget(clip_item)
+            
+        clips_layout.addStretch()
+        scroll_area.setWidget(clips_widget)
+        layout.addWidget(scroll_area)
+        
+        return content
+        
+    def create_clip_item(self, index, clip):
+        """Create a single clip item widget"""
+        item = QWidget()
+        item.setFixedHeight(80)
+        item.setStyleSheet(
+            """
+            QWidget {
+                background-color: #1a1a1a;
+                border-radius: 8px;
+                border: 1px solid #333;
+            }
+            QWidget:hover {
+                background-color: #2a2a2a;
+                border: 1px solid #29d28c;
+            }
+        """
+        )
+        
+        layout = QHBoxLayout(item)
+        layout.setContentsMargins(15, 10, 15, 10)
+        
+        # Clip info
+        info_layout = QVBoxLayout()
+        
+        # Title with situation
+        title = QLabel(f"#{index + 1}: {clip.get('situation', 'Play Detection')}")
+        title.setStyleSheet(
+            """
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 14px;
+            font-family: 'Minork Sans', Arial, sans-serif;
+        """
+        )
+        info_layout.addWidget(title)
+        
+        # Time info
+        start_time = clip.get('start_time', 0)
+        end_time = clip.get('end_time', 0)
+        duration = end_time - start_time
+        time_info = QLabel(f"⏱️ {start_time:.1f}s - {end_time:.1f}s ({duration:.1f}s duration)")
+        time_info.setStyleSheet(
+            """
+            color: #767676;
+            font-size: 12px;
+            font-family: 'Minork Sans', Arial, sans-serif;
+        """
+        )
+        info_layout.addWidget(time_info)
+        
+        layout.addLayout(info_layout)
+        layout.addStretch()
+        
+        # Export button
+        export_btn = QPushButton("📥 Export Clip")
+        export_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #29d28c;
+                color: #151515;
+                border: none;
+                border-radius: 4px;
+                padding: 8px 16px;
+                font-family: 'Minork Sans', Arial, sans-serif;
+                font-weight: bold;
+                font-size: 12px;
+            }
+            QPushButton:hover { background-color: #34e89a; }
+        """
+        )
+        export_btn.clicked.connect(lambda: self.export_clip(index, clip))
+        layout.addWidget(export_btn)
+        
+        return item
+        
+    def export_clip(self, index, clip):
+        """Export a specific clip"""
+        print(f"🎬 Exporting clip #{index + 1}: {clip.get('situation', 'Unknown')}")
+        
+        # Get output file path from user
+        video_name = Path(self.current_video_path).stem if hasattr(self, 'current_video_path') else 'clip'
+        default_name = f"{video_name}_clip_{index + 1}_{clip.get('situation', 'play').replace(' ', '_')}.mp4"
+        
+        output_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Clip As",
+            default_name,
+            "Video Files (*.mp4);;All Files (*)"
+        )
+        
+        if output_path:
+            # Show export progress
+            progress = QProgressDialog("Exporting clip...", "Cancel", 0, 100, self)
+            progress.setWindowModality(Qt.WindowModality.WindowModal)
+            progress.show()
+            
+            try:
+                # Extract clip using ffmpeg (simplified - you may want to use the full worker)
+                import subprocess
+                
+                start_time = clip.get('start_time', 0)
+                duration = clip.get('end_time', 0) - start_time
+                
+                cmd = [
+                    'ffmpeg',
+                    '-y',  # Overwrite output
+                    '-i', self.current_video_path,
+                    '-ss', str(start_time),
+                    '-t', str(duration),
+                    '-c', 'copy',  # Copy streams for speed
+                    output_path
+                ]
+                
+                # Run ffmpeg
+                result = subprocess.run(cmd, capture_output=True, text=True)
+                
+                progress.close()
+                
+                if result.returncode == 0:
+                    QMessageBox.information(
+                        self,
+                        "Export Complete",
+                        f"Clip exported successfully!\n\nSaved to: {output_path}",
+                        QMessageBox.StandardButton.Ok
+                    )
+                else:
+                    QMessageBox.warning(
+                        self,
+                        "Export Failed",
+                        f"Failed to export clip.\n\nError: {result.stderr}",
+                        QMessageBox.StandardButton.Ok
+                    )
+                    
+            except Exception as e:
+                progress.close()
+                QMessageBox.warning(
+                    self,
+                    "Export Error",
+                    f"An error occurred during export:\n\n{str(e)}",
+                    QMessageBox.StandardButton.Ok
+                )
+        
+    def create_upload_interface_content(self):
+        """Create upload interface when no clips are available"""
+        content = QWidget()
+        layout = QVBoxLayout(content)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(20)
+        
         # Header
-        header = QLabel("Latest Analysis")
+        header = QLabel("Video Analysis")
         header.setStyleSheet(
             """
             color: #ffffff;
@@ -1471,7 +2049,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         container_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Upload icon
-        upload_icon = QLabel("📤")
+        upload_icon = QLabel("")
         upload_icon.setStyleSheet(
             """
             font-size: 48px;
@@ -1509,7 +2087,24 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         container_layout.addWidget(subtitle)
 
-        # Browse button
+        # Create main upload content layout
+        main_content_layout = QVBoxLayout()
+        
+        # Center the upload container (without browse button)
+        centered_layout = QHBoxLayout()
+        centered_layout.addStretch()
+        centered_layout.addWidget(upload_container)
+        centered_layout.addStretch()
+
+        upload_widget = QWidget()
+        upload_widget.setLayout(centered_layout)
+        main_content_layout.addWidget(upload_widget)
+        
+        # Add stretch to push browse button down
+        main_content_layout.addStretch()
+        
+        # Browse button positioned lower (where stop button would be)
+        browse_btn_layout = QHBoxLayout()
         browse_btn = QPushButton("Browse Files")
         browse_btn.setStyleSheet(
             """
@@ -1527,17 +2122,23 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         """
         )
         browse_btn.clicked.connect(self.browse_file)
-        container_layout.addWidget(browse_btn)
-
-        # Center the upload container
-        centered_layout = QHBoxLayout()
-        centered_layout.addStretch()
-        centered_layout.addWidget(upload_container)
-        centered_layout.addStretch()
-
-        upload_widget = QWidget()
-        upload_widget.setLayout(centered_layout)
-        layout.addWidget(upload_widget)
+        
+        # Center the browse button horizontally
+        browse_btn_layout.addStretch()
+        browse_btn_layout.addWidget(browse_btn)
+        browse_btn_layout.addStretch()
+        
+        browse_btn_widget = QWidget()
+        browse_btn_widget.setLayout(browse_btn_layout)
+        main_content_layout.addWidget(browse_btn_widget)
+        
+        # Add some bottom margin
+        main_content_layout.addSpacing(80)
+        
+        # Create final container
+        final_container = QWidget()
+        final_container.setLayout(main_content_layout)
+        layout.addWidget(final_container)
 
         layout.addStretch()
         return content
@@ -1548,7 +2149,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         layout = QVBoxLayout(content)
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(20)
-
+        
         # Welcome header with user info
         welcome_layout = QHBoxLayout()
 
@@ -1594,7 +2195,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         actions_row.setSpacing(15)
 
         # Upload Video Button (primary action)
-        upload_btn = QPushButton("📤 Upload New Video")
+        upload_btn = QPushButton("Upload New Video")
         upload_btn.setFixedHeight(50)
         upload_btn.setStyleSheet(
             """
@@ -1616,7 +2217,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             }
         """
         )
-        upload_btn.clicked.connect(self.browse_file)
+        upload_btn.clicked.connect(lambda: self.switch_to_tab("analysis"))
         actions_row.addWidget(upload_btn)
 
         # Play Builder Button
@@ -1639,7 +2240,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             }
         """
         )
-        play_builder_btn.clicked.connect(self.show_play_builder)
+        play_builder_btn.clicked.connect(lambda: self.switch_to_tab("gameplan"))
         actions_row.addWidget(play_builder_btn)
 
         # View Analysis Button
@@ -1962,7 +2563,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
                 border: 1px solid #29d28c;
                 }
             """
-        )
+            )
 
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(20, 15, 20, 15)
@@ -2071,13 +2672,13 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         self.update_right_sidebar()
 
     def create_gameplan_content(self):
-        """Create gameplan tab content placeholder"""
+        """Create gameplan tab content with embedded interactive field"""
         content = QWidget()
         layout = QVBoxLayout(content)
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(20)
-
-        header = QLabel("Game Planning & Formation Builder")
+        
+        header = QLabel("🏈 Interactive Play Planner")
         header.setStyleSheet(
             """
             color: #ffffff;
@@ -2088,21 +2689,477 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         )
         layout.addWidget(header)
 
-        placeholder = QLabel("🏈 Formation Builder and Game Planning tools will be integrated here")
-        placeholder.setStyleSheet(
+        # Create main horizontal layout for field and controls
+        main_layout = QHBoxLayout()
+        
+        # Left side: Interactive field
+        field_widget = self.create_interactive_field()
+        main_layout.addWidget(field_widget, 2)  # Take up more space
+        
+        # Right side: Controls
+        controls_widget = self.create_play_planner_controls()
+        main_layout.addWidget(controls_widget, 1)
+        
+        layout.addLayout(main_layout)
+        
+        return content
+    
+    def create_interactive_field(self):
+        """Create the interactive football field widget"""
+        field_container = QWidget()
+        field_layout = QVBoxLayout(field_container)
+        field_layout.setContentsMargins(10, 10, 10, 10)
+        
+        # Field controls row
+        controls_row = QHBoxLayout()
+        
+        zoom_in_btn = QPushButton("🔍+")
+        zoom_in_btn.setFixedSize(40, 30)
+        zoom_in_btn.setToolTip("Zoom In")
+        zoom_in_btn.setStyleSheet(
             """
-            color: #767676;
-            font-size: 16px;
-            font-family: 'Minork Sans', Arial, sans-serif;
-            text-align: center;
-            padding: 40px;
+            QPushButton {
+                background-color: #2d2d2d;
+                color: #e3e3e3;
+                border: 1px solid #666;
+                border-radius: 4px;
+                font-weight: bold;
+                font-family: 'Minork Sans', Arial, sans-serif;
+            }
+            QPushButton:hover { background-color: #3d3d3d; border-color: #1ce783; }
         """
         )
-        placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(placeholder)
-
-        layout.addStretch()
-        return content
+        
+        zoom_out_btn = QPushButton("🔍-")
+        zoom_out_btn.setFixedSize(40, 30)
+        zoom_out_btn.setToolTip("Zoom Out")
+        zoom_out_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #2d2d2d;
+                color: #e3e3e3;
+                border: 1px solid #666;
+                border-radius: 4px;
+                font-weight: bold;
+                font-family: 'Minork Sans', Arial, sans-serif;
+            }
+            QPushButton:hover { background-color: #3d3d3d; border-color: #1ce783; }
+        """
+        )
+        
+        reset_btn = QPushButton("⟲")
+        reset_btn.setFixedSize(40, 30)
+        reset_btn.setToolTip("Reset View")
+        reset_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #2d2d2d;
+                color: #e3e3e3;
+                border: 1px solid #666;
+                border-radius: 4px;
+                font-weight: bold;
+                font-family: 'Minork Sans', Arial, sans-serif;
+            }
+            QPushButton:hover { background-color: #3d3d3d; border-color: #1ce783; }
+        """
+        )
+        
+        self.zoom_label = QLabel("100%")
+        self.zoom_label.setStyleSheet(
+            """
+            color: #ffffff;
+            font-family: 'Minork Sans', Arial, sans-serif;
+            font-weight: bold;
+            padding: 5px;
+        """
+        )
+        
+        controls_row.addWidget(zoom_in_btn)
+        controls_row.addWidget(zoom_out_btn)
+        controls_row.addWidget(reset_btn)
+        controls_row.addWidget(self.zoom_label)
+        controls_row.addStretch()
+        
+        field_layout.addLayout(controls_row)
+        
+        # Interactive graphics view
+        self.field_view = ZoomableGraphicsView()
+        self.field_scene = QGraphicsScene()
+        self.field_view.setScene(self.field_scene)
+        self.field_view.setFixedSize(700, 500)
+        self.field_view.setStyleSheet(
+            """
+            QGraphicsView {
+                border: 2px solid #666;
+                border-radius: 8px;
+                background-color: #1a1a1a;
+            }
+        """
+        )
+        
+        # Connect zoom controls
+        zoom_in_btn.clicked.connect(self.zoom_in_field)
+        zoom_out_btn.clicked.connect(self.zoom_out_field)
+        reset_btn.clicked.connect(self.reset_field_zoom)
+        
+        field_layout.addWidget(self.field_view)
+        
+        # Create the field and players (coordinates display will be set up later)
+        self.create_football_field()
+        
+        return field_container
+    
+    def create_play_planner_controls(self):
+        """Create the play planner control panel"""
+        controls_container = QWidget()
+        controls_layout = QVBoxLayout(controls_container)
+        controls_layout.setContentsMargins(10, 10, 10, 10)
+        
+        # Formation presets
+        presets_label = QLabel("Formation Presets")
+        presets_label.setStyleSheet(
+            """
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: 'Minork Sans', Arial, sans-serif;
+            margin-bottom: 10px;
+        """
+        )
+        controls_layout.addWidget(presets_label)
+        
+        # Preset buttons
+        gun_bunch_btn = QPushButton("Gun Bunch")
+        gun_bunch_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #1ce783;
+                color: #e3e3e3;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 6px;
+                font-weight: bold;
+                font-family: 'Minork Sans', Arial, sans-serif;
+                margin: 2px;
+            }
+            QPushButton:hover { background-color: #17d474; }
+        """
+        )
+        gun_bunch_btn.clicked.connect(lambda: self.load_field_formation("Gun Bunch"))
+        controls_layout.addWidget(gun_bunch_btn)
+        
+        gun_trips_btn = QPushButton("Gun Trips TE")
+        gun_trips_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #1ce783;
+                color: #e3e3e3;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 6px;
+                font-weight: bold;
+                font-family: 'Minork Sans', Arial, sans-serif;
+                margin: 2px;
+            }
+            QPushButton:hover { background-color: #17d474; }
+        """
+        )
+        gun_trips_btn.clicked.connect(lambda: self.load_field_formation("Gun Trips Te"))
+        controls_layout.addWidget(gun_trips_btn)
+        
+        i_formation_btn = QPushButton("I-Formation")
+        i_formation_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #1ce783;
+                color: #e3e3e3;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 6px;
+                font-weight: bold;
+                font-family: 'Minork Sans', Arial, sans-serif;
+                margin: 2px;
+            }
+            QPushButton:hover { background-color: #17d474; }
+        """
+        )
+        i_formation_btn.clicked.connect(lambda: self.load_field_formation("I-Formation"))
+        controls_layout.addWidget(i_formation_btn)
+        
+        # Player info
+        info_label = QLabel("Player Positions")
+        info_label.setStyleSheet(
+            """
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: 'Minork Sans', Arial, sans-serif;
+            margin-top: 20px;
+        """
+        )
+        controls_layout.addWidget(info_label)
+        
+        # Coordinates display
+        self.coordinates_display = QLabel("Drag players to position...")
+        self.coordinates_display.setStyleSheet(
+            """
+            color: #767676;
+            font-family: 'Minork Sans', Arial, sans-serif;
+            font-size: 12px;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background-color: #1a1a1a;
+        """
+        )
+        self.coordinates_display.setWordWrap(True)
+        controls_layout.addWidget(self.coordinates_display)
+        
+        # Action buttons
+        save_btn = QPushButton("💾 Save Formation")
+        save_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #2d2d2d;
+                color: #ffffff;
+                padding: 10px;
+                border: 2px solid #666;
+                border-radius: 6px;
+                font-weight: bold;
+                font-family: 'Minork Sans', Arial, sans-serif;
+                margin: 5px 0;
+            }
+            QPushButton:hover { border-color: #1ce783; background-color: #3d3d3d; }
+        """
+        )
+        save_btn.clicked.connect(self.save_current_formation)
+        controls_layout.addWidget(save_btn)
+        
+        reset_formation_btn = QPushButton("🔄 Reset Players")
+        reset_formation_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #2d2d2d;
+                color: #ffffff;
+                padding: 10px;
+                border: 2px solid #666;
+                border-radius: 6px;
+                font-weight: bold;
+                font-family: 'Minork Sans', Arial, sans-serif;
+                margin: 5px 0;
+            }
+            QPushButton:hover { border-color: #1ce783; background-color: #3d3d3d; }
+        """
+        )
+        reset_formation_btn.clicked.connect(self.reset_players_to_default)
+        controls_layout.addWidget(reset_formation_btn)
+        
+        # Instructions
+        instructions = QLabel(
+            """
+🏈 Instructions:
+• Drag players to desired positions
+• Use mouse wheel to zoom in/out
+• Select formation presets
+• Save custom formations
+        """
+        )
+        instructions.setStyleSheet(
+            """
+            color: #767676;
+            font-size: 12px;
+            font-family: 'Minork Sans', Arial, sans-serif;
+            padding: 15px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background-color: #1a1a1a;
+            margin-top: 20px;
+        """
+        )
+        controls_layout.addWidget(instructions)
+        
+        controls_layout.addStretch()
+        
+        # Now add the players after coordinates display is created
+        self.add_draggable_players()
+        
+        return controls_container
+    
+    def create_football_field(self):
+        """Create the football field graphics"""
+        # Field background (green)
+        field = QGraphicsRectItem(0, 0, 600, 400)
+        field.setBrush(QBrush(QColor("#228B22")))
+        field.setPen(QPen(QColor("#ffffff"), 2))
+        self.field_scene.addItem(field)
+        
+        # End zones
+        end_zone_1 = QGraphicsRectItem(0, 0, 600, 40)
+        end_zone_1.setBrush(QBrush(QColor("#1e7e1e")))
+        end_zone_1.setPen(QPen(QColor("#ffffff"), 2))
+        self.field_scene.addItem(end_zone_1)
+        
+        end_zone_2 = QGraphicsRectItem(0, 360, 600, 40)
+        end_zone_2.setBrush(QBrush(QColor("#1e7e1e")))
+        end_zone_2.setPen(QPen(QColor("#ffffff"), 2))
+        self.field_scene.addItem(end_zone_2)
+        
+        # Yard lines every 40 pixels (10 yards)
+        for yard in range(1, 10):
+            y_pos = 40 + (yard * 32)  # Scale down for widget
+            line = QGraphicsLineItem(0, y_pos, 600, y_pos)
+            line.setPen(QPen(QColor("#ffffff"), 1))
+            self.field_scene.addItem(line)
+        
+        # 50-yard line (midfield)
+        midfield_line = QGraphicsLineItem(0, 200, 600, 200)
+        midfield_line.setPen(QPen(QColor("#ffffff"), 3))
+        self.field_scene.addItem(midfield_line)
+        
+        # Line of scrimmage (highlight at 25-yard line)
+        los_line = QGraphicsLineItem(0, 120, 600, 120)
+        los_line.setPen(QPen(QColor("#ff6b35"), 4))
+        self.field_scene.addItem(los_line)
+        
+        # Add field labels
+        los_label = QGraphicsTextItem("Line of Scrimmage")
+        los_label.setDefaultTextColor(QColor("#ff6b35"))
+        los_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        los_label.setPos(10, 95)
+        self.field_scene.addItem(los_label)
+    
+    def add_draggable_players(self):
+        """Add draggable player icons to the field"""
+        from PyQt6.QtGui import QBrush, QPen
+        from PyQt6.QtWidgets import QGraphicsEllipseItem, QGraphicsTextItem
+        
+        # Default Gun Bunch formation positions (scaled for widget)
+        default_positions = {
+            "QB": (300, 100, QColor("#0066cc")),    # Blue for QB
+            "RB": (300, 85, QColor("#cc6600")),     # Orange for RB
+            "WR1": (120, 120, QColor("#cc0066")),   # Pink for WRs
+            "WR2": (180, 120, QColor("#cc0066")),
+            "WR3": (420, 120, QColor("#cc0066")),
+            "TE": (450, 120, QColor("#9900cc")),    # Purple for TE
+            "LT": (250, 120, QColor("#666666")),    # Gray for O-line
+            "LG": (275, 120, QColor("#666666")),
+            "C": (300, 120, QColor("#666666")),
+            "RG": (325, 120, QColor("#666666")),
+            "RT": (350, 120, QColor("#666666")),
+        }
+        
+        self.field_players = {}
+        
+        for position, (x, y, color) in default_positions.items():
+            # Create player circle
+            player = QGraphicsEllipseItem(0, 0, 20, 20)
+            player.setPos(x - 10, y - 10)  # Center the circle
+            player.setBrush(QBrush(color))
+            player.setPen(QPen(QColor("#ffffff"), 1))
+            
+            # Make draggable
+            player.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsMovable, True)
+            player.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsSelectable, True)
+            player.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemSendsGeometryChanges, True)
+            
+            # Add text label
+            label = QGraphicsTextItem(position, player)
+            label.setDefaultTextColor(QColor("#ffffff"))
+            label.setFont(QFont("Arial", 7, QFont.Weight.Bold))
+            label.setPos(2, 2)  # Center text in circle
+            
+            # Store reference
+            player.position = position
+            player.label = label
+            self.field_players[position] = player
+            
+            self.field_scene.addItem(player)
+        
+        self.update_field_coordinates()
+    
+    def zoom_in_field(self):
+        """Zoom in the field view"""
+        self.field_view.zoom_in()
+        zoom_percent = int(self.field_view.current_zoom * 100)
+        self.zoom_label.setText(f"{zoom_percent}%")
+    
+    def zoom_out_field(self):
+        """Zoom out the field view"""
+        self.field_view.zoom_out()
+        zoom_percent = int(self.field_view.current_zoom * 100)
+        self.zoom_label.setText(f"{zoom_percent}%")
+    
+    def reset_field_zoom(self):
+        """Reset field zoom to 100%"""
+        self.field_view.reset_zoom()
+        self.zoom_label.setText("100%")
+    
+    def load_field_formation(self, formation_name):
+        """Load a formation preset on the field"""
+        print(f"🏈 Loading formation preset: {formation_name}")
+        
+        formations = {
+            "Gun Bunch": {
+                "QB": (300, 100), "RB": (300, 85),
+                "WR1": (120, 120), "WR2": (180, 120), "WR3": (420, 120),
+                "TE": (450, 120), "LT": (250, 120), "LG": (275, 120),
+                "C": (300, 120), "RG": (325, 120), "RT": (350, 120),
+            },
+            "Gun Trips Te": {
+                "QB": (300, 100), "RB": (300, 85),
+                "WR1": (420, 120), "WR2": (450, 120), "WR3": (480, 120),
+                "TE": (380, 120), "LT": (250, 120), "LG": (275, 120),
+                "C": (300, 120), "RG": (325, 120), "RT": (350, 120),
+            },
+            "I-Formation": {
+                "QB": (300, 100), "RB": (300, 140),
+                "WR1": (100, 120), "WR2": (500, 120), "WR3": (450, 120),
+                "TE": (380, 120), "LT": (250, 120), "LG": (275, 120),
+                "C": (300, 120), "RG": (325, 120), "RT": (350, 120),
+            }
+        }
+        
+        if formation_name in formations:
+            formation = formations[formation_name]
+            for position, (x, y) in formation.items():
+                if position in self.field_players:
+                    self.field_players[position].setPos(x - 10, y - 10)
+            self.update_field_coordinates()
+            print(f"✅ Loaded {formation_name}: {len(formation)} players positioned")
+        else:
+            print(f"❌ Formation preset '{formation_name}' not found")
+    
+    def update_field_coordinates(self):
+        """Update the coordinates display"""
+        coords_text = ""
+        for position in ["QB", "RB", "WR1", "WR2", "WR3", "TE", "LT", "LG", "C", "RG", "RT"]:
+            if position in self.field_players:
+                player = self.field_players[position]
+                x = player.pos().x() + 10  # Add offset to get center
+                y = player.pos().y() + 10
+                coords_text += f"{position}: ({int(x)}, {int(y)})\n"
+        
+        self.coordinates_display.setText(coords_text)
+    
+    def save_current_formation(self):
+        """Save the current formation"""
+        from PyQt6.QtWidgets import QMessageBox, QInputDialog
+        
+        formation_name, ok = QInputDialog.getText(
+            self, "Save Formation", "Enter formation name:"
+        )
+        
+        if ok and formation_name:
+            # Here you would save the formation
+            QMessageBox.information(
+                self, "Formation Saved", 
+                f"Formation '{formation_name}' has been saved!"
+            )
+            print(f"💾 Formation '{formation_name}' saved")
+    
+    def reset_players_to_default(self):
+        """Reset players to default Gun Bunch positions"""
+        self.load_field_formation("Gun Bunch")
 
     def create_learn_content(self):
         """Create learn tab content placeholder"""
@@ -2110,7 +3167,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         layout = QVBoxLayout(content)
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(20)
-
+        
         header = QLabel("Learning Center")
         header.setStyleSheet(
             """
@@ -2182,7 +3239,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         self.update_right_sidebar()
 
         parent_layout.addWidget(self.right_sidebar)
-
+        
     def update_right_sidebar(self):
         """Update right sidebar content based on current tab"""
         # Clear existing content
@@ -2190,7 +3247,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             item = self.right_sidebar_layout.itemAt(i)
             if item and item.widget():
                 item.widget().setParent(None)
-
+        
         # Add content based on current tab
         if self.current_content == "dashboard":
             self.create_dashboard_sidebar()
@@ -2198,7 +3255,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
             self.create_analysis_sidebar()
         else:
             self.create_default_sidebar()
-
+            
     def create_dashboard_sidebar(self):
         """Create dashboard-specific sidebar content"""
         header = QLabel("Quick Actions")
@@ -2242,7 +3299,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
 
         placeholder = QLabel("Analysis tools and settings")
         placeholder.setStyleSheet(
-            """
+                """
                 color: #767676;
                 font-size: 14px;
             font-family: 'Minork Sans', Arial, sans-serif;
@@ -2256,7 +3313,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
         """Create default sidebar content"""
         placeholder = QLabel("Sidebar content")
         placeholder.setStyleSheet(
-            """
+                """
                 color: #767676;
                 font-size: 14px;
             font-family: 'Minork Sans', Arial, sans-serif;
@@ -2269,7 +3326,7 @@ class SpygateDesktopFaceItStyle(QMainWindow):
 
 class ZoomableGraphicsView(QGraphicsView):
     """Enhanced Graphics View with comprehensive zoom and navigation controls"""
-
+    
     def __init__(self):
         super().__init__()
         self.zoom_factor = 1.0
@@ -2280,19 +3337,19 @@ class ZoomableGraphicsView(QGraphicsView):
         self.grid_visible = True
         self.snap_to_grid = False
         self.last_pan_point = QPointF()
-
+        
         # Setup the view
         self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
         self.setOptimizationFlags(QGraphicsView.OptimizationFlag.DontAdjustForAntialiasing)
-
+        
         # Enable mouse tracking for pan operations
         self.setMouseTracking(True)
-
+        
         # Setup keyboard shortcuts
         self.setup_shortcuts()
-
+        
     def setup_shortcuts(self):
         """Setup keyboard shortcuts for zoom and navigation"""
         # Zoom shortcuts
@@ -2301,13 +3358,13 @@ class ZoomableGraphicsView(QGraphicsView):
         QShortcut(QKeySequence("Ctrl+-"), self, self.zoom_out)
         QShortcut(QKeySequence("Ctrl+0"), self, self.reset_zoom)
         QShortcut(QKeySequence("Ctrl+9"), self, self.fit_to_view)
-
+        
         # Navigation shortcuts
         QShortcut(QKeySequence("Space"), self, self.toggle_pan_mode)
         QShortcut(QKeySequence("Ctrl+G"), self, self.toggle_grid)
         QShortcut(QKeySequence("Ctrl+Shift+G"), self, self.toggle_snap)
         QShortcut(QKeySequence("F11"), self, self.toggle_fullscreen)
-
+        
     def wheelEvent(self, event: QWheelEvent):
         """Handle mouse wheel zoom with Ctrl modifier"""
         if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
@@ -2320,7 +3377,7 @@ class ZoomableGraphicsView(QGraphicsView):
         else:
             # Normal scroll behavior
             super().wheelEvent(event)
-
+            
     def mousePressEvent(self, event):
         """Handle mouse press for pan mode"""
         if self.pan_mode and event.button() == Qt.MouseButton.LeftButton:
@@ -2328,7 +3385,7 @@ class ZoomableGraphicsView(QGraphicsView):
             self.setCursor(QCursor(Qt.CursorShape.ClosedHandCursor))
         else:
             super().mousePressEvent(event)
-
+            
     def mouseMoveEvent(self, event):
         """Handle mouse move for pan mode"""
         if self.pan_mode and event.buttons() & Qt.MouseButton.LeftButton:
@@ -2338,39 +3395,39 @@ class ZoomableGraphicsView(QGraphicsView):
             self.last_pan_point = event.position()
         else:
             super().mouseMoveEvent(event)
-
+            
     def mouseReleaseEvent(self, event):
         """Handle mouse release for pan mode"""
         if self.pan_mode:
             self.setCursor(QCursor(Qt.CursorShape.OpenHandCursor))
         super().mouseReleaseEvent(event)
-
+        
     def zoom_in(self):
         """Zoom in by zoom_step"""
         if self.zoom_factor < self.max_zoom:
             factor = 1 + self.zoom_step
             self.scale(factor, factor)
             self.zoom_factor *= factor
-
+            
     def zoom_out(self):
         """Zoom out by zoom_step"""
         if self.zoom_factor > self.min_zoom:
             factor = 1 / (1 + self.zoom_step)
             self.scale(factor, factor)
             self.zoom_factor *= factor
-
+            
     def reset_zoom(self):
         """Reset zoom to 100%"""
         self.resetTransform()
         self.zoom_factor = 1.0
-
+        
     def fit_to_view(self):
         """Fit entire scene to view"""
         if self.scene():
             self.fitInView(self.scene().sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
             transform = self.transform()
             self.zoom_factor = transform.m11()  # Get scaling factor
-
+            
     def toggle_pan_mode(self):
         """Toggle pan/hand tool mode"""
         self.pan_mode = not self.pan_mode
@@ -2380,23 +3437,23 @@ class ZoomableGraphicsView(QGraphicsView):
         else:
             self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
             self.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
-
+            
     def toggle_grid(self):
         """Toggle grid visibility"""
         self.grid_visible = not self.grid_visible
         self.viewport().update()
-
+        
     def toggle_snap(self):
         """Toggle snap to grid"""
         self.snap_to_grid = not self.snap_to_grid
-
+        
     def toggle_fullscreen(self):
         """Toggle fullscreen mode"""
         if self.window().isFullScreen():
             self.window().showNormal()
         else:
             self.window().showFullScreen()
-
+            
     def get_zoom_percentage(self):
         """Get current zoom as percentage"""
         return int(self.zoom_factor * 100)
@@ -2404,7 +3461,7 @@ class ZoomableGraphicsView(QGraphicsView):
 
 class FloatingZoomControls(QWidget):
     """Floating zoom control widget with comprehensive features"""
-
+    
     # Signals for communication with parent
     zoom_in_requested = pyqtSignal()
     zoom_out_requested = pyqtSignal()
@@ -2415,7 +3472,7 @@ class FloatingZoomControls(QWidget):
     snap_toggled = pyqtSignal(bool)
     fullscreen_toggled = pyqtSignal()
     mini_map_toggled = pyqtSignal(bool)
-
+    
     def __init__(self, parent=None):
         super().__init__(parent)
         self.zoom_percentage = 100
@@ -2423,65 +3480,65 @@ class FloatingZoomControls(QWidget):
         self.grid_visible = True
         self.snap_enabled = False
         self.mini_map_visible = False
-
+        
         self.setup_ui()
         self.setup_styling()
-
+        
     def setup_ui(self):
         """Setup the floating control UI with clear icons"""
         self.setFixedSize(220, 120)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-
+        
         # Main layout
         layout = QVBoxLayout(self)
         layout.setContentsMargins(8, 8, 8, 8)
         layout.setSpacing(6)
-
+        
         # Core Zoom Controls Row
         zoom_row = QHBoxLayout()
         zoom_row.setSpacing(4)
-
+        
         # Zoom Out button
         self.zoom_out_btn = QPushButton("−")
         self.zoom_out_btn.setFixedSize(28, 28)
         self.zoom_out_btn.setToolTip("Zoom Out")
         self.zoom_out_btn.clicked.connect(self.zoom_out_requested.emit)
         zoom_row.addWidget(self.zoom_out_btn)
-
+        
         # Zoom percentage display
         self.zoom_label = QLabel("100%")
         self.zoom_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.zoom_label.setMinimumWidth(40)
         self.zoom_label.setToolTip("Current Zoom Level")
         zoom_row.addWidget(self.zoom_label)
-
+        
         # Zoom In button
         self.zoom_in_btn = QPushButton("+")
         self.zoom_in_btn.setFixedSize(28, 28)
         self.zoom_in_btn.setToolTip("Zoom In")
         self.zoom_in_btn.clicked.connect(self.zoom_in_requested.emit)
         zoom_row.addWidget(self.zoom_in_btn)
-
+        
         # Reset button
         self.reset_btn = QPushButton("◯")
         self.reset_btn.setFixedSize(28, 28)
         self.reset_btn.setToolTip("Reset Zoom (100%)")
         self.reset_btn.clicked.connect(self.reset_zoom_requested.emit)
         zoom_row.addWidget(self.reset_btn)
-
+        
         # Fit to view button
         self.fit_btn = QPushButton("⬜")
         self.fit_btn.setFixedSize(28, 28)
         self.fit_btn.setToolTip("Fit Field to View")
         self.fit_btn.clicked.connect(self.fit_view_requested.emit)
         zoom_row.addWidget(self.fit_btn)
-
+        
         layout.addLayout(zoom_row)
-
+        
         # Navigation Controls Row
         nav_row = QHBoxLayout()
         nav_row.setSpacing(4)
-
+        
         # Pan/Hand tool toggle
         self.pan_btn = QPushButton("✋")
         self.pan_btn.setFixedSize(28, 28)
@@ -2489,7 +3546,7 @@ class FloatingZoomControls(QWidget):
         self.pan_btn.setToolTip("Pan/Drag Tool")
         self.pan_btn.clicked.connect(self.toggle_pan_mode)
         nav_row.addWidget(self.pan_btn)
-
+        
         # Grid toggle
         self.grid_btn = QPushButton("⊞")
         self.grid_btn.setFixedSize(28, 28)
@@ -2498,7 +3555,7 @@ class FloatingZoomControls(QWidget):
         self.grid_btn.setToolTip("Toggle Grid")
         self.grid_btn.clicked.connect(self.toggle_grid)
         nav_row.addWidget(self.grid_btn)
-
+        
         # Snap to grid toggle
         self.snap_btn = QPushButton("⊡")
         self.snap_btn.setFixedSize(28, 28)
@@ -2506,7 +3563,7 @@ class FloatingZoomControls(QWidget):
         self.snap_btn.setToolTip("Snap to Grid")
         self.snap_btn.clicked.connect(self.toggle_snap)
         nav_row.addWidget(self.snap_btn)
-
+        
         # Mini-map toggle
         self.map_btn = QPushButton("◐")
         self.map_btn.setFixedSize(28, 28)
@@ -2514,16 +3571,16 @@ class FloatingZoomControls(QWidget):
         self.map_btn.setToolTip("Mini-Map Overview")
         self.map_btn.clicked.connect(self.toggle_mini_map)
         nav_row.addWidget(self.map_btn)
-
+        
         # Fullscreen toggle
         self.fullscreen_btn = QPushButton("⤢")
         self.fullscreen_btn.setFixedSize(28, 28)
         self.fullscreen_btn.setToolTip("Toggle Fullscreen")
         self.fullscreen_btn.clicked.connect(self.fullscreen_toggled.emit)
         nav_row.addWidget(self.fullscreen_btn)
-
+        
         layout.addLayout(nav_row)
-
+        
     def setup_styling(self):
         """Apply styling to the floating controls"""
         # Main container styling with #565656 background
@@ -2534,7 +3591,7 @@ class FloatingZoomControls(QWidget):
                 border: 1px solid #29d28c;
                 border-radius: 12px;
             }}
-
+            
             QPushButton {{
                 background-color: #565656;
                 color: #e3e3e3;
@@ -2544,22 +3601,22 @@ class FloatingZoomControls(QWidget):
                 font-weight: bold;
                 font-size: 14px;
             }}
-
+            
             QPushButton:hover {{
                 background-color: #6a6a6a;
                 border-color: #29d28c;
             }}
-
+            
             QPushButton:pressed {{
                 background-color: #4a4a4a;
             }}
-
+            
             QPushButton:checked {{
                 background-color: #29d28c;
                 color: #151515;
                 border-color: #1fc47d;
             }}
-
+            
             QLabel {{
                 color: #e3e3e3;
                 font-family: 'Minork Sans', Arial, sans-serif;
@@ -2569,53 +3626,108 @@ class FloatingZoomControls(QWidget):
             }}
         """
         )
-
+        
     def toggle_pan_mode(self):
         """Toggle pan mode and emit signal"""
         self.pan_mode = not self.pan_mode
         self.pan_mode_toggled.emit(self.pan_mode)
-
+        
     def toggle_grid(self):
         """Toggle grid visibility and emit signal"""
         self.grid_visible = not self.grid_visible
         self.grid_toggled.emit(self.grid_visible)
-
+        
     def toggle_snap(self):
         """Toggle snap to grid and emit signal"""
         self.snap_enabled = not self.snap_enabled
         self.snap_toggled.emit(self.snap_enabled)
-
+        
     def toggle_mini_map(self):
         """Toggle mini-map visibility and emit signal"""
         self.mini_map_visible = not self.mini_map_visible
         self.mini_map_toggled.emit(self.mini_map_visible)
-
+        
     def update_zoom_display(self, percentage):
         """Update the zoom percentage display"""
         self.zoom_percentage = percentage
         self.zoom_label.setText(f"{percentage}%")
-
+        
     def update_pan_mode(self, enabled):
         """Update pan mode button state"""
         self.pan_mode = enabled
         self.pan_btn.setChecked(enabled)
-
+        
     def update_grid_state(self, visible):
         """Update grid button state"""
         self.grid_visible = visible
         self.grid_btn.setChecked(visible)
-
+        
     def update_snap_state(self, enabled):
         """Update snap button state"""
         self.snap_enabled = enabled
         self.snap_btn.setChecked(enabled)
 
 
+class AnimatedClockWidget(QSvgWidget):
+    """Animated clock widget using your exact clock.svg file"""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedSize(120, 120)  # Larger size to see details
+        
+        # Load your exact clock.svg file
+        svg_path = "assets/other/clock.svg"
+        if os.path.exists(svg_path):
+            self.load(svg_path)
+        else:
+            print(f"⚠️ Clock SVG not found at: {svg_path}")
+            
+        # Animation properties
+        self.hand_rotation = 0
+        self.animation_timer = QTimer()
+        self.animation_timer.timeout.connect(self.update_hand_rotation)
+        
+        # Make it semi-transparent overlay
+        self.setStyleSheet("""
+            QSvgWidget {
+                background-color: rgba(45, 45, 45, 180);
+                border: 2px solid #29d28c;
+                border-radius: 60px;
+            }
+        """)
+        
+    def start_animation(self):
+        """Start the clock hand animation"""
+        self.animation_timer.start(400)  # Update every 400ms (every few frames)
+        
+    def stop_animation(self):
+        """Stop the clock hand animation"""
+        self.animation_timer.stop()
+        
+    def update_hand_rotation(self):
+        """Update the hand rotation by modifying the SVG transform"""
+        self.hand_rotation = (self.hand_rotation + 30) % 360  # Move 30 degrees
+        
+        # Create CSS transformation for the hand layer
+        transform_style = f"""
+            QSvgWidget {{
+                background-color: rgba(45, 45, 45, 180);
+                border: 2px solid #29d28c;
+                border-radius: 60px;
+                transform: rotate({self.hand_rotation}deg);
+                transform-origin: center;
+            }}
+        """
+        self.setStyleSheet(transform_style)
+
+
+
+
 def main():
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
 
-    window = SpygateDesktopFaceItStyle()
+    window = SpygateDesktop()
     window.show()
 
     sys.exit(app.exec())

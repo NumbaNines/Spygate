@@ -1,0 +1,6 @@
+# Security analysis tools
+# Install with: pip install -r requirements-security.txt
+
+bandit>=1.7.0
+safety>=2.0.0
+pip-audit>=2.0.0

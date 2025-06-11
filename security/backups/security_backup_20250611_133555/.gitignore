@@ -105,18 +105,3 @@ iCloud Installer.exe
 
 # IDE files
 *.code-workspace
-
-
-# Security sensitive files
-*.key
-*.pem
-*.p12
-*.pfx
-secrets.json
-config/secrets.yml
-# Database files
-*.db
-*.sqlite3
-# Log files
-# Temporary files
-tmp/

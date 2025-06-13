@@ -1,3 +1,0 @@
-"""
-Spygate Machine Learning Module
-"""

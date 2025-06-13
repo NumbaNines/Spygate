@@ -1,5 +1,5 @@
 """
-Game situation detector using YOLO11 and OCR for football game analysis.
+Game situation detector using YOLOv8 and OCR for football game analysis.
 """
 
 import logging
@@ -13,7 +13,7 @@ import pytesseract
 from PIL import Image
 
 from . import Detection
-from .yolo_detector import YOLO11Detector
+from ...spygate.ml.yolov8_model import EnhancedYOLOv8
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class GameSituation:
 
 
 class SituationDetector:
-    """Detects and analyzes game situations using YOLO11 and OCR."""
+    """Detects and analyzes game situations using YOLOv8 and OCR."""
 
     def __init__(
         self,
@@ -45,12 +45,13 @@ class SituationDetector:
         """Initialize the situation detector.
 
         Args:
-            yolo_weights: Path to YOLO11 weights
+            yolo_weights: Path to YOLOv8 weights
             tesseract_path: Path to Tesseract executable
             device: Device to run on ('cuda' or 'cpu')
         """
-        # Initialize YOLO11 detector
-        self.detector = YOLO11Detector(weights_path=yolo_weights, device=device)
+        # Initialize YOLOv8 detector
+        model_path = str(yolo_weights) if yolo_weights else "hud_region_training/runs/hud_regions_fresh_1749629437/weights/best.pt"
+        self.detector = EnhancedYOLOv8(model_path=model_path, device=device)
 
         # Configure Tesseract
         if tesseract_path:
@@ -108,8 +109,11 @@ class SituationDetector:
         """
         data = {}
 
-        for bbox, conf, label in detections:
-            if conf < self.detector.conf_threshold:
+        for detection in detections:
+            bbox = detection['bbox']
+            conf = detection['confidence'] 
+            label = detection['class']
+            if conf < 0.25:
                 continue
 
             # Extract region

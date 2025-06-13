@@ -120,3 +120,71 @@ config/secrets.yml
 # Log files
 # Temporary files
 tmp/
+
+.env.*
+!.env.example
+config.json
+credentials.json
+
+# Security & Sensitive Files
+auth.json
+# Database Files
+user_database.db
+# Logs & Debug Files
+debug_*.py
+temp_*.py
+# Cache & Temporary
+.cache/
+# Security Reports (keep structure, not sensitive data)
+security/*.json
+!security/policy.json
+
+# Zero Risk Security Patterns
+# Temporary and debug files
+test_*.txt
+test_*.json
+backup_*
+# Sensitive data patterns
+*password*
+*secret*
+*key*
+*token*
+*credential*
+*auth*
+# Database and logs
+*.db-journal
+*.db-wal
+# Cache and temporary directories
+# Security reports (keep only templates)
+security/security_audit_*.json
+security/implementation_report_*.json
+security/secured_logs/
+# Development artifacts
+.mypy_cache/
+# Archived Security Reports
+security/archive/
+# Large security reports (keep only latest)
+security/security_audit_2025*.json
+!security/security_audit_$(date +%Y%m%d)*.json
+
+# Added by Task Master AI
+# Logs
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dev-debug.log
+# Dependency directories
+# Environment variables
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
+# Task files
+tasks.json
+tasks/ 

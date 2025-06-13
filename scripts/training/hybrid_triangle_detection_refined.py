@@ -24,6 +24,9 @@ class RefinedHybridTriangleDetector:
         self.min_triangle_area = 15
         self.max_triangle_area = 80
         
+        self.possession_team = None  # Will store which team has possession
+        self.territory_orientation = None  # Will store if triangle points up or down
+        
     def detect_hud_regions(self, image, conf_threshold=0.3):
         """Use YOLO to detect HUD regions."""
         results = self.yolo_model(image, conf=conf_threshold, verbose=False)
@@ -53,153 +56,156 @@ class RefinedHybridTriangleDetector:
         if hud_roi.size == 0:
             return []
         
+        # Reset state for new detection
+        self.possession_team = None
+        self.territory_orientation = None
+        
         triangles = []
         
-        # Focus on specific regions where triangles are likely to be
-        possession_roi = hud_roi[:, :hud_roi.shape[1]//2]  # Left half
-        territory_roi = hud_roi[:, hud_roi.shape[1]//2:]   # Right half
+        # Focus on specific regions where triangles are located
+        possession_roi = hud_roi[:, :hud_roi.shape[1]//2]  # Left half (between team abbrev/scores)
+        territory_roi = hud_roi[:, hud_roi.shape[1]//2:]   # Right half (next to field position)
         
-        # Detect possession indicator (left side)
+        # Detect possession triangle (left side) - points to team with ball
         possession_triangles = self._detect_possession_triangle(possession_roi, x1, y1)
         triangles.extend(possession_triangles)
         
-        # Detect territory indicator (right side)
+        # Detect territory triangle (right side) - ▲=opponent's territory, ▼=own territory
         territory_triangles = self._detect_territory_triangle(territory_roi, x1 + hud_roi.shape[1]//2, y1)
         triangles.extend(territory_triangles)
         
+        # After detecting both triangles, determine field position context
+        field_position = self.determine_field_position()
+        if field_position:
+            # Add field position context to the detection results
+            triangles.append({
+                'type': 'field_position_context',
+                'data': field_position
+            })
+        
         return triangles
     
-    def _detect_possession_triangle(self, roi, offset_x, offset_y):
-        """Detect possession indicator triangle (usually orange, pointing right)."""
+    def _detect_possession_triangle(self, roi, x_offset, y_offset):
+        """Enhanced possession triangle detection."""
+        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        edges = cv2.Canny(blurred, 50, 150)
+        
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
         triangles = []
-        
-        # Convert to HSV for better color detection
-        hsv_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-        
-        # Orange color range for possession indicator
-        orange_lower = np.array([8, 120, 120], dtype=np.uint8)
-        orange_upper = np.array([20, 255, 255], dtype=np.uint8)
-        
-        # Create mask for orange color
-        orange_mask = cv2.inRange(hsv_roi, orange_lower, orange_upper)
-        
-        # Apply morphological operations to clean up mask
-        kernel = np.ones((3, 3), np.uint8)
-        orange_mask = cv2.morphologyEx(orange_mask, cv2.MORPH_CLOSE, kernel)
-        orange_mask = cv2.morphologyEx(orange_mask, cv2.MORPH_OPEN, kernel)
-        
-        # Find contours
-        contours, _ = cv2.findContours(orange_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
         for contour in contours:
-            area = cv2.contourArea(contour)
-            if self.min_triangle_area < area < self.max_triangle_area:
-                # Get bounding rectangle
-                x, y, w, h = cv2.boundingRect(contour)
+            peri = cv2.arcLength(contour, True)
+            approx = cv2.approxPolyDP(contour, 0.04 * peri, True)
+            
+            if len(approx) == 3:
+                x, y, w, h = cv2.boundingRect(approx)
                 
-                # Check aspect ratio
-                aspect_ratio = w / h if h > 0 else 0
-                if self.aspect_ratio_range[0] < aspect_ratio < self.aspect_ratio_range[1]:
-                    # Check if it looks like a triangle pointing right
-                    if self._is_right_pointing_triangle(contour):
-                        triangles.append({
-                            'bbox': (x + offset_x, y + offset_y, x + w + offset_x, y + h + offset_y),
-                            'type': 'possession_indicator',
-                            'method': 'refined_color_orange',
-                            'confidence': 0.9,
-                            'area': area
-                        })
+                # For possession triangle, we care about horizontal position
+                # Assuming left team is away, right team is home
+                center_x = x + (w / 2)
+                self.possession_team = 'away' if center_x < roi.shape[1] / 2 else 'home'
+                
+                triangles.append({
+                    'type': 'possession_triangle',
+                    'bbox': (x + x_offset, y + y_offset, x + w + x_offset, y + h + y_offset),
+                    'points_to': self.possession_team,
+                    'confidence': 0.9
+                })
         
         return triangles
     
-    def _detect_territory_triangle(self, roi, offset_x, offset_y):
-        """Detect territory indicator triangle (usually purple/white, pointing up/down)."""
+    def _detect_territory_triangle(self, roi, x_offset, y_offset):
+        """Enhanced territory triangle detection with orientation."""
+        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        edges = cv2.Canny(blurred, 50, 150)
+        
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
         triangles = []
-        
-        # Convert to HSV
-        hsv_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-        
-        # Purple color range for territory indicator
-        purple_lower = np.array([110, 50, 50], dtype=np.uint8)
-        purple_upper = np.array([140, 255, 255], dtype=np.uint8)
-        
-        # White color range (alternative)
-        white_lower = np.array([0, 0, 220], dtype=np.uint8)
-        white_upper = np.array([180, 25, 255], dtype=np.uint8)
-        
-        # Try both color ranges
-        for color_name, (lower, upper) in [('purple', (purple_lower, purple_upper)), 
-                                           ('white', (white_lower, white_upper))]:
+        for contour in contours:
+            # Approximate the contour to a polygon
+            peri = cv2.arcLength(contour, True)
+            approx = cv2.approxPolyDP(contour, 0.04 * peri, True)
             
-            # Create mask
-            mask = cv2.inRange(hsv_roi, lower, upper)
-            
-            # Clean up mask
-            kernel = np.ones((3, 3), np.uint8)
-            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-            mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-            
-            # Find contours
-            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            
-            for contour in contours:
-                area = cv2.contourArea(contour)
-                if self.min_triangle_area < area < self.max_triangle_area:
-                    x, y, w, h = cv2.boundingRect(contour)
-                    
-                    # Check aspect ratio
-                    aspect_ratio = w / h if h > 0 else 0
-                    if self.aspect_ratio_range[0] < aspect_ratio < self.aspect_ratio_range[1]:
-                        # Check if it looks like a triangle pointing up or down
-                        if self._is_vertical_triangle(contour):
-                            triangles.append({
-                                'bbox': (x + offset_x, y + offset_y, x + w + offset_x, y + h + offset_y),
-                                'type': 'territory_indicator',
-                                'method': f'refined_color_{color_name}',
-                                'confidence': 0.9,
-                                'area': area
-                            })
+            # Check if it's a triangle (3 points)
+            if len(approx) == 3:
+                # Get orientation
+                orientation = self._detect_triangle_orientation(approx)
+                
+                # Calculate bounding box
+                x, y, w, h = cv2.boundingRect(approx)
+                
+                # Store the territory triangle info
+                self.territory_orientation = orientation
+                
+                triangles.append({
+                    'type': 'territory_triangle',
+                    'bbox': (x + x_offset, y + y_offset, x + w + x_offset, y + h + y_offset),
+                    'orientation': orientation,
+                    'confidence': 0.9
+                })
         
         return triangles
     
-    def _is_right_pointing_triangle(self, contour):
-        """Check if contour looks like a right-pointing triangle."""
-        # Approximate to polygon
-        epsilon = 0.02 * cv2.arcLength(contour, True)
-        approx = cv2.approxPolyDP(contour, epsilon, True)
+    def _detect_triangle_orientation(self, contour) -> str:
+        """Detect if a triangle points up (▲) or down (▼).
         
-        # Should have 3-4 vertices for a triangle
-        if 3 <= len(approx) <= 4:
-            # Get the rightmost point (tip of right-pointing triangle)
-            rightmost = tuple(approx[approx[:, :, 0].argmax()][0])
+        Args:
+            contour: The triangle contour points
             
-            # Get bounding box
-            x, y, w, h = cv2.boundingRect(contour)
-            
-            # Right-pointing triangle should have its tip near the right edge
-            return rightmost[0] > x + w * 0.7
+        Returns:
+            'up' if triangle points up (▲), 'down' if points down (▼)
+        """
+        # Get the topmost and bottommost points
+        topmost = tuple(contour[contour[:,:,1].argmin()][0])
+        bottommost = tuple(contour[contour[:,:,1].argmax()][0])
         
-        return False
+        # Get the average x-coordinate of the base
+        base_points = [pt[0] for pt in contour if abs(pt[0][1] - bottommost[1]) < 5]
+        base_x_avg = sum(x for x in base_points) / len(base_points) if base_points else bottommost[0]
+        
+        # If the top point's x is close to the base's average x, it's pointing up
+        # Otherwise, it's pointing down
+        return 'up' if abs(topmost[0] - base_x_avg) < 10 else 'down'
     
-    def _is_vertical_triangle(self, contour):
-        """Check if contour looks like an up or down pointing triangle."""
-        # Approximate to polygon
-        epsilon = 0.02 * cv2.arcLength(contour, True)
-        approx = cv2.approxPolyDP(contour, epsilon, True)
+    def determine_field_position(self) -> dict:
+        """Determine complete field position context using both triangles.
         
-        # Should have 3-4 vertices for a triangle
-        if 3 <= len(approx) <= 4:
-            # Get bounding box
-            x, y, w, h = cv2.boundingRect(contour)
+        Returns:
+            Dictionary containing field position context:
+            {
+                'possession_team': 'home' or 'away',
+                'in_territory': 'own' or 'opponent',
+                'on_offense': True or False,
+                'description': Human readable description
+            }
+        """
+        if self.possession_team is None or self.territory_orientation is None:
+            return None
             
-            # Get topmost and bottommost points
-            topmost = tuple(approx[approx[:, :, 1].argmin()][0])
-            bottommost = tuple(approx[approx[:, :, 1].argmax()][0])
-            
-            # Triangle should have distinct top/bottom points
-            return abs(topmost[1] - bottommost[1]) > h * 0.5
+        # Determine if the possession team is in their own or opponent's territory
+        in_own_territory = self.territory_orientation == 'down'
         
-        return False
+        result = {
+            'possession_team': self.possession_team,
+            'in_territory': 'own' if in_own_territory else 'opponent',
+            'on_offense': True,  # Default to True, will be updated below
+            'description': ''
+        }
+        
+        # If in own territory, possession team is on offense
+        # If in opponent's territory, possession team is also on offense
+        # This is because the territory triangle always shows from possession team's perspective
+        result['on_offense'] = True
+        
+        # Create human readable description
+        team = 'Home' if self.possession_team == 'home' else 'Away'
+        territory = 'their own' if in_own_territory else "the opponent's"
+        result['description'] = f"{team} team has possession in {territory} territory"
+        
+        return result
     
     def detect(self, image):
         """Main detection method."""
@@ -337,7 +343,7 @@ def test_refined_detector():
     # Draw triangles with different colors
     for triangle in results['triangles']:
         x1, y1, x2, y2 = triangle['bbox']
-        color = (255, 165, 0) if triangle['type'] == 'possession_indicator' else (128, 0, 128)
+        color = (255, 165, 0) if triangle['type'] == 'possession_triangle' else (128, 0, 128)
         cv2.rectangle(display_image, (x1, y1), (x2, y2), color, 3)
         
         label = f"{triangle['type'][:4]}: {triangle['confidence']:.2f}"

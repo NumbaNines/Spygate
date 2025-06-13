@@ -1,0 +1,10 @@
+{
+  "name": "possession_right",
+  "direction": "right",
+  "triangle_type": 1,
+  "size": [
+    12,
+    20
+  ],
+  "created_programmatically": true
+}

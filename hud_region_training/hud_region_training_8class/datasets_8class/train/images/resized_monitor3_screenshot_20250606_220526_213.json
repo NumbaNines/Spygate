@@ -1,0 +1,74 @@
+{
+  "version": "5.8.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "hud",
+      "points": [
+        [
+          81.18592,
+          342.23712
+        ],
+        [
+          467.98656,
+          356.10720000000003
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "territory_triangle_area",
+      "points": [
+        [
+          448.29983999999996,
+          342.68447999999995
+        ],
+        [
+          467.98688,
+          356.10720000000003
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "possession_triangle_area",
+      "points": [
+        [
+          140.02208,
+          342.23712
+        ],
+        [
+          329.50751999999994,
+          356.55456
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "play_call_screen",
+      "points": [
+        [
+          80.32575999999999,
+          214.63776
+        ],
+        [
+          527.06496,
+          342.17376
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    }
+  ],
+  "imagePath": "resized_monitor3_screenshot_20250606_220526_213.png",
+  "imageData": null,
+  "imageHeight": 480,
+  "imageWidth": 640
+}

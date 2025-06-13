@@ -1,0 +1,25 @@
+# SpygateAI HUD Region Detection Dataset
+# 5-Class approach for robust region detection + computer vision analysis
+
+# Dataset paths
+path: C:\Users\Nines\Spygate\hud_region_training\datasets
+train: train/images
+val: val/images
+
+# Number of classes
+nc: 5
+
+# Class names
+names:
+  0: hud
+  1: possession_triangle_area
+  2: territory_triangle_area
+  3: preplay_indicator
+  4: play_call_screen
+
+# Class descriptions:
+# 0: hud - Main HUD bar containing all game information
+# 1: possession_triangle_area - Left triangle area showing ball possession
+# 2: territory_triangle_area - Right triangle area showing field territory  
+# 3: preplay_indicator - Bottom left indicator (pre-play state)
+# 4: play_call_screen - Play call screen (post-play state)

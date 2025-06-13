@@ -1,0 +1,65 @@
+{
+  "filename": "monitor3_screenshot_20250612_113427_41.png",
+  "detections": [
+    {
+      "class": "possession_triangle_area",
+      "confidence": 0.925379753112793,
+      "bbox": [
+        262,
+        1015,
+        1071,
+        1076
+      ]
+    },
+    {
+      "class": "territory_triangle_area",
+      "confidence": 0.919687032699585,
+      "bbox": [
+        1578,
+        1016,
+        1658,
+        1078
+      ]
+    },
+    {
+      "class": "play_call_screen",
+      "confidence": 0.9007247090339661,
+      "bbox": [
+        0,
+        454,
+        1885,
+        1014
+      ]
+    },
+    {
+      "class": "hud",
+      "confidence": 0.6033063530921936,
+      "bbox": [
+        266,
+        1015,
+        1647,
+        1076
+      ]
+    }
+  ],
+  "ocr_results": [],
+  "timing": {
+    "yolo": 0.020994901657104492,
+    "ocr": 1.1979503631591797,
+    "total": 1.2189452648162842
+  },
+  "shape": [
+    1080,
+    1920,
+    3
+  ],
+  "summary": {
+    "hud_elements": 1,
+    "triangles": 2,
+    "indicators": 1
+  },
+  "performance": {
+    "fps": 0.8203813812351263,
+    "rating": "FAIR (Batch processing)"
+  }
+}

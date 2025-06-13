@@ -1,0 +1,13 @@
+names:
+- hud
+- possession_triangle_area
+- territory_triangle_area
+- preplay_indicator
+- play_call_screen
+- down_distance_area
+- game_clock_area
+- play_clock_area
+nc: 8
+path: C:\Users\Nines\Spygate\hud_region_training\hud_region_training_8class\datasets_8class
+train: train/images
+val: val/images

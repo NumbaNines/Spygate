@@ -1,4 +1,0 @@
-{
-  "name": "test_theme",
-  "styles": "\n    QWidget {\n        background-color: #2b2b2b;\n        color: #ffffff;\n    }\n    "
-}

@@ -15,7 +15,7 @@ from torch.optim.lr_scheduler import OneCycleLR
 from ultralytics import YOLO
 
 from ..core.hardware import HardwareDetector, HardwareTier
-from .yolov8_model import EnhancedYOLOv8 as CustomYOLO11  # Using YOLOv8 as specified in PRD
+from .yolov8_model import EnhancedYOLOv8  # Using YOLOv8 as specified in PRD
 
 logger = logging.getLogger(__name__)
 
@@ -219,7 +219,7 @@ def train_model(
     hardware, config = setup_training_environment()
 
     # Initialize model with hardware optimization
-    model = CustomYOLO11(
+    model = EnhancedYOLOv8(
         cfg="yolov11.yaml" if not model_path else model_path, nc=10  # Number of HUD element classes
     )
 

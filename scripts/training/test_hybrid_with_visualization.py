@@ -189,6 +189,55 @@ def create_detailed_hud_breakdown(hud_regions, output_path="hud_breakdown.jpg"):
     cv2.imwrite(output_path, grid_image)
     print(f"   Breakdown saved: {output_path}")
 
+def visualize_detections(image, results):
+    """Create visualization of triangle detections with enhanced field position info."""
+    viz_image = image.copy()
+    
+    if 'triangles' not in results:
+        return viz_image
+        
+    # Draw triangles with enhanced information
+    for triangle in results['triangles']:
+        if triangle['type'] == 'field_position_context':
+            # Add field position context as text overlay
+            context = triangle['data']
+            text_lines = [
+                f"Possession: {context['possession_team'].upper()}",
+                f"Territory: {context['in_territory'].upper()}",
+                f"Status: {'OFFENSE' if context['on_offense'] else 'DEFENSE'}",
+                context['description']
+            ]
+            
+            # Position text in top-left
+            y_pos = 30
+            for line in text_lines:
+                cv2.putText(viz_image, line, (10, y_pos), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                y_pos += 25
+        else:
+            # Draw triangle bounding boxes
+            x1, y1, x2, y2 = triangle['bbox']
+            
+            # Color code based on type and additional info
+            if triangle['type'] == 'possession_triangle':
+                color = (255, 165, 0)  # Orange for possession
+                label = f"Possession: {triangle['points_to']}"
+            elif triangle['type'] == 'territory_triangle':
+                color = (128, 0, 128)  # Purple for territory
+                # Add arrow to show orientation
+                arrow = '▲' if triangle['orientation'] == 'up' else '▼'
+                label = f"Territory: {arrow} ({triangle['orientation']})"
+            else:
+                color = (128, 128, 128)  # Gray for unknown
+                label = triangle['type']
+            
+            # Draw box and label
+            cv2.rectangle(viz_image, (x1, y1), (x2, y2), color, 2)
+            cv2.putText(viz_image, label, (x1, y1-5), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+    
+    return viz_image
+
 if __name__ == "__main__":
     # Run test
     vis_path, hud_regions, stats = capture_and_visualize()

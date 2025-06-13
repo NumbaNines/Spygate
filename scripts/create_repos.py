@@ -86,7 +86,7 @@ if __name__ == "__main__":
     if not github_token:
         print("Error: GITHUB_TOKEN environment variable not set")
         print("Please set your GitHub personal access token:")
-        print("export GITHUB_TOKEN='your-token-here'")
+        print("export GITHUB_token = os.getenv("TOKEN", "")")
         sys.exit(1)
 
     create_all_repositories(github_token)

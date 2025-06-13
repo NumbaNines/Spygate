@@ -893,7 +893,7 @@ CustomYOLOv8 = EnhancedYOLOv8
 # Aliases for clarity and backward compatibility
 YOLOv8Model = EnhancedYOLOv8
 SpygateYOLO = EnhancedYOLOv8
-CustomYOLO11 = EnhancedYOLOv8  # Legacy compatibility - remove in future versions
+# Legacy YOLO11 compatibility removed - use EnhancedYOLOv8 directly
 
 
 def load_optimized_yolov8_model(

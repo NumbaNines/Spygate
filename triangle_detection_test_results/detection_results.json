@@ -1,0 +1,988 @@
+[
+  {
+    "image": "monitor3_screenshot_20250612_113227_17.png",
+    "total_detections": 3,
+    "classes": [
+      "territory_triangle_area",
+      "possession_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9333458542823792,
+      0.9033232927322388,
+      0.7359658479690552
+    ],
+    "bboxes": [
+      [
+        1579,
+        1017,
+        1658,
+        1078
+      ],
+      [
+        265,
+        1016,
+        1064,
+        1076
+      ],
+      [
+        240,
+        1018,
+        1651,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.857544998327891,
+    "max_confidence": 0.9333458542823792,
+    "min_confidence": 0.7359658479690552
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113452_46.png",
+    "total_detections": 3,
+    "classes": [
+      "possession_triangle_area",
+      "territory_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9349313378334045,
+      0.9330539107322693,
+      0.7267392873764038
+    ],
+    "bboxes": [
+      [
+        264,
+        1016,
+        1070,
+        1076
+      ],
+      [
+        1579,
+        1018,
+        1658,
+        1078
+      ],
+      [
+        226,
+        1019,
+        1649,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8649081786473592,
+    "max_confidence": 0.9349313378334045,
+    "min_confidence": 0.7267392873764038
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113232_18.png",
+    "total_detections": 3,
+    "classes": [
+      "territory_triangle_area",
+      "possession_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9321339726448059,
+      0.9122718572616577,
+      0.7280319333076477
+    ],
+    "bboxes": [
+      [
+        1579,
+        1019,
+        1657,
+        1078
+      ],
+      [
+        265,
+        1017,
+        1068,
+        1076
+      ],
+      [
+        230,
+        1018,
+        1651,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8574792544047037,
+    "max_confidence": 0.9321339726448059,
+    "min_confidence": 0.7280319333076477
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113332_30.png",
+    "total_detections": 3,
+    "classes": [
+      "possession_triangle_area",
+      "territory_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9214401841163635,
+      0.9186623096466064,
+      0.708450198173523
+    ],
+    "bboxes": [
+      [
+        264,
+        1017,
+        1073,
+        1076
+      ],
+      [
+        1579,
+        1019,
+        1658,
+        1078
+      ],
+      [
+        222,
+        1018,
+        1643,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8495175639788309,
+    "max_confidence": 0.9214401841163635,
+    "min_confidence": 0.708450198173523
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113312_26.png",
+    "total_detections": 4,
+    "classes": [
+      "territory_triangle_area",
+      "possession_triangle_area",
+      "hud",
+      "possession_triangle_area"
+    ],
+    "confidences": [
+      0.9253225922584534,
+      0.8912069797515869,
+      0.7277177572250366,
+      0.5778418183326721
+    ],
+    "bboxes": [
+      [
+        1580,
+        1017,
+        1658,
+        1078
+      ],
+      [
+        264,
+        1017,
+        1062,
+        1076
+      ],
+      [
+        241,
+        1018,
+        1649,
+        1076
+      ],
+      [
+        1646,
+        512,
+        1917,
+        545
+      ]
+    ],
+    "possession_triangles": 2,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.7805222868919373,
+    "max_confidence": 0.9253225922584534,
+    "min_confidence": 0.5778418183326721
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113252_22.png",
+    "total_detections": 3,
+    "classes": [
+      "territory_triangle_area",
+      "possession_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9331774115562439,
+      0.8868657946586609,
+      0.7293023467063904
+    ],
+    "bboxes": [
+      [
+        1579,
+        1018,
+        1658,
+        1077
+      ],
+      [
+        266,
+        1017,
+        1061,
+        1076
+      ],
+      [
+        256,
+        1018,
+        1649,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.849781850973765,
+    "max_confidence": 0.9331774115562439,
+    "min_confidence": 0.7293023467063904
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113552_58.png",
+    "total_detections": 1,
+    "classes": [
+      "territory_triangle_area"
+    ],
+    "confidences": [
+      0.8320991396903992
+    ],
+    "bboxes": [
+      [
+        1512,
+        264,
+        1617,
+        334
+      ]
+    ],
+    "possession_triangles": 0,
+    "territory_triangles": 1,
+    "hud_detections": 0,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8320991396903992,
+    "max_confidence": 0.8320991396903992,
+    "min_confidence": 0.8320991396903992
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113852_94.png",
+    "total_detections": 4,
+    "classes": [
+      "territory_triangle_area",
+      "possession_triangle_area",
+      "preplay_indicator",
+      "hud"
+    ],
+    "confidences": [
+      0.9211668968200684,
+      0.9185969233512878,
+      0.9075634479522705,
+      0.7193530201911926
+    ],
+    "bboxes": [
+      [
+        1578,
+        1018,
+        1659,
+        1078
+      ],
+      [
+        265,
+        1017,
+        1064,
+        1076
+      ],
+      [
+        1550,
+        949,
+        1838,
+        994
+      ],
+      [
+        232,
+        1018,
+        1643,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 1,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8666700720787048,
+    "max_confidence": 0.9211668968200684,
+    "min_confidence": 0.7193530201911926
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113832_90.png",
+    "total_detections": 0,
+    "classes": [],
+    "confidences": []
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113457_47.png",
+    "total_detections": 4,
+    "classes": [
+      "possession_triangle_area",
+      "territory_triangle_area",
+      "preplay_indicator",
+      "hud"
+    ],
+    "confidences": [
+      0.9425860643386841,
+      0.9254714846611023,
+      0.8958355784416199,
+      0.7142022848129272
+    ],
+    "bboxes": [
+      [
+        263,
+        1015,
+        1070,
+        1076
+      ],
+      [
+        1578,
+        1018,
+        1659,
+        1078
+      ],
+      [
+        1549,
+        950,
+        1834,
+        992
+      ],
+      [
+        221,
+        1018,
+        1650,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 1,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8695238530635834,
+    "max_confidence": 0.9425860643386841,
+    "min_confidence": 0.7142022848129272
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113842_92.png",
+    "total_detections": 3,
+    "classes": [
+      "territory_triangle_area",
+      "possession_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9186788201332092,
+      0.9066022038459778,
+      0.6643185615539551
+    ],
+    "bboxes": [
+      [
+        1578,
+        1018,
+        1658,
+        1078
+      ],
+      [
+        266,
+        1014,
+        1066,
+        1076
+      ],
+      [
+        234,
+        1018,
+        1642,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8298665285110474,
+    "max_confidence": 0.9186788201332092,
+    "min_confidence": 0.6643185615539551
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113257_23.png",
+    "total_detections": 3,
+    "classes": [
+      "territory_triangle_area",
+      "possession_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9320688247680664,
+      0.8897907137870789,
+      0.7080121040344238
+    ],
+    "bboxes": [
+      [
+        1579,
+        1018,
+        1659,
+        1077
+      ],
+      [
+        265,
+        1016,
+        1064,
+        1076
+      ],
+      [
+        240,
+        1018,
+        1648,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8432905475298563,
+    "max_confidence": 0.9320688247680664,
+    "min_confidence": 0.7080121040344238
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113317_27.png",
+    "total_detections": 3,
+    "classes": [
+      "possession_triangle_area",
+      "territory_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9456138014793396,
+      0.9257724285125732,
+      0.6706042885780334
+    ],
+    "bboxes": [
+      [
+        263,
+        1016,
+        1072,
+        1076
+      ],
+      [
+        1577,
+        1018,
+        1659,
+        1078
+      ],
+      [
+        220,
+        1018,
+        1651,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8473301728566488,
+    "max_confidence": 0.9456138014793396,
+    "min_confidence": 0.6706042885780334
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113847_93.png",
+    "total_detections": 3,
+    "classes": [
+      "possession_triangle_area",
+      "territory_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9372031092643738,
+      0.9359834790229797,
+      0.7089694142341614
+    ],
+    "bboxes": [
+      [
+        263,
+        1016,
+        1066,
+        1076
+      ],
+      [
+        1580,
+        1016,
+        1658,
+        1078
+      ],
+      [
+        218,
+        1017,
+        1648,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8607186675071716,
+    "max_confidence": 0.9372031092643738,
+    "min_confidence": 0.7089694142341614
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113912_98.png",
+    "total_detections": 3,
+    "classes": [
+      "territory_triangle_area",
+      "possession_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9305942058563232,
+      0.9276913404464722,
+      0.7162455916404724
+    ],
+    "bboxes": [
+      [
+        1579,
+        1018,
+        1658,
+        1078
+      ],
+      [
+        263,
+        1016,
+        1066,
+        1076
+      ],
+      [
+        222,
+        1017,
+        1648,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8581770459810892,
+    "max_confidence": 0.9305942058563232,
+    "min_confidence": 0.7162455916404724
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113807_85.png",
+    "total_detections": 0,
+    "classes": [],
+    "confidences": []
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113502_48.png",
+    "total_detections": 3,
+    "classes": [
+      "possession_triangle_area",
+      "territory_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9414595365524292,
+      0.9339046478271484,
+      0.7174592614173889
+    ],
+    "bboxes": [
+      [
+        262,
+        1015,
+        1069,
+        1076
+      ],
+      [
+        1579,
+        1017,
+        1658,
+        1078
+      ],
+      [
+        222,
+        1018,
+        1652,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8642744819323221,
+    "max_confidence": 0.9414595365524292,
+    "min_confidence": 0.7174592614173889
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113922_100.png",
+    "total_detections": 3,
+    "classes": [
+      "possession_triangle_area",
+      "territory_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.930548906326294,
+      0.9296092391014099,
+      0.6486673951148987
+    ],
+    "bboxes": [
+      [
+        264,
+        1017,
+        1064,
+        1076
+      ],
+      [
+        1578,
+        1018,
+        1659,
+        1078
+      ],
+      [
+        226,
+        1018,
+        1651,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8362751801808676,
+    "max_confidence": 0.930548906326294,
+    "min_confidence": 0.6486673951148987
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113116_3.png",
+    "total_detections": 3,
+    "classes": [
+      "territory_triangle_area",
+      "possession_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9264249205589294,
+      0.8947091698646545,
+      0.7420212626457214
+    ],
+    "bboxes": [
+      [
+        1579,
+        1017,
+        1658,
+        1076
+      ],
+      [
+        265,
+        1016,
+        1064,
+        1076
+      ],
+      [
+        242,
+        1017,
+        1650,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8543851176897684,
+    "max_confidence": 0.9264249205589294,
+    "min_confidence": 0.7420212626457214
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113352_34.png",
+    "total_detections": 3,
+    "classes": [
+      "possession_triangle_area",
+      "territory_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9475010633468628,
+      0.9282364249229431,
+      0.663352370262146
+    ],
+    "bboxes": [
+      [
+        264,
+        1016,
+        1072,
+        1076
+      ],
+      [
+        1579,
+        1018,
+        1658,
+        1078
+      ],
+      [
+        222,
+        1018,
+        1646,
+        1077
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8463632861773173,
+    "max_confidence": 0.9475010633468628,
+    "min_confidence": 0.663352370262146
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113737_79.png",
+    "total_detections": 3,
+    "classes": [
+      "territory_triangle_area",
+      "possession_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.929559588432312,
+      0.915179431438446,
+      0.6157042980194092
+    ],
+    "bboxes": [
+      [
+        1579,
+        1017,
+        1658,
+        1078
+      ],
+      [
+        264,
+        1017,
+        1077,
+        1076
+      ],
+      [
+        268,
+        1017,
+        1657,
+        1078
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8201477726300558,
+    "max_confidence": 0.929559588432312,
+    "min_confidence": 0.6157042980194092
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113337_31.png",
+    "total_detections": 3,
+    "classes": [
+      "possession_triangle_area",
+      "territory_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9504846930503845,
+      0.9216231107711792,
+      0.6714703440666199
+    ],
+    "bboxes": [
+      [
+        262,
+        1014,
+        1071,
+        1076
+      ],
+      [
+        1578,
+        1017,
+        1657,
+        1078
+      ],
+      [
+        265,
+        1017,
+        1666,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8478593826293945,
+    "max_confidence": 0.9504846930503845,
+    "min_confidence": 0.6714703440666199
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113657_71.png",
+    "total_detections": 3,
+    "classes": [
+      "territory_triangle_area",
+      "possession_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9300051331520081,
+      0.9286002516746521,
+      0.6098268032073975
+    ],
+    "bboxes": [
+      [
+        1580,
+        1017,
+        1659,
+        1077
+      ],
+      [
+        263,
+        1014,
+        1076,
+        1077
+      ],
+      [
+        266,
+        1017,
+        1657,
+        1078
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8228107293446859,
+    "max_confidence": 0.9300051331520081,
+    "min_confidence": 0.6098268032073975
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113432_42.png",
+    "total_detections": 3,
+    "classes": [
+      "possession_triangle_area",
+      "territory_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9495460391044617,
+      0.9159376621246338,
+      0.7048803567886353
+    ],
+    "bboxes": [
+      [
+        263,
+        1015,
+        1069,
+        1076
+      ],
+      [
+        1577,
+        1018,
+        1658,
+        1079
+      ],
+      [
+        220,
+        1017,
+        1650,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8567880193392435,
+    "max_confidence": 0.9495460391044617,
+    "min_confidence": 0.7048803567886353
+  },
+  {
+    "image": "monitor3_screenshot_20250612_113507_49.png",
+    "total_detections": 3,
+    "classes": [
+      "possession_triangle_area",
+      "territory_triangle_area",
+      "hud"
+    ],
+    "confidences": [
+      0.9475067853927612,
+      0.9326610565185547,
+      0.7152734994888306
+    ],
+    "bboxes": [
+      [
+        263,
+        1015,
+        1070,
+        1076
+      ],
+      [
+        1579,
+        1017,
+        1659,
+        1077
+      ],
+      [
+        222,
+        1017,
+        1650,
+        1076
+      ]
+    ],
+    "possession_triangles": 1,
+    "territory_triangles": 1,
+    "hud_detections": 1,
+    "preplay_detections": 0,
+    "playcall_detections": 0,
+    "avg_confidence": 0.8651471138000488,
+    "max_confidence": 0.9475067853927612,
+    "min_confidence": 0.7152734994888306
+  }
+]

@@ -23,13 +23,18 @@ try:
 except ImportError:
     PYAUTOGUI_AVAILABLE = False
 
-def load_trained_model():
+def load_trained_model(model_path=None):
     """Load the latest trained triangle detection model."""
-    # First try the new triangle model
-    triangle_model_path = Path("runs/detect/spygate_triangles_20250610_120853/weights/best.pt")
-    if triangle_model_path.exists():
-        print(f"✅ Loading NEW TRIANGLE MODEL from: {triangle_model_path}")
-        return YOLO(str(triangle_model_path))
+    # If custom model path provided, use it
+    if model_path and Path(model_path).exists():
+        print(f"✅ Loading custom model from: {model_path}")
+        return YOLO(str(model_path))
+    
+    # First try the latest HUD regions model
+    hud_model_path = Path("hud_region_training/runs/hud_regions_fresh_1749629437/weights/best.pt")
+    if hud_model_path.exists():
+        print(f"✅ Loading NEW HUD MODEL from: {hud_model_path}")
+        return YOLO(str(hud_model_path))
     
     # Fallback to any recent spygate model
     runs_dir = Path("runs/detect")
@@ -132,27 +137,21 @@ class ScreenCapture:
 def live_detection(model, conf_threshold=0.15, monitor=1, region=None, save_video=None, show_preview=True):
     """Run live detection on screen capture with TRIANGLE DETECTION!"""
     
-    # Updated class names and colors for ALL 8 CLASSES including TRIANGLES!
+    # Updated class names and colors for HUD region detection
     class_names = [
-        "hud",                    # Class 0
-        "qb_position",            # Class 1  
-        "left_hash_mark",         # Class 2
-        "right_hash_mark",        # Class 3
-        "preplay",                # Class 4
-        "playcall",               # Class 5
-        "possession_indicator",   # Class 6 - LEFT TRIANGLE! 🔺
-        "territory_indicator"     # Class 7 - RIGHT TRIANGLE! 🔺
+        "hud",                         # Main HUD bar
+        "possession_triangle_area",    # LEFT side triangle area
+        "territory_triangle_area",     # RIGHT side triangle area
+        "preplay_indicator",          # Pre-play UI element
+        "play_call_screen"            # Play selection UI
     ]
     
     colors = [
         (0, 0, 255),      # hud - red
-        (0, 255, 0),      # qb_position - green
-        (255, 0, 0),      # left_hash_mark - blue
-        (0, 255, 255),    # right_hash_mark - yellow
-        (255, 0, 255),    # preplay - magenta
-        (255, 255, 0),    # playcall - cyan
-        (0, 255, 128),    # possession_indicator - lime green (TRIANGLE!)
-        (255, 128, 0),    # territory_indicator - orange (TRIANGLE!)
+        (0, 255, 128),    # possession_triangle_area - lime green
+        (255, 128, 0),    # territory_triangle_area - orange
+        (255, 0, 255),    # preplay_indicator - magenta
+        (255, 255, 0),    # play_call_screen - cyan
     ]
     
     # Initialize screen capture
@@ -238,13 +237,13 @@ def live_detection(model, conf_threshold=0.15, monitor=1, region=None, save_vide
                             color = colors[cls_id]
                             
                             # Special handling for triangles
-                            if class_name == "possession_indicator":
+                            if class_name == "possession_triangle_area":
                                 possession_detected = True
                                 # Extra thick border for triangles
                                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, 5)
                                 # Add triangle symbol
                                 label = f"🔺 POSSESSION: {conf:.2f}"
-                            elif class_name == "territory_indicator":
+                            elif class_name == "territory_triangle_area":
                                 territory_detected = True
                                 # Extra thick border for triangles
                                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, 5)
@@ -315,7 +314,7 @@ def live_detection(model, conf_threshold=0.15, monitor=1, region=None, save_vide
                 if count > 0:
                     color = colors[i]
                     # Special display for triangles
-                    if "indicator" in class_name:
+                    if "triangle_area" in class_name:
                         text = f"🔺 {class_name}: {count}"
                     else:
                         text = f"{class_name}: {count}"
@@ -399,7 +398,7 @@ def print_statistics(detection_stats, frame_count, avg_fps, triangle_stats=None)
     for class_name, count in detection_stats.items():
         if count > 0:
             rate = (count / frame_count) * 100 if frame_count > 0 else 0
-            symbol = "🔺" if "indicator" in class_name else "🎯"
+            symbol = "🔺" if "triangle_area" in class_name else "🎯"
             print(f"{symbol} {class_name}: {count} ({rate:.1f}% of frames)")
     print(f"📈 Total detections: {total_detections}")
 
@@ -435,7 +434,7 @@ def print_final_statistics(detection_stats, frame_count, fps_queue, triangle_sta
     for class_name, count in detection_stats.items():
         if count > 0:
             rate = (count / frame_count) * 100 if frame_count > 0 else 0
-            if "indicator" in class_name:
+            if "triangle_area" in class_name:
                 status = "✅" if rate > 20 else "⚠️" if count > 0 else "❌"
                 symbol = "🔺"
             else:
@@ -443,7 +442,7 @@ def print_final_statistics(detection_stats, frame_count, fps_queue, triangle_sta
                 symbol = ""
             print(f"{status} {symbol} {class_name:<20}: {count:>4} detections ({rate:.1f}% of frames)")
         else:
-            symbol = "🔺" if "indicator" in class_name else ""
+            symbol = "🔺" if "triangle_area" in class_name else ""
             print(f"❌ {symbol} {class_name:<20}: {count:>4} detections")
     
     print(f"\n🏆 OVERALL PERFORMANCE ASSESSMENT:")
@@ -474,14 +473,15 @@ def main():
                        help="Capture region: x y width height")
     parser.add_argument("--save", "-s", help="Save video to file")
     parser.add_argument("--no-preview", action="store_true", help="Don't show preview window")
+    parser.add_argument("--model", type=str, help="Path to custom model weights")
     
     args = parser.parse_args()
     
     print("🏈 SpygateAI Live Screen Detection")
     print("=" * 60)
     
-    # Load model
-    model = load_trained_model()
+    # Load model with custom path if provided
+    model = load_trained_model(args.model)
     if model is None:
         print("❌ Could not load trained model!")
         return

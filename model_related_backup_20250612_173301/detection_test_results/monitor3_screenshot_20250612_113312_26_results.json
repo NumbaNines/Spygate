@@ -1,0 +1,79 @@
+{
+  "filename": "monitor3_screenshot_20250612_113312_26.png",
+  "detections": [
+    {
+      "class": "territory_triangle_area",
+      "confidence": 0.92527174949646,
+      "bbox": [
+        1580,
+        1017,
+        1658,
+        1078
+      ]
+    },
+    {
+      "class": "possession_triangle_area",
+      "confidence": 0.8912717700004578,
+      "bbox": [
+        265,
+        1017,
+        1062,
+        1076
+      ]
+    },
+    {
+      "class": "hud",
+      "confidence": 0.7280058860778809,
+      "bbox": [
+        241,
+        1018,
+        1649,
+        1076
+      ]
+    },
+    {
+      "class": "possession_triangle_area",
+      "confidence": 0.5790718197822571,
+      "bbox": [
+        1646,
+        512,
+        1917,
+        545
+      ]
+    }
+  ],
+  "ocr_results": [
+    {
+      "bbox": [
+        241,
+        1018,
+        1649,
+        1076
+      ],
+      "text": {
+        "yard_line": 13
+      },
+      "confidence": 0.7280058860778809,
+      "method": "enhanced_ocr"
+    }
+  ],
+  "timing": {
+    "yolo": 0.02295684814453125,
+    "ocr": 0.2481980323791504,
+    "total": 0.27115488052368164
+  },
+  "shape": [
+    1080,
+    1920,
+    3
+  ],
+  "summary": {
+    "hud_elements": 1,
+    "triangles": 3,
+    "indicators": 0
+  },
+  "performance": {
+    "fps": 3.687929194077935,
+    "rating": "EXCELLENT (Real-time capable)"
+  }
+}

@@ -1,4 +1,4 @@
-"""Tests for the YOLO11-based HUD element detection system."""
+"""Tests for the YOLOv8-based HUD element detection system."""
 
 import logging
 import os
@@ -14,7 +14,7 @@ from PIL import Image
 
 from spygate.core.hardware import HardwareDetector, HardwareTier
 from spygate.ml.hud_detector import HUDDetector
-from spygate.ml.yolo11_model import UI_CLASSES
+from spygate.ml.yolov8_model import UI_CLASSES
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # Test data paths
 TEST_DATA_DIR = Path("data/test_clips")
 SAMPLE_FRAMES_DIR = TEST_DATA_DIR / "frames"
-MODEL_PATH = Path("spygate/models/yolo11/weights/best.pt")
+MODEL_PATH = Path("hud_region_training/runs/hud_regions_fresh_1749629437/weights/best.pt")
 
 
 @pytest.fixture

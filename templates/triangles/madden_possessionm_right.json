@@ -1,0 +1,10 @@
+{
+  "name": "madden_possessionm_right",
+  "direction": "right",
+  "triangle_type": 1,
+  "size": [
+    17,
+    22
+  ],
+  "created_programmatically": true
+}

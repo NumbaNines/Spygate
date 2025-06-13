@@ -1,0 +1,15 @@
+# SpygateAI HUD Region Detection Dataset
+path: ./hud_region_training/dataset
+train: images/train
+val: images/val
+
+# Classes
+nc: 5  # number of classes
+names: ['hud', 'possession_triangle_area', 'territory_triangle_area', 'preplay_indicator', 'play_call_screen']
+
+# Class mapping:
+# 0: hud - Main HUD bar region
+# 1: possession_triangle_area - Left triangle area (between team names)
+# 2: territory_triangle_area - Right triangle area (next to yard marker)
+# 3: preplay_indicator - Pre-play indicator elements
+# 4: play_call_screen - Play selection screen elements

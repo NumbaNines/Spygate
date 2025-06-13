@@ -5,6 +5,40 @@ Quick test script to verify error handling fixes work correctly.
 import sys
 import numpy as np
 import traceback
+import logging
+import os
+from pathlib import Path
+
+# Add src directory to Python path for imports
+sys.path.insert(0, str(Path(__file__).parent / "src"))
+
+from src.spygate.core.optimizer import TierOptimizer
+from src.spygate.core.hardware import HardwareDetector
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def test_hardware_detection():
+    """Test hardware detection functionality."""
+    try:
+        detector = HardwareDetector()
+        tier = detector.detect_tier()
+        logger.info(f"Hardware tier detected: {tier.name}")
+        return True
+    except Exception as e:
+        logger.error(f"Hardware detection failed: {e}")
+        return False
+
+def test_optimizer():
+    """Test optimizer functionality."""
+    try:
+        detector = HardwareDetector()
+        optimizer = TierOptimizer(detector)
+        logger.info("Optimizer initialized successfully")
+        return True
+    except Exception as e:
+        logger.error(f"Optimizer test failed: {e}")
+        return False
 
 def test_optimizer_fix():
     """Test that the TierOptimizer hardware tier comparison fix works."""
@@ -105,26 +139,26 @@ def main():
     print("=" * 50)
     
     tests = [
-        test_optimizer_fix,
-        test_ocr_corrupted_data,
-        test_enum_fix,
+        ("Hardware Detection", test_hardware_detection),
+        ("Optimizer", test_optimizer),
+        ("TierOptimizer Fix", test_optimizer_fix),
+        ("OCR Corrupted Data", test_ocr_corrupted_data),
+        ("EngineStatus Enum", test_enum_fix),
     ]
     
-    results = []
-    for test in tests:
-        results.append(test())
+    passed = 0
+    total = len(tests)
     
-    print(f"\n📊 RESULTS SUMMARY")
-    print("=" * 50)
-    print(f"Tests passed: {sum(results)}/{len(results)}")
+    for test_name, test_func in tests:
+        logger.info(f"Running {test_name} test...")
+        if test_func():
+            logger.info(f"✓ {test_name} test passed")
+            passed += 1
+        else:
+            logger.error(f"✗ {test_name} test failed")
     
-    if all(results):
-        print("🎉 All quick fixes verified successfully!")
-        print("✅ Ready to run comprehensive error handling tests")
-        return True
-    else:
-        print("⚠️ Some fixes still need work")
-        return False
+    logger.info(f"Test results: {passed}/{total} passed")
+    return passed == total
 
 if __name__ == "__main__":
     success = main()

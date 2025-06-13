@@ -1,0 +1,37 @@
+{
+  "total_images": 41,
+  "successful_detections": 41,
+  "total_hud_elements": 41,
+  "total_triangles": 85,
+  "total_text_regions": 31,
+  "total_time": 22.003697872161865,
+  "start_time": "2025-06-12T16:32:33.987284",
+  "hardware": {
+    "tier": "ULTRA",
+    "cpu_cores": 8,
+    "ram_gb": 31.2,
+    "has_cuda": false,
+    "gpu_name": null,
+    "gpu_memory_gb": null
+  },
+  "model": {
+    "path": "hud_region_training/runs/hud_regions_fresh_1749629437/weights/best.pt",
+    "classes": 5,
+    "class_names": [
+      "hud",
+      "possession_triangle_area",
+      "territory_triangle_area",
+      "preplay_indicator",
+      "play_call_screen"
+    ],
+    "confidence_threshold": 0.25
+  },
+  "ocr": {
+    "hardware_tier": "ULTRA",
+    "has_easyocr": true,
+    "min_confidence": 0.6
+  },
+  "end_time": "2025-06-12T16:33:00.371737",
+  "average_time_per_image": 0.5366755578576065,
+  "average_fps": 1.8633231667787733
+}

@@ -1,0 +1,89 @@
+{
+  "filename": "monitor3_screenshot_20250612_113342_32.png",
+  "detections": [
+    {
+      "class": "possession_triangle_area",
+      "confidence": 0.9238318800926208,
+      "bbox": [
+        262,
+        1014,
+        1066,
+        1076
+      ]
+    },
+    {
+      "class": "territory_triangle_area",
+      "confidence": 0.8364436626434326,
+      "bbox": [
+        1579,
+        1017,
+        1659,
+        1077
+      ]
+    },
+    {
+      "class": "play_call_screen",
+      "confidence": 0.6357932686805725,
+      "bbox": [
+        406,
+        462,
+        1259,
+        1015
+      ]
+    },
+    {
+      "class": "hud",
+      "confidence": 0.5432178378105164,
+      "bbox": [
+        0,
+        1016,
+        1266,
+        1075
+      ]
+    },
+    {
+      "class": "play_call_screen",
+      "confidence": 0.494057834148407,
+      "bbox": [
+        17,
+        459,
+        1257,
+        1012
+      ]
+    }
+  ],
+  "ocr_results": [
+    {
+      "bbox": [
+        0,
+        1016,
+        1266,
+        1075
+      ],
+      "text": {
+        "yard_line": 11
+      },
+      "confidence": 0.5432178378105164,
+      "method": "enhanced_ocr"
+    }
+  ],
+  "timing": {
+    "yolo": 0.023690223693847656,
+    "ocr": 0.23561406135559082,
+    "total": 0.2593042850494385
+  },
+  "shape": [
+    1080,
+    1920,
+    3
+  ],
+  "summary": {
+    "hud_elements": 1,
+    "triangles": 2,
+    "indicators": 2
+  },
+  "performance": {
+    "fps": 3.856473099969566,
+    "rating": "EXCELLENT (Real-time capable)"
+  }
+}

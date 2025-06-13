@@ -1,0 +1,26 @@
+{
+  "version": "5.8.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "play_call_screen",
+      "points": [
+        [
+          211.84799999999998,
+          283.84079999999994
+        ],
+        [
+          374.52896,
+          340.72464
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    }
+  ],
+  "imagePath": "resized_monitor3_screenshot_20250606_220855_252.png",
+  "imageData": null,
+  "imageHeight": 480,
+  "imageWidth": 640
+}

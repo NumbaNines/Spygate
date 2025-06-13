@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 os.makedirs("data", exist_ok=True)
 
 # SQLite database URL
-SQLALCHEMY_DATABASE_URL = "sqlite:///data/spygate.db"
+SQLALCHEMY_database_url = os.getenv("DATABASE_URL", "")
 
 # Create SQLAlchemy engine
 engine = create_engine(

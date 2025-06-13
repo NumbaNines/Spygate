@@ -878,9 +878,18 @@ class AnalysisWorker(QThread):
     progress_updated = pyqtSignal(int, str)
     analysis_finished = pyqtSignal(str, list)
 
-    def __init__(self, video_path):
+    def __init__(self, video_path, situation_preferences=None):
         super().__init__()
         self.video_path = video_path
+        # Default to common situations if none specified
+        self.situation_preferences = situation_preferences or {
+            '1st_down': True,
+            '3rd_down': True,
+            '4th_down': True,
+            '3rd_long': True,
+            'goal_line': True
+        }
+        print(f"🎯 Analysis will detect: {[k for k, v in self.situation_preferences.items() if v]}")
         self.should_stop = False
         
         # Context tracking for down detection logic
@@ -1608,10 +1617,20 @@ class AnalysisWorker(QThread):
         try:
             # Real SpygateAI detection using custom 5-class model
             from ultralytics import YOLO
+            import os
+            from pathlib import Path
             
-            # Load SpygateAI custom model
-            model_path = "../hud_region_training/runs/hud_regions_fresh_1749629437/weights/best.pt"
-            model = YOLO(model_path)
+            # Load SpygateAI custom model with correct path
+            current_dir = Path(__file__).parent.parent.parent  # Go up to Spygate root
+            model_path = current_dir / "hud_region_training" / "runs" / "hud_regions_fresh_1749629437" / "weights" / "best.pt"
+            
+            print(f"🤖 Loading model from: {model_path}")
+            
+            if not model_path.exists():
+                raise FileNotFoundError(f"Model not found at {model_path}")
+                
+            model = YOLO(str(model_path))
+            print(f"✅ Model loaded successfully")
             
             # Store the model for re-analysis
             self.hud_model = model
@@ -1666,14 +1685,42 @@ class AnalysisWorker(QThread):
                                     # SEPARATE: Check for team scores and possession indicator
                                     scores_detected, score_info = self.detect_team_scores_and_possession(frame, hud_boxes[0], frame_count)
                                     
-                                    # Only create clips for actual 1st downs with proper spacing
-                                    if first_down_detected:
+                                    # Enhanced situation filtering - check if we should create a clip for this situation
+                                    should_create_clip = False
+                                    
+                                    if first_down_detected and situation:
+                                        # Map detected situations to preference keys
+                                        situation_key = None
+                                        
+                                        if "1st Down" in situation:
+                                            situation_key = "1st_down"
+                                        elif "2nd Down" in situation:
+                                            situation_key = "2nd_down"
+                                        elif "3rd Down" in situation:
+                                            if "Long" in situation or "&" in situation:
+                                                situation_key = "3rd_long"
+                                            else:
+                                                situation_key = "3rd_down"
+                                        elif "4th Down" in situation:
+                                            situation_key = "4th_down"
+                                        elif "Goal" in situation:
+                                            situation_key = "goal_line"
+                                        
+                                        # Check if this situation is selected by user
+                                        if situation_key and self.situation_preferences.get(situation_key, False):
+                                            should_create_clip = True
+                                            print(f"🎯 Situation '{situation}' matches selected preference '{situation_key}'")
+                                        else:
+                                            print(f"⏭️ Situation '{situation}' not selected for clipping")
+                                    
+                                    # Only create clips if situation is selected and proper spacing
+                                    if should_create_clip:
                                         frames_since_last_clip = frame_count - last_clip_frame
                                         required_gap = 180  # Reduced to 180 frames (3 seconds) for quick plays
                                         
                                         if clips_detected == 0 or frames_since_last_clip > required_gap:
-                                            start_time = (frame_count / fps) - 2.5  # 2.5 seconds before
-                                            end_time = (frame_count / fps) + 2.5   # 2.5 seconds after
+                                            start_time = (frame_count / fps) - 8.0  # 8 seconds before (increased from 2.5)
+                                            end_time = (frame_count / fps) + 4.0   # 4 seconds after (increased from 2.5)
                                             
                                             # Ensure times are within video bounds
                                             start_time = max(0, start_time)
@@ -1711,7 +1758,9 @@ class AnalysisWorker(QThread):
             self.analysis_finished.emit(self.video_path, clips_data)
 
         except Exception as e:
-            print(f"Analysis error: {e}")
+            print(f"❌ Analysis error: {e}")
+            import traceback
+            traceback.print_exc()
             self.analysis_finished.emit(self.video_path, [])
 
     def check_for_missed_third_down_forward(self, current_frame, detected_down):

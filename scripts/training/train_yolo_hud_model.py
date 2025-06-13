@@ -11,6 +11,10 @@ from pathlib import Path
 from datetime import datetime
 from ultralytics import YOLO
 import torch
+import logging
+import time
+
+logger = logging.getLogger(__name__)
 
 def setup_training_environment():
     """Set up the training environment and directories."""
@@ -144,72 +148,114 @@ def create_training_config():
     print(f"📝 Training config saved: {config_path}")
     return config_path
 
-def train_model(config_path, run_dir):
-    """Train the YOLOv8 model."""
-    print("\n🚀 Starting YOLOv8 Training...")
+def train_model(config_path: str, run_dir: str):
+    """Train the YOLOv8 model with optimized parameters for HUD detection.
+    
+    Key improvements:
+    1. Focused augmentation strategy for HUD elements
+    2. Multi-scale training for different resolutions
+    3. Optimized hyperparameters for static UI detection
+    4. Enhanced early stopping and model selection
+    5. Custom loss weights for better HUD region detection
+    """
+    print("\n🚀 Starting YOLOv8 Training with Enhanced Parameters...")
     
     # Check for GPU
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f"💻 Using device: {device}")
     
-    # Initialize model
-    model = YOLO('yolov8n.pt')  # Start with YOLOv8 nano pretrained weights
+    # Initialize model - use nano for faster training, will be scaled up later
+    model = YOLO('yolov8n.pt')
     
-    # Training parameters optimized for HUD detection
+    # Enhanced training parameters for HUD detection
     training_args = {
         'data': str(config_path),
-        'epochs': 50,  # Start with 50 epochs
-        'imgsz': 640,
-        'batch': 16 if device == 'cuda' else 4,
+        'epochs': 100,  # Increased epochs for better convergence
+        'patience': 15,  # Increased patience for better model selection
+        'save_period': 5,
+        'cache': True,  # Cache images for faster training
         'device': device,
-        'workers': 4,
-        'patience': 10,  # Early stopping patience
-        'save_period': 5,  # Save every 5 epochs
+        'project': 'runs/train',
+        'name': f'hud_detection_enhanced_{datetime.now().strftime("%Y%m%d_%H%M%S")}',
+        
+        # Multi-scale training
+        'imgsz': [640, 960],  # Train on multiple sizes
+        'rect': False,  # Allow for multi-scale training
+        
+        # Batch size optimization
+        'batch': 32 if device == 'cuda' else 8,
+        'workers': 8 if device == 'cuda' else 4,
+        
+        # Optimizer settings
+        'optimizer': 'AdamW',  # Better convergence for our task
+        'lr0': 0.001,  # Initial learning rate
+        'lrf': 0.01,  # Final learning rate fraction
+        'momentum': 0.937,
+        'weight_decay': 0.0005,
+        'warmup_epochs': 5,
+        'warmup_momentum': 0.8,
+        'warmup_bias_lr': 0.1,
+        
+        # Focused augmentation for HUD detection
+        'hsv_h': 0.015,  # Slight hue variation
+        'hsv_s': 0.2,    # Moderate saturation variation
+        'hsv_v': 0.1,    # Slight brightness variation
+        'degrees': 0.0,  # No rotation (HUD is always horizontal)
+        'translate': 0.05,  # Minimal translation
+        'scale': 0.05,   # Minimal scaling
+        'shear': 0.0,    # No shear
+        'perspective': 0.0,  # No perspective
+        'flipud': 0.0,   # No vertical flip
+        'fliplr': 0.0,   # No horizontal flip
+        'mosaic': 0.25,  # Reduced mosaic for stable training
+        'mixup': 0.0,    # No mixup
+        'copy_paste': 0.0,  # No copy-paste
+        
+        # Enhanced loss weights for better HUD detection
+        'box': 7.5,  # Increased box loss weight
+        'cls': 0.3,  # Reduced classification weight (fewer classes)
+        'dfl': 1.5,  # DFL loss weight
+        'cls_pw': 1.0,  # Cls BCELoss positive_weight
+        'obj': 1.0,  # Obj loss gain
+        'obj_pw': 1.0,  # Obj BCELoss positive_weight
+        
+        # Validation settings
         'val': True,
         'plots': True,
+        'save': True,
+        'save_json': True,
+        'save_hybrid': True,  # Save hybrid version of labels
+        'conf': 0.001,  # NMS confidence threshold
+        'iou': 0.6,     # NMS IoU threshold
+        'max_det': 300,  # Maximum detections per image
+        'half': True,   # Use FP16 half-precision inference
+        
+        # Logging and monitoring
         'verbose': True,
-        'project': 'runs/train',
-        'name': f'hud_detection_{datetime.now().strftime("%Y%m%d_%H%M%S")}',
-        
-        # Optimization parameters
-        'optimizer': 'AdamW',
-        'lr0': 0.001,  # Initial learning rate
-        'weight_decay': 0.0005,
-        'momentum': 0.937,
-        'warmup_epochs': 3,
-        'warmup_momentum': 0.8,
-        
-        # Augmentation (minimal for perfect data)
-        'degrees': 0.0,  # No rotation
-        'translate': 0.1,  # Slight translation
-        'scale': 0.1,  # Slight scaling
-        'shear': 0.0,  # No shearing
-        'perspective': 0.0,  # No perspective
-        'flipud': 0.0,  # No vertical flip
-        'fliplr': 0.0,  # No horizontal flip
-        'mosaic': 0.5,  # Reduced mosaic
-        'mixup': 0.0,  # No mixup
-        
-        # Loss weights
-        'box': 7.5,
-        'cls': 0.5,
-        'dfl': 1.5,
+        'exist_ok': False,  # Increment run name if exists
     }
     
-    print("📋 Training parameters:")
+    print("\n📋 Enhanced Training Parameters:")
     for key, value in training_args.items():
         print(f"   {key}: {value}")
     
-    print("\n🏈 Training starting... This may take a while!")
-    print("📊 Monitor progress at: runs/train/<run_name>/")
+    print("\n🏈 Starting enhanced training pipeline...")
+    print("=" * 50)
     
-    # Start training
-    results = model.train(**training_args)
-    
-    print(f"\n✅ Training completed!")
-    print(f"📈 Results saved to: {results.save_dir}")
-    
-    return results
+    try:
+        # Start training
+        results = model.train(**training_args)
+        
+        print("\n✅ Training completed successfully!")
+        print(f"📊 Results saved to: {training_args['project']}/{training_args['name']}/")
+        
+        # Return best model path
+        return str(Path(training_args['project']) / training_args['name'] / 'weights' / 'best.pt')
+        
+    except Exception as e:
+        logger.error(f"Training failed: {e}")
+        print(f"\n❌ Training failed: {e}")
+        return None
 
 def evaluate_model(results):
     """Evaluate the trained model."""
@@ -229,6 +275,17 @@ def evaluate_model(results):
     print(f"   Recall: {val_results.box.mr:.4f}")
     
     return val_results
+
+def verify_training_data(data_path: str) -> bool:
+    """Verify training data before starting."""
+    try:
+        # Load and verify dataset
+        model = YOLO('yolov8n.pt')
+        model.train(data=data_path, epochs=1, imgsz=640, verbose=False)
+        return True
+    except Exception as e:
+        logger.error(f"Data verification failed: {e}")
+        return False
 
 def main():
     """Main training function."""
@@ -250,16 +307,34 @@ def main():
         # Create training config
         config_path = create_training_config()
         
+        # Verify training data
+        if not verify_training_data(config_path):
+            print("❌ Training data verification failed!")
+            return
+        
         # Train model
-        results = train_model(config_path, run_dir)
+        best_model_path = train_model(config_path, run_dir)
         
-        # Evaluate model
-        val_results = evaluate_model(results)
-        
-        print("\n🎉 Training Complete!")
-        print(f"📁 Best model: {results.save_dir}/weights/best.pt")
-        print(f"📁 Last model: {results.save_dir}/weights/last.pt")
-        print("\n🚀 Ready to test on your gameplay footage!")
+        if best_model_path:
+            # Evaluate model
+            model = YOLO(best_model_path)
+            val_results = model.val()
+            
+            print("\n🎉 Training Complete!")
+            print(f"📁 Best model: {best_model_path}")
+            print(f"📁 Last model: {model.path}")
+            print("\n🚀 Ready to test on your gameplay footage!")
+            
+            # Evaluate model
+            val_results = evaluate_model(val_results)
+            
+            print("\n📊 Evaluated model results:")
+            print(f"   mAP50: {val_results.box.map50:.4f}")
+            print(f"   mAP50-95: {val_results.box.map:.4f}")
+            print(f"   Precision: {val_results.box.mp:.4f}")
+            print(f"   Recall: {val_results.box.mr:.4f}")
+        else:
+            print("\n❌ Training failed. No model path found.")
         
     except Exception as e:
         print(f"❌ Training failed: {e}")

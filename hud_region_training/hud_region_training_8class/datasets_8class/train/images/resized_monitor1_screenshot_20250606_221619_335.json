@@ -1,0 +1,58 @@
+{
+  "version": "5.8.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "hud",
+      "points": [
+        [
+          60.45216,
+          365.2932
+        ],
+        [
+          487.58752000000004,
+          379.36344
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "territory_triangle_area",
+      "points": [
+        [
+          467.32032,
+          364.62312000000003
+        ],
+        [
+          487.75552,
+          379.69848
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    },
+    {
+      "label": "possession_triangle_area",
+      "points": [
+        [
+          127.95680000000002,
+          365.79576
+        ],
+        [
+          335.66175999999996,
+          379.866
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",
+      "flags": {}
+    }
+  ],
+  "imagePath": "resized_monitor1_screenshot_20250606_221619_335.png",
+  "imageData": null,
+  "imageHeight": 480,
+  "imageWidth": 640
+}

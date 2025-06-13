@@ -1,9 +1,0 @@
-names:
-- hud
-- qb_position
-- left_hash_mark
-- right_hash_mark
-nc: 4
-path: C:\Users\Nines\Spygate\training_data
-train: train/images
-val: val/images

@@ -1,0 +1,10 @@
+[
+  {
+    "image": "monitor3_screenshot_20250612_113552_58.png",
+    "yolo_detections": 1,
+    "template_matches": 3,
+    "template_details": [
+      {
+        "type": "territory",
+        "direction": "up",
+        "confidence": 

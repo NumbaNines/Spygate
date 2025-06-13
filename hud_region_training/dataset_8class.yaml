@@ -1,0 +1,49 @@
+# SpygateAI HUD Region Detection Dataset - 8-Class Expanded System
+# Enhanced detection with down/distance, game clock, and play clock regions
+
+# Dataset paths
+path: C:\Users\Nines\Spygate\hud_region_training\datasets_8class
+train: train/images
+val: val/images
+
+# Number of classes
+nc: 8
+
+# Class names (backward compatible with 5-class)
+names:
+  0: hud
+  1: possession_triangle_area
+  2: territory_triangle_area
+  3: preplay_indicator
+  4: play_call_screen
+  5: down_distance_area
+  6: game_clock_area
+  7: play_clock_area
+
+# Class descriptions:
+# EXISTING CLASSES (0-4):
+# 0: hud - Main HUD bar containing all game information
+# 1: possession_triangle_area - Left triangle area showing ball possession
+# 2: territory_triangle_area - Right triangle area showing field territory
+# 3: preplay_indicator - Bottom left indicator (pre-play state)
+# 4: play_call_screen - Play call screen (post-play state)
+
+# NEW CLASSES (5-7):
+# 5: down_distance_area - Down and distance text region (e.g., "3rd & 8")
+# 6: game_clock_area - Game clock region showing quarter time
+# 7: play_clock_area - Play clock region showing 40-second countdown
+
+# Training parameters optimized for 8-class detection
+augmentation:
+  hsv_h: 0.015
+  hsv_s: 0.7
+  hsv_v: 0.4
+  degrees: 0.0
+  translate: 0.1
+  scale: 0.5
+  shear: 0.0
+  perspective: 0.0
+  flipud: 0.0
+  fliplr: 0.5
+  mosaic: 1.0
+  mixup: 0.0

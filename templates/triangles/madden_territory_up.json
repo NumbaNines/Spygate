@@ -1,0 +1,10 @@
+{
+  "name": "madden_territory_up",
+  "direction": "up",
+  "triangle_type": 2,
+  "size": [
+    16,
+    16
+  ],
+  "created_programmatically": true
+}

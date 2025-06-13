@@ -1,0 +1,10 @@
+{
+  "name": "territory_down",
+  "direction": "down",
+  "triangle_type": 2,
+  "size": [
+    12,
+    12
+  ],
+  "created_programmatically": true
+}

@@ -164,11 +164,11 @@ class TestGPUMemoryOptimizationIntegration:
     def test_yolo_memory_integration(self):
         """Test YOLO model integration with memory manager."""
         # Mock the YOLO model to avoid heavy dependencies
-        from spygate.ml.yolo11_model import CustomYOLO11
+        from spygate.ml.yolov8_model import EnhancedYOLOv8
 
         # This would normally load a real model, but for testing we'll mock it
-        with patch.object(CustomYOLO11, "__init__", return_value=None):
-            model = CustomYOLO11()
+        with patch.object(EnhancedYOLOv8, "__init__", return_value=None):
+            model = EnhancedYOLOv8()
             model.hardware = self.hardware
             model._setup_memory_management()
 

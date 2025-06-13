@@ -36,5 +36,5 @@ pip install -r requirements-security.txt
 
 ## Regular Security Tasks
 - [ ] Run security audits monthly
-- [ ] Update dependencies quarterly  
+- [ ] Update dependencies quarterly
 - [ ] Review access permissions quarterly

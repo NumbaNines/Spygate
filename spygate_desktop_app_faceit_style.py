@@ -17,19 +17,426 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union, Set, Tuple
 import subprocess
 import shutil
+import cv2
+import numpy as np
+from PIL import Image
+from PyQt6.QtCore import QThread, pyqtSignal, QObject
+from PyQt6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QPushButton, QLabel, QFileDialog, QProgressBar, QMessageBox,
+    QTabWidget, QComboBox, QSpinBox, QCheckBox, QLineEdit,
+    QScrollArea, QFrame, QSizePolicy, QSpacerItem
+)
+from PyQt6.QtGui import QPixmap, QImage, QColor, QPalette
+import torch
 
 # Add project paths
 current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir))
 sys.path.insert(0, str(current_dir / "spygate"))
 
+from spygate.ml.enhanced_game_analyzer import EnhancedGameAnalyzer
+from spygate.ml.enhanced_ocr import EnhancedOCR
+from spygate.core.hardware import HardwareDetector
+
+# Import other dependencies
 from profile_picture_manager import ProfilePictureManager, is_emoji_profile
-
-# Import user database
 from user_database import User, UserDatabase
-
-# Import formation editor
 from formation_editor import FormationEditor
+
+class AnalysisWorker(QThread):
+    """Worker thread for video analysis using enhanced 5-class detection."""
+
+    progress_updated = pyqtSignal(int, str)
+    analysis_finished = pyqtSignal(str, list)
+    error_occurred = pyqtSignal(str)
+
+    def __init__(self, video_path, situation_preferences=None):
+        super().__init__()
+        self.video_path = video_path
+        self.situation_preferences = situation_preferences or {
+            "1st_down": True,
+            "2nd_down": False,
+            "3rd_down": True,
+            "3rd_long": True,
+            "4th_down": True,
+            "goal_line": True
+        }
+        self.should_stop = False
+        self.analyzer = None
+        self.hardware = HardwareDetector()
+        self.last_progress_update = 0
+        self.progress_update_interval = 1000
+        self.memory_cleanup_interval = 5000
+        self.last_memory_cleanup = 0
+
+    def load_model(self):
+        """Initialize enhanced game analyzer with 5-class detection."""
+        try:
+            print("🤖 Initializing enhanced game analyzer...")
+            
+            # Initialize analyzer with hardware detection
+            self.analyzer = EnhancedGameAnalyzer(
+                hardware=self.hardware,
+                model_path=Path("hud_region_training/runs/hud_regions_fresh_1749629437/weights/best.pt")
+            )
+            
+            print("✅ Enhanced game analyzer initialized successfully")
+            return True
+            
+        except Exception as e:
+            error_msg = f"Failed to initialize analyzer: {str(e)}"
+            print(f"❌ {error_msg}")
+            self.error_occurred.emit(error_msg)
+            return False
+
+    def cleanup_memory(self, cap=None):
+        """Clean up memory by releasing resources."""
+        if cap is not None:
+            cap.release()
+        
+        # Clear CUDA cache if available
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        
+        # Force garbage collection
+        import gc
+        gc.collect()
+
+    def run(self):
+        """Run video analysis with enhanced 5-class detection."""
+        if not self.load_model():
+            return
+
+        try:
+            cap = cv2.VideoCapture(self.video_path)
+            if not cap.isOpened():
+                raise Exception("Failed to open video file")
+
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            frame_number = 0
+            detected_clips = []
+            
+            print(f"📊 Processing video: {total_frames} frames at {fps} FPS")
+            
+            while frame_number < total_frames and not self.should_stop:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+
+                # Update progress periodically
+                if frame_number % self.progress_update_interval == 0:
+                    progress = int((frame_number / total_frames) * 100)
+                    self.progress_updated.emit(progress, f"Analyzing frame {frame_number}/{total_frames}")
+
+                # Analyze frame with enhanced game analyzer
+                game_state = self.analyzer.analyze_frame(frame)
+                
+                if game_state:
+                    # Check for situations based on preferences
+                    if self._check_situation_match(game_state):
+                        clip = self._create_clip(frame_number, fps, game_state)
+                        detected_clips.append(clip)
+                
+                # Periodic memory cleanup
+                if frame_number % self.memory_cleanup_interval == 0:
+                    self.cleanup_memory()
+                
+                frame_number += 1
+
+            # Final cleanup
+            self.cleanup_memory(cap)
+            
+            # Emit completion signal
+            self.analysis_finished.emit("Analysis complete", detected_clips)
+            
+        except Exception as e:
+            error_msg = f"Analysis error: {str(e)}"
+            print(f"❌ {error_msg}")
+            self.error_occurred.emit(error_msg)
+            self.cleanup_memory(cap)
+
+    def _check_situation_match(self, game_state):
+        """Check if current game state matches user preferences."""
+        if not game_state:
+            return False
+            
+        # Extract situation from game state
+        down = game_state.down
+        distance = game_state.distance
+        
+        # Check against preferences
+        if down == 1 and self.situation_preferences.get("1st_down", True):
+            return True
+        if down == 2 and self.situation_preferences.get("2nd_down", False):
+            return True
+        if down == 3:
+            if distance >= 7 and self.situation_preferences.get("3rd_long", True):
+                return True
+            if self.situation_preferences.get("3rd_down", True):
+                return True
+        if down == 4 and self.situation_preferences.get("4th_down", True):
+            return True
+        if distance == 0 and self.situation_preferences.get("goal_line", True):
+            return True
+            
+        return False
+
+    def _create_clip(self, frame_number, fps, game_state):
+        """Create a clip object from the current game state."""
+        # Calculate clip boundaries with pre-play buffer
+        start_frame = max(0, frame_number - int(fps * 5))  # 5 second buffer
+        end_frame = frame_number + int(fps * 10)  # 10 second forward
+        
+        return DetectedClip(
+            start_frame=start_frame,
+            end_frame=end_frame,
+            start_time=start_frame / fps,
+            end_time=end_frame / fps,
+            confidence=0.95,  # Using enhanced detection
+            situation=self._format_situation(game_state)
+        )
+
+    def _format_situation(self, game_state):
+        """Format game state into readable situation text."""
+        down_map = {1: "1st", 2: "2nd", 3: "3rd", 4: "4th"}
+        down_text = down_map.get(game_state.down, "Unknown")
+        
+        if game_state.distance == 0:
+            return f"{down_text} & Goal"
+        
+        return f"{down_text} & {game_state.distance}"
+
+    def detect_team_scores_and_possession(self, frame, hud_box, frame_number=0):
+        """Detect team scores and possession from the HUD box."""
+        try:
+            import pytesseract
+            import re
+            import cv2
+            import numpy as np
+            
+            # Extract HUD region
+            x1, y1, x2, y2 = map(int, hud_box.xyxy[0].cpu().numpy())
+            hud_region = frame[int(y1):int(y2), int(x1):int(x2)]
+            
+            # Split HUD into left and right sections for team info
+            hud_height, hud_width = hud_region.shape[:2]
+            
+            # Left team section (away team)
+            left_x1 = int(hud_width * 0.05)  # 5% from left
+            left_x2 = int(hud_width * 0.30)  # 30% from left
+            
+            # Right team section (home team)
+            right_x1 = int(hud_width * 0.70)  # 70% from left
+            right_x2 = int(hud_width * 0.95)  # 95% from left
+            
+            # Vertical range for both sections
+            y1_score = int(hud_height * 0.20)  # 20% from top
+            y2_score = int(hud_height * 0.80)  # 80% from top
+            
+            # Extract team regions
+            away_region = hud_region[y1_score:y2_score, left_x1:left_x2]
+            home_region = hud_region[y1_score:y2_score, right_x1:right_x2]
+            
+            # Process each region
+            def process_team_region(region, is_home):
+                # Scale up for better OCR
+                scale_factor = 8
+                scaled = cv2.resize(region, (region.shape[1] * scale_factor, region.shape[0] * scale_factor),
+                                  interpolation=cv2.INTER_CUBIC)
+                
+                # Convert to grayscale
+                gray = cv2.cvtColor(scaled, cv2.COLOR_BGR2GRAY)
+                
+                # Apply CLAHE
+                clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+                enhanced = clahe.apply(gray)
+                
+                # Denoise
+                denoised = cv2.fastNlMeansDenoising(enhanced)
+                
+                # Adaptive threshold
+                binary = cv2.adaptiveThreshold(denoised, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                             cv2.THRESH_BINARY_INV, 11, 2)
+                
+                # Clean up with morphology
+                kernel = np.ones((2,2), np.uint8)
+                cleaned = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
+                
+                # OCR with optimized settings for scores
+                score_config = r'--oem 3 --psm 7 -c tessedit_char_whitelist=0123456789'
+                score_text = pytesseract.image_to_string(cleaned, config=score_config).strip()
+                
+                # Extract score (look for 1-2 digit number)
+                score_match = re.search(r'\d{1,2}', score_text)
+                score = int(score_match.group()) if score_match else None
+                
+                return score
+            
+            # Get scores for both teams
+            away_score = process_team_region(away_region, False)
+            home_score = process_team_region(home_region, True)
+            
+            # Detect possession triangle
+            # Look in the middle section for the triangle
+            mid_x1 = int(hud_width * 0.45)  # 45% from left
+            mid_x2 = int(hud_width * 0.55)  # 55% from left
+            mid_region = hud_region[y1_score:y2_score, mid_x1:mid_x2]
+            
+            # Convert to HSV for better triangle detection
+            hsv = cv2.cvtColor(mid_region, cv2.COLOR_BGR2HSV)
+            
+            # Define yellow color range for the triangle
+            lower_yellow = np.array([20, 100, 100])
+            upper_yellow = np.array([30, 255, 255])
+            
+            # Create mask for yellow triangle
+            yellow_mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+            
+            # Find contours
+            contours, _ = cv2.findContours(yellow_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            
+            possession = None
+            if contours:
+                # Get the largest contour (should be the triangle)
+                largest_contour = max(contours, key=cv2.contourArea)
+                
+                # Get bounding box
+                x, y, w, h = cv2.boundingRect(largest_contour)
+                
+                # Check if triangle points right (home) or left (away)
+                # by looking at the center of mass
+                M = cv2.moments(largest_contour)
+                if M["m00"] != 0:
+                    cx = int(M["m10"] / M["m00"])
+                    # If center is in right half, triangle points right (home possession)
+                    possession = "home" if cx > mid_region.shape[1] / 2 else "away"
+            
+            return {
+                'home_score': home_score,
+                'away_score': away_score,
+                'possession': possession
+            }
+            
+        except Exception as e:
+            print(f"⚠️ Score/possession detection error: {e}")
+            return {
+                'home_score': None,
+                'away_score': None,
+                'possession': None
+            }
+
+    def run(self):
+        """Main analysis loop with improved error handling and memory management."""
+        try:
+            # Initialize variables
+            frame_count = 0
+            clips_detected = 0
+            last_clip_frame = 0
+            clips_data = []
+            
+            # Get video info
+            cap = cv2.VideoCapture(self.video_path)
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            
+            print(f"🎥 Processing video: {fps} FPS, {total_frames} frames")
+            
+            while cap.isOpened() and not self.should_stop:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                    
+                frame_count += 1
+                
+                # Update progress every frame
+                progress = int((frame_count / total_frames) * 100)
+                self.progress_updated.emit(progress, f"🔄 Progress: {progress}% (Frame {frame_count})")
+                
+                # Run detection every 60 frames (every second at 60fps)  
+                if frame_count % 60 == 0:
+                    try:
+                        results = self.hud_model(frame, verbose=False)
+                        
+                        if results and len(results) > 0:
+                            boxes = results[0].boxes
+                            if boxes is not None and len(boxes) > 0:
+                                # Find HUD boxes for text extraction
+                                hud_boxes = [box for box in boxes if int(box.cls[0]) == 0]
+                                
+                                if hud_boxes:
+                                    # Check for down & distance using OCR analysis with context
+                                    first_down_detected, situation = self.detect_down_and_distance(frame, hud_boxes[0], frame_count)
+                                    
+                                    # SEPARATE: Check for team scores and possession indicator
+                                    scores_detected, score_info = self.detect_team_scores_and_possession(frame, hud_boxes[0], frame_count)
+                                    
+                                    # Enhanced situation filtering - check if we should create a clip
+                                    should_create_clip = False
+                                    
+                                    # Create clips for:
+                                    # 1. First downs
+                                    # 2. Third downs (both successful and failed)
+                                    # 3. Fourth downs
+                                    # 4. Red zone plays
+                                    if situation:
+                                        if "1st" in situation:
+                                            should_create_clip = True
+                                        elif "3rd" in situation:
+                                            should_create_clip = True
+                                        elif "4th" in situation:
+                                            should_create_clip = True
+                                        
+                                        # Only create clips if proper spacing between clips
+                                        if should_create_clip:
+                                            frames_since_last_clip = frame_count - last_clip_frame
+                                            required_gap = 180  # 3 seconds at 60fps
+                                            
+                                            if clips_detected == 0 or frames_since_last_clip > required_gap:
+                                                # Create longer clips for important situations
+                                                start_time = (frame_count / fps) - 8.0  # 8 seconds before
+                                                end_time = (frame_count / fps) + 4.0   # 4 seconds after
+                                                
+                                                # Ensure times are within video bounds
+                                                start_time = max(0, start_time)
+                                                end_time = min(total_frames / fps, end_time)
+                                                
+                                                # Add score context if available
+                                                score_context = ""
+                                                if scores_detected and score_info:
+                                                    score_context = f" (Score: {score_info['home_score']}-{score_info['away_score']}"
+                                                    if score_info['possession']:
+                                                        score_context += f", {score_info['possession']} possession)"
+                                                    else:
+                                                        score_context += ")"
+                                                
+                                                clips_data.append({
+                                                    "start_frame": int(start_time * fps),
+                                                    "end_frame": int(end_time * fps), 
+                                                    "start_time": start_time,
+                                                    "end_time": end_time,
+                                                    "confidence": 0.95,
+                                                    "situation": f"{situation}{score_context}",
+                                                })
+                                                
+                                                last_clip_frame = frame_count
+                                                clips_detected += 1
+                                                print(f"✅ Clip detected: {situation}{score_context}")
+                                                
+                    except Exception as e:
+                        print(f"⚠️ Frame analysis error: {e}")
+                        continue
+                    
+            cap.release()
+            print(f"\n✅ Analysis complete! Found {clips_detected} clips")
+            self.analysis_finished.emit(self.video_path, clips_data)
+            
+        except Exception as e:
+            print(f"❌ Analysis error: {e}")
+            self.error_occurred.emit(str(e))
+        finally:
+            self.cleanup_memory()
 
 try:
     import cv2
@@ -220,129 +627,12 @@ class SpygateDesktop(QMainWindow):
             self.start_video_analysis(file_path)
 
     def start_video_analysis(self, video_path):
-        """Start video analysis with multi-strategy 3rd down detection"""
-        from spygate_desktop_app_with_viewer import AnalysisWorker
-        
-        try:
-            print("🎬 Starting animation creation...")
-            
-            # Create analyzing text label
-            self.analyzing_text = QLabel("Analyzing", self)
-            print("🎬 Analyzing text created")
-            self.analyzing_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.analyzing_text.setStyleSheet("""
-                QLabel {
-                    color: #ffffff;
-                    font-family: 'Minork Sans', Arial, sans-serif;
-                    font-size: 16px;
-                    font-weight: bold;
-                    background: transparent;
-                }
-            """)
-            self.analyzing_text.setFixedSize(120, 25)
-            
-            # Create and show centered animation overlay
-            self.animation_overlay = QLabel(self)
-            print("🎬 Animation QLabel created")
-            self.animation_overlay.setFixedSize(60, 60)  # Smaller size
-            self.animation_overlay.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            # Remove setScaledContents to preserve image quality
-            
-            # Load animation images 1.png, 2.png, 3.png, 4.png
-            self.animation_images = []
-            self.animation_index = 0
-            
-            for i in range(1, 5):  # 1, 2, 3, 4
-                image_path = f"assets/other/{i}.png"
-                if os.path.exists(image_path):
-                    pixmap = QPixmap(image_path)
-                    if not pixmap.isNull():
-                        # Scale to fit the overlay size with smooth scaling
-                        scaled_pixmap = pixmap.scaled(
-                            60, 60,
-                            Qt.AspectRatioMode.KeepAspectRatio,
-                            Qt.TransformationMode.SmoothTransformation
-                        )
-                        self.animation_images.append(scaled_pixmap)
-                        print(f"🎬 Loaded animation image: {image_path}")
-                else:
-                    print(f"⚠️ Animation image not found: {image_path}")
-            
-            # Only proceed if we have images loaded
-            if self.animation_images:
-                # Set initial image
-                self.animation_overlay.setPixmap(self.animation_images[0])
-                print(f"✅ Animation setup complete with {len(self.animation_images)} images")
-            else:
-                print("⚠️ No animation images found, animation will not show")
-                return  # Exit early if no images to animate
-            
-            # Style the overlay with transparency
-            self.animation_overlay.setStyleSheet("""
-                QLabel {
-                    background-color: transparent;
-                }
-            """)
-            
-            # Create stop button with same styling as browse button
-            self.stop_button = QPushButton("Stop Analysis", self)
-            print("🎬 Stop button created")
-            self.stop_button.setStyleSheet("""
-                QPushButton {
-                    background-color: #1ce783;
-                    color: #e3e3e3;
-                    padding: 12px 24px;
-                    border: none;
-                    border-radius: 6px;
-                    font-family: "Minork Sans", sans-serif;
-                    font-weight: bold;
-                    font-size: 14px;
-                }
-                QPushButton:hover { background-color: #17d474; }
-            """)
-            # Remove fixed size to match browse button auto-sizing
-            self.stop_button.clicked.connect(self.stop_analysis)
-            
-            # Show stop button always (not just during analysis)
-            self.stop_button.show()
-            self.stop_button.raise_()
-            
-            # Center the animation on the main window and bring it to front
-            self.center_animation_overlay()
-            print("🎬 Animation centered")
-            # Show both text and animation
-            self.analyzing_text.show()
-            self.animation_overlay.show()
-            print("🎬 Animation and text shown")
-            
-            # Bring both to front
-            self.analyzing_text.raise_()
-            self.animation_overlay.raise_()
-            print("🎬 Animation and text raised to front")
-            
-            # Make sure it's above all other widgets
-            self.animation_overlay.setParent(self)
-            self.animation_overlay.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-            
-            # Start animation timer - cycle every 1 second (1000ms)
-            self.animation_timer = QTimer()
-            self.animation_timer.timeout.connect(self.animate_images)
-            self.animation_timer.start(1000)  # Update every 1000ms (1 second)
-            
-            print(f"🎬 Animation overlay shown at position: {self.animation_overlay.pos()}")
-            print(f"🎬 Animation overlay size: {self.animation_overlay.size()}")
-            print(f"🎬 Main window size: {self.size()}")
-            print("🎬 Animation setup complete!")
-            
-        except Exception as e:
-            print(f"❌ Error creating animation: {e}")
-            import traceback
-            traceback.print_exc()
-        
-        # Create and start analysis worker
+        """Start the video analysis process."""
+        self.video_path = video_path
         self.analysis_worker = AnalysisWorker(video_path)
-        self.analysis_worker.progress_updated.connect(self.update_analysis_progress)
+        self.analysis_worker.progress_updated.connect(self.update_analysis_progress)  # Fixed method name
         self.analysis_worker.analysis_finished.connect(self.on_analysis_complete)
+        self.analysis_worker.error_occurred.connect(self.on_analysis_error)
         self.analysis_worker.start()
 
     def center_animation_overlay(self):
@@ -397,7 +687,42 @@ class SpygateDesktop(QMainWindow):
     def update_analysis_progress(self, progress, message):
         """Update analysis progress - no dialog needed with clock overlay"""
         # Progress is shown through the animated clock overlay
-        pass
+        print(f"📊 Analysis progress: {progress}% - {message}")
+
+    def on_clip_detected(self, clip_data):
+        """Handle detected clip from analysis worker"""
+        # Convert ClipData to dictionary format expected by FACEIT app
+        clip_dict = {
+            'start_frame': clip_data.start_frame,
+            'end_frame': clip_data.end_frame,
+            'start_time': clip_data.start_frame / 30.0,  # Assuming 30 FPS
+            'end_time': clip_data.end_frame / 30.0,
+            'situation': clip_data.situation,
+            'confidence': clip_data.confidence,
+            'timestamp': clip_data.timestamp
+        }
+        self.detected_clips.append(clip_dict)
+        print(f"🎯 Detected clip: {clip_data.situation} at {clip_data.timestamp}")
+
+    def on_analysis_error(self, error_message):
+        """Handle analysis errors"""
+        print(f"❌ Analysis error: {error_message}")
+        
+        # Stop animation and show error
+        if hasattr(self, 'animation_timer'):
+            self.animation_timer.stop()
+        if hasattr(self, 'animation_overlay'):
+            self.animation_overlay.hide()
+        if hasattr(self, 'analyzing_text'):
+            self.analyzing_text.hide()
+            
+        # Show error dialog
+        QMessageBox.critical(
+            self,
+            "Analysis Error",
+            f"An error occurred during video analysis:\n\n{error_message}",
+            QMessageBox.StandardButton.Ok
+        )
             
     def stop_analysis(self):
         """Stop the video analysis process"""
@@ -405,6 +730,8 @@ class SpygateDesktop(QMainWindow):
         
         # Stop the analysis worker if it exists
         if hasattr(self, 'analysis_worker') and self.analysis_worker:
+            if hasattr(self.analysis_worker, 'stop'):
+                self.analysis_worker.stop()  # Use the stop method from production worker
             self.analysis_worker.terminate()
             self.analysis_worker.wait()  # Wait for thread to finish
             print("🛑 Analysis worker stopped")
@@ -422,8 +749,40 @@ class SpygateDesktop(QMainWindow):
         if hasattr(self, 'stop_button'):
             self.stop_button.hide()
     
-    def on_analysis_complete(self, video_path, clips_data):
+    def _detect_hardware_tier(self) -> str:
+        """Detect hardware capabilities for optimal performance."""
+        try:
+            import GPUtil
+            gpus = GPUtil.getGPUs()
+            if gpus:
+                gpu = gpus[0]
+                if gpu.memoryTotal >= 8000:  # 8GB+ VRAM
+                    return "ultra"
+                elif gpu.memoryTotal >= 6000:  # 6GB+ VRAM
+                    return "high"
+                elif gpu.memoryTotal >= 4000:  # 4GB+ VRAM
+                    return "medium"
+                else:
+                    return "low"
+            else:
+                return "low"
+        except:
+            # Fallback to CPU detection
+            import psutil
+            cpu_count = psutil.cpu_count()
+            memory_gb = psutil.virtual_memory().total / (1024**3)
+            
+            if cpu_count >= 8 and memory_gb >= 16:
+                return "medium"
+            elif cpu_count >= 4 and memory_gb >= 8:
+                return "low"
+            else:
+                return "ultra_low"
+
+    def on_analysis_complete(self, total_clips):
         """Handle analysis completion"""
+        # Get the video path from the worker
+        video_path = self.analysis_worker.video_path if hasattr(self, 'analysis_worker') else "Unknown"
         # Stop animation and hide overlays
         if hasattr(self, 'animation_timer'):
             self.animation_timer.stop()
@@ -433,9 +792,9 @@ class SpygateDesktop(QMainWindow):
             self.analyzing_text.hide()
             print("🎬 Animation and text stopped and hidden")
         
-        # Store clips data for viewing
+        # Store clips data for viewing  
         self.current_video_path = video_path
-        self.detected_clips = clips_data if clips_data else []
+        # self.detected_clips is already populated by on_clip_detected signals
         
         # Show results
         num_clips = len(self.detected_clips)
@@ -673,7 +1032,7 @@ class SpygateDesktop(QMainWindow):
 
     def mouseMoveEvent(self, event):
         """Handle mouse move for window dragging"""
-        if event.buttons() == Qt.MouseButton.LeftButton and not self.drag_pos.isNull():
+        if event.buttons() & Qt.MouseButton.LeftButton and not self.drag_pos.isNull():
 
             # Only allow dragging from the top area (header bar)
             if event.position().y() < 50:  # Header bar height

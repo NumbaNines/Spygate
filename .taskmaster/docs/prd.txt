@@ -2,13 +2,105 @@
 
 #### **Product Requirements Document (PRD)**
 
-**Version**: 6.9 - Desktop UI Enhancement
-**Date**: June 11, 2025
-**Status**: Production UI Updates
+**Version**: 7.0 - Advanced Situational Intelligence
+**Date**: December 12, 2024
+**Status**: Production Intelligence System
 
-### **0. Recent Updates (Version 6.9)**
+### **0. Recent Updates (Version 7.0)**
 
-#### **Desktop Application UI Enhancements - Completed June 11, 2025**
+#### **8-Class Model Expansion - Completed December 12, 2024**
+
+**Major Model Enhancement Achievement**:
+
+SpygateAI has successfully expanded from the proven 5-class YOLOv8 model to an advanced **8-class detection system** that provides granular HUD element analysis for enhanced game intelligence.
+
+**8-Class Model Implementation**:
+
+1. **Enhanced HUD Detection Classes**:
+   - **Core Classes (from 5-class)**: `hud`, `possession_triangle_area`, `territory_triangle_area`, `preplay_indicator`, `play_call_screen`
+   - **New Granular Classes**: `down_distance_area`, `game_clock_area`, `play_clock_area`
+   - **Training Results**: 61.4% mAP50 achieved in initial training with 35 epochs
+   - **Hardware Optimization**: RTX 4070 SUPER with 12GB VRAM, YOLOv8n model, batch size 32
+
+2. **False Positive Reduction Strategy**:
+   - **Comprehensive Analysis**: Developed multi-layered approach to reduce false positives
+   - **Enhanced Training Pipeline**: Classification loss weight 1.5, dropout 0.1, label smoothing 0.1
+   - **Optimized Inference Settings**: Class-specific confidence thresholds, improved NMS parameters
+   - **Post-Processing Filters**: Size and position constraints based on HUD layout knowledge
+   - **Expected Improvement**: 20-40% precision improvement with enhanced training
+
+3. **Training Infrastructure**:
+   - **Training Scripts**: `train_8class_model.py` (baseline), `train_fp_reduced_8class.py` (enhanced)
+   - **Analysis Tools**: `reduce_false_positives.py`, `balanced_fp_reduction.py`
+   - **Model Path**: `hud_region_training/hud_region_training_8class/runs/hud_8class_v1/weights/best.pt`
+   - **Training Time**: 1.2 minutes for 35 epochs with early stopping
+
+4. **Technical Optimizations**:
+   - **AdamW Optimizer**: Better convergence than standard Adam
+   - **Cosine Learning Rate Schedule**: Improved training stability
+   - **Disabled Destructive Augmentations**: Removed mosaic, mixup, and flips for HUD elements
+   - **Hardware-Adaptive Configuration**: Optimized for RTX 4070 SUPER specifications
+
+**Production Integration Status**:
+- **Current Model**: 8-class system ready for integration into enhanced_game_analyzer.py
+- **Backward Compatibility**: Maintains compatibility with existing 5-class workflows
+- **Performance Validation**: Tested on validation dataset with balanced false positive reduction
+- **Next Steps**: Enhanced training script execution for production-ready model
+
+#### **Advanced Situational Intelligence System - Completed December 12, 2024**
+
+**Revolutionary Game Analysis Breakthrough**:
+
+SpygateAI has achieved a **major breakthrough** in football game analysis with the implementation of professional-grade situational intelligence that rivals what NFL teams use for game analysis.
+
+**Core Achievement: Perfect Triangle Detection Foundation**:
+- **97.6% accuracy** in possession and territory triangle detection
+- **Flawless possession tracking**: Know exactly who has the ball at all times
+- **Territory context awareness**: Understand field position implications
+- **Real-time game state analysis**: Complete HUD data extraction
+
+**Advanced Situational Intelligence Implementation**:
+
+1. **15+ Sophisticated Situation Types Detected**:
+   - Red Zone Offense/Defense (possession + territory + yard_line ≤ 20)
+   - Goal Line Situations (yard_line ≤ 5 with possession context)
+   - Third and Long/Short (down=3 + distance analysis + possession)
+   - Fourth Down Decisions (down=4 + field position + possession)
+   - Two-Minute Drill (quarter≥4 + time≤2:00 + possession)
+   - Backed Up Situations (own territory + yard_line≤15)
+   - Pressure Defense (opponent backed up in own territory)
+
+2. **Hidden MMR Performance System**:
+   - **15 performance metrics** tracked silently for comprehensive player profiling
+   - **7-tier performance classification** (Learning to Elite Pro level)
+   - **Situational IQ tracking** (40% weight): Red zone efficiency, third down conversion, turnover avoidance
+   - **Execution Quality tracking** (35% weight): Pressure performance, clutch factor, consistency
+   - **Strategic Depth tracking** (25% weight): Formation diversity, situational play calling, opponent exploitation
+
+3. **Pressure & Leverage Analysis**:
+   - **Dynamic pressure calculation**: Critical, High, Medium, Low based on game context
+   - **Leverage index (0.0-1.0)**: Situational importance weighting for clip prioritization
+   - **Strategic context awareness**: Understand when moments matter most
+
+4. **Professional-Grade Strategic Intelligence**:
+   - **Offensive Intelligence**: Drive momentum, red zone efficiency, situational awareness
+   - **Defensive Intelligence**: Pressure creation, red zone defense, situational stops
+   - **Transition Intelligence**: Turnover context, momentum swings, special teams analysis
+   - **Performance Benchmarking**: Compare against professional football standards
+
+**Technical Implementation**:
+- Enhanced `src/spygate/ml/enhanced_game_analyzer.py` with advanced situation detection
+- New `SituationContext`, `HiddenMMRMetrics`, and `PerformanceTier` data structures
+- Contextual intelligence combining possession + territory + HUD data
+- Hidden performance tracking that builds comprehensive player profiles over time
+
+**Competitive Impact**:
+- **No other tool** has this level of situational intelligence in football gaming
+- **Professional-grade analysis** that rivals NFL team analytics
+- **Hidden progression system** keeps users engaged without overwhelming interface
+- **Cross-game compatibility** ensures intelligence transfers between EA football titles
+
+#### **Previous Updates (Version 6.9) - Desktop Application UI Enhancements - Completed June 11, 2025**
 
 **Production-Ready Interface Improvements**:
 
@@ -314,7 +406,13 @@ performance_tracking = {
 
 #### **3.8 Enhanced Error Handling & Edge Cases**
 
-**Commercial Break Detection**: Automatically pause analysis during non-gameplay footage when HUD elements are absent for 2+ seconds, saving computational resources.
+**Game Interruption Detection**: Automatically pause analysis during non-gameplay segments when HUD elements are absent for 2.5+ seconds:
+- Quarter End: Score visible but play elements hidden
+- Game End: Score/stats visible but play elements hidden
+- Menu/Exit: All HUD elements disappear
+- Unknown: Other interruptions where HUD elements are absent
+
+This saves computational resources and prevents false detections during these transitions.
 
 **Clock Management Analysis**: Track end-of-half strategic time usage, timeout timing, spike plays, and two-minute drill execution against professional benchmarks.
 
@@ -332,22 +430,133 @@ performance_tracking = {
 
 #### **4.0 Production Backend Implementation (June 2025)**
 
-**5-Class YOLOv8 Detection System**: SpygateAI implements a streamlined 5-class detection model that focuses on essential HUD elements for maximum accuracy and performance:
+**Enhanced Hybrid Detection System**: SpygateAI implements a streamlined hybrid detection system that combines YOLOv8 and OpenCV for maximum accuracy and performance:
 
 ```python
-# Core Detection Classes - Universal across EA Football Games
+# Core Detection Classes - Universal across EA Football Games (8-Class System)
 UI_CLASSES = [
     "hud",                      # Main HUD bar containing game situation data
     "possession_triangle_area",  # Left triangle region (shows ball possession)
-    "territory_triangle_area",  # Right triangle region (field territory context)
+    "territory_triangle_area",   # Right triangle region (field territory context)
     "preplay_indicator",        # Pre-play state indicator
     "play_call_screen",         # Play call screen overlay
+    "down_distance_area",       # Down and distance text region
+    "game_clock_area",          # Game clock display region
+    "play_clock_area",          # Play clock display region
 ]
+
+# Facecam Occlusion Handling
+class HUDRegionManager:
+    """
+    Robust HUD detection with facecam occlusion handling:
+    
+    1. Region-Based Detection:
+       - HUD divided into 4 key regions (top_left, top_right, bottom_left, bottom_right)
+       - Each region contains specific game state elements
+       - Minimum 2 regions required for valid state
+       
+    2. Critical Element Pairs:
+       - down_distance + possession_triangle
+       - territory_triangle + yardline
+       - At least one pair must be fully visible
+       
+    3. Occlusion Pattern Detection:
+       - Learns consistent facecam placement in first 10 seconds
+       - Adapts thresholds for known occluded regions
+       - Maintains state with partial visibility
+       
+    4. State Persistence:
+       - Stores last known values for occluded elements
+       - Validates state changes using visible elements
+       - Graceful degradation with partial occlusion
+    """
+    
+    def __init__(self):
+        self.regions = {
+            "top_left": ["score", "quarter", "time"],
+            "top_right": ["timeouts", "playclock"],
+            "bottom_left": ["down_distance", "possession"],
+            "bottom_right": ["territory", "yardline"]
+        }
+        self.min_visible_regions = 2
+        self.critical_pairs = [
+            ["down_distance", "possession"],
+            ["territory", "yardline"]
+        ]
 ```
 
-**Enhanced YOLOv8 Pipeline Architecture** (`spygate/ml/yolov8_model.py`):
+**State Persistence and Recovery Features**:
 
-The `EnhancedYOLOv8` class provides hardware-adaptive optimization with 5-tier performance scaling:
+1. **Short Gaps (≤ 0.3s)**:
+   - Maintains state through brief HUD disappearances (up to 10 frames)
+   - Continues using last valid game state
+   - Keeps statistical tracking and clip generation active
+   - Confidence penalty: 10% reduction
+
+2. **Medium Gaps (0.3s - 2.0s)**:
+   - Suspends statistical tracking and clip generation
+   - Maintains last known game state
+   - Continues basic frame analysis
+   - Confidence penalty: 20% reduction
+   - Requires additional validation on recovery
+
+3. **Long Gaps (≥ 2.0s)**:
+   - Triggers commercial break detection
+   - Suspends all analysis and tracking
+   - Saves computational resources
+   - Full state reset on recovery
+   - Requires complete revalidation
+
+4. **State Recovery**:
+   - Stores last valid down, possession, and territory states
+   - Resumes tracking when HUD reappears
+   - Validates state changes after gaps
+   - Progressive confidence restoration
+   - Cross-game state validation
+
+5. **Detection History Tracking**:
+   - Maintains history for each UI element
+   - Uses temporal smoothing for stability
+   - Requires minimum frames for state changes
+   - Tracks confidence over time
+   - Supports cross-game elements
+
+6. **Failure Recovery**:
+   - Graceful degradation during detection failures
+   - Multiple validation methods for state changes
+   - Confidence-based state updates
+   - Adaptive recovery thresholds
+   - Game-specific validation rules
+
+7. **Cross-Game Compatibility**:
+   - Universal state persistence logic
+   - Game-specific validation thresholds
+   - Shared recovery mechanisms
+   - Consistent confidence scoring
+   - Version-specific adaptations
+
+8. **Performance Monitoring**:
+   - Tracks persistence usage statistics
+   - Monitors recovery success rates
+   - Measures impact on system performance
+   - Real-time monitoring dashboard
+   - Cross-game analytics
+
+9. **Validation Methods**:
+   - UI element sequence verification
+   - HUD state consistency checks
+   - Possession state validation
+   - Territory state confirmation
+   - Cross-frame correlation
+
+10. **Confidence Scoring**:
+    - Base confidence from detection quality
+    - Persistence duration penalties
+    - Recovery validation bonuses
+    - Cross-method agreement boost
+    - Game-specific adjustments
+
+**Hardware-Adaptive Pipeline Architecture**:
 
 ```python
 # Hardware Tier Configuration Matrix
@@ -375,90 +584,64 @@ HARDWARE_TIERS = {
 }
 ```
 
-**Key Backend Features Implemented**:
+**Key Detection Features**:
 
-1. **Dynamic Model Switching**: Automatically switches to smaller models if performance degrades
-2. **Adaptive Batch Sizing**: Optimizes batch size based on available GPU memory
-3. **Performance Monitoring**: Real-time tracking of inference times and memory usage
-4. **GPU Memory Management**: Advanced memory optimization for RTX GPUs and lower-tier hardware
-5. **Auto-Optimization**: Background optimization based on performance thresholds
+1. **Enhanced Triangle Detection**:
+   - Geometric validation using angle and aspect ratio checks
+   - Confidence scoring based on shape quality
+   - Area-based filtering to reduce false positives
+   - Contour approximation for better shape detection
 
-**Advanced HUD Detection Logic** (`spygate/ml/hud_detector.py`):
+2. **Temporal Smoothing**:
+   - 5-frame history for detection smoothing
+   - IOU-based region matching
+   - Coordinate averaging for stable bounding boxes
+   - Confidence-based element selection
 
-The `EnhancedHUDDetector` class implements sophisticated game state extraction:
+3. **Training Optimizations**:
+   - Multi-scale training (640px and 960px)
+   - Focused augmentation strategy for HUD elements
+   - Custom loss weights for better HUD region detection
+   - Enhanced early stopping and model selection
+
+4. **Error Handling and Validation**:
+   - Strict geometric validation for triangles
+   - Aspect ratio and size filtering for text regions
+   - Comprehensive error handling and logging
+   - Performance monitoring and statistics
+
+**Detection Pipeline Flow**:
 
 ```python
-# Game State Extraction Pipeline
 def detect_hud_elements(frame) -> dict:
-    """Extract comprehensive game state from HUD elements."""
+    """Enhanced hybrid detection pipeline."""
     
-    # 1. YOLOv8 Detection - Locate HUD regions
-    detection_results = self.model.detect_hud_elements(frame)
+    # Stage 1: YOLOv8 Detection
+    yolo_regions = detect_with_yolo(frame)
     
-    # 2. OCR Processing - Extract text from detected regions
-    for detection in detection_results:
-        if detection['type'] == 'hud':
-            game_state.update(self._parse_hud_text(ocr_text))
-        elif detection['type'] == 'possession_triangle_area':
-            game_state['possession'] = self._parse_possession_triangle(ocr_text)
-        elif detection['type'] == 'territory_triangle_area':
-            game_state['territory'] = self._parse_territory_triangle(ocr_text)
+    # Stage 2: OpenCV Processing
+    processed_regions = []
+    for region in yolo_regions:
+        elements = process_region_with_opencv(frame, region)
+        region.elements = elements
+        processed_regions.append(region)
     
-    # 3. Game State Validation and Standardization
-    return self._validate_and_standardize_game_state(game_state)
-```
-
-**Multi-Engine OCR Processing**:
-
-```python
-# Enhanced OCR with Fallback Chain
-class EnhancedHUDDetector:
-    def _extract_text_with_error_handling(self, frame, bbox, element_type):
-        """Multi-engine OCR with intelligent fallback."""
-        
-        # Primary: Enhanced OCR System
-        if self.ocr_system:
-            text, confidence = self.ocr_system.extract_text(
-                frame, bbox, element_type
-            )
-            if confidence > 0.7:
-                return text, confidence
-        
-        # Fallback: EasyOCR
-        if self.easyocr_reader:
-            return self._basic_text_extraction(frame, bbox, element_type)
-        
-        # Final Fallback: Template Matching
-        return self._template_based_extraction(frame, bbox, element_type)
-```
-
-**Error Handling and Resilience**:
-
-```python
-# Comprehensive Error Management
-class HUDDetectionError(Exception): pass
-class ModelInitializationError(HUDDetectionError): pass  
-class OCRProcessingError(HUDDetectionError): pass
-class ValidationError(HUDDetectionError): pass
-
-# Retry Logic with Exponential Backoff
-def detect_with_retry(self, frame, max_retries=3):
-    """Robust detection with intelligent retry logic."""
-    for attempt in range(max_retries):
-        try:
-            return self.detect_hud_elements(frame)
-        except HUDDetectionError as e:
-            if attempt == max_retries - 1:
-                raise
-            time.sleep(2 ** attempt)  # Exponential backoff
+    # Stage 3: Temporal Smoothing
+    smoothed_regions = apply_temporal_smoothing(processed_regions)
+    
+    # Stage 4: Final Validation
+    validated_regions = validate_detections(smoothed_regions)
+    
+    return {
+        'regions': validated_regions,
+        'processing_time': processing_time,
+        'hardware_tier': hardware_tier.name
+    }
 ```
 
 **Performance Metrics and Monitoring**:
 
-The system tracks comprehensive performance metrics:
-
 ```python
-# Real-time Performance Tracking
 @dataclass 
 class PerformanceMetrics:
     inference_times: deque = field(default_factory=lambda: deque(maxlen=100))
@@ -475,27 +658,37 @@ class PerformanceMetrics:
         }
 ```
 
-**Cross-Game Compatibility Architecture**:
-
-The universal detection pipeline supports multiple EA football games:
-
+**Play State Detection Logic**:
 ```python
-# Universal Game Detection and Processing
-def analyze_any_football_game(video_input):
-    # 1. Auto-detect game version (Madden 25, CFB 25, future games)
-    game_version = detect_game_type(video_input)
+# Core Play State Detection
+class PlayStateDetection:
+    """
+    Play state is determined through UI element sequences:
     
-    # 2. Load game-specific configuration while maintaining universal classes
-    game_config = get_game_config(game_version)
-    
-    # 3. Apply universal 5-class detection model
-    universal_detections = self.model.detect_hud_elements(frame)
-    
-    # 4. Map to game-specific context while preserving universal concepts
-    game_analysis = map_to_game_context(universal_detections, game_version)
-    
-    # 5. Return standardized analysis format
-    return create_standardized_analysis(game_analysis)
+    1. Play Start Detection:
+       - Pre-play indicator disappears after being visible
+       - HUD remains visible
+       - Play count increments
+       
+    2. Play End Detection:
+       - Either pre-play indicator or play call screen reappears
+       - Play duration is calculated
+       - State resets for next play
+       
+    3. Tracked Metrics (No Clips):
+       - play_count: Total plays detected
+       - play_duration: Duration of each play
+       - play_start_time: When play began
+       - last_preplay_time: Last pre-play indicator
+       - last_playcall_time: Last play call screen
+       
+    4. State Indicators (Direct YOLO Classes):
+       - preplay_indicator: Pre-play UI element
+       - play_call_screen: Play selection UI
+       - hud_visible: Main HUD bar
+       - possession_triangle: Possession indicator
+       - territory_triangle: Field position indicator
+    """
 ```
 
 #### **4.1 Initial Data Seeding & Day-1 Value**
@@ -523,7 +716,7 @@ To ensure SpygateAI provides immediate value, the system's initial intelligence 
 ```python
 def analyze_any_football_game(video_input):
     # 1. Auto-detect game version
-    game_version = detect_game_type(video_input)  # madden_25, cfb_25, madden_26
+    game_version = detect_game_type(video_input)
 
     # 2. Hardware-adapted processing
     performance_tier = detect_hardware_capabilities()
@@ -583,25 +776,27 @@ SpygateAI implements a **dual-platform architecture** to maximize both performan
 - **API Bridge**: Desktop app can push/pull strategy data to/from web hub
 - **Progressive Enhancement**: Start with desktop, add web features as needed
 
-#### **4.5 AI/ML Task Delegation: YOLO vs. OpenCV**
+#### **4.5 AI/ML Task Delegation**
 
-To achieve our analytical goals, YOLO and OpenCV will perform distinct but complementary tasks. They work as a team: YOLO is the robust "spotter" that finds where to look, and OpenCV is the efficient "analyst" that interprets what's there.
+The enhanced hybrid detection system combines YOLOv8 and OpenCV in a two-stage pipeline for optimal performance:
 
-**YOLO's Role: The 'What & Where' Detector** YOLO's core responsibility is high-speed, robust object detection. It is used for tasks where the object's appearance or position might vary.
+**Stage 1: YOLOv8 Detection**
+- Primary responsibility: Fast, reliable HUD region identification
+- Hardware-optimized model selection
+- Dynamic batch size and resolution adjustment
+- Confidence-based filtering
 
-- **Primary Player Detection**: Identify the location (via bounding boxes) of all 22 players on the field. This is its main task, as players are constantly moving and changing shape.
-- **Initial HUD Localization**: On the first frame of a clip or when the scene changes (e.g., after a replay), YOLO will robustly find the *regions* of interest on the screen, such as the score bug and the play-art box. It is resilient to changes from game patches or different modes.
-- **Game Detection**: Identify which EA football game is being analyzed for proper context mapping.
+**Stage 2: OpenCV Processing**
+- Primary responsibility: Precise element detection within HUD regions
+- Enhanced triangle detection with geometric validation
+- Adaptive thresholding for text regions
+- Temporal smoothing for stable detections
 
-**OpenCV's Role: The 'How & Why' Analyzer** OpenCV is a versatile computer vision library that will execute a series of targeted, highly efficient tasks, often using the locations provided by YOLO.
-
-- **Preprocessing**: Before analysis, OpenCV will handle tasks like resizing frames and converting color spaces to optimize them for the YOLO model.
-- **Efficient HUD Analysis (Post-YOLO)**: Instead of re-running YOLO on every frame, we use OpenCV for continuous, lightweight analysis of the static HUD regions that YOLO found.
-  - **HUD Data Extraction (OCR)**: On every frame, OpenCV will run fast Optical Character Recognition (OCR) *only on the small score bug region* to read the game clock, score, and down.
-  - **Play Art Identification (Template Matching)**: Similarly, it will use efficient Template Matching *only on the play-art region* to identify the specific play being run.
-- **Contextual Player Analysis**:
-  - **Formation Recognition**: After YOLO returns the coordinates of all players, OpenCV will analyze their *spatial relationships* and geometry to classify the offensive and defensive formations.
-  - **Player Tracking & Route Analysis**: Using the bounding boxes from YOLO as a starting point, OpenCV algorithms will follow players from frame to frame to identify routes and play concepts.
+This unified approach ensures:
+- Maximum detection accuracy
+- Optimal hardware utilization
+- Stable and reliable results
+- Efficient processing pipeline
 
 #### **4.6 Non-Functional Requirements**
 

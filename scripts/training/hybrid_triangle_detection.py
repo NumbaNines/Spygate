@@ -153,12 +153,12 @@ class HybridTriangleDetector:
     
     def _classify_triangle_by_position(self, x, roi_width):
         """Classify triangle type based on position in HUD."""
-        # Left side of HUD = possession indicator
+        # Left side = possession triangle (between team abbreviations/scores)
         if x < roi_width * 0.5:
-            return 'possession_indicator'
-        # Right side of HUD = territory indicator
+            return 'possession_triangle'  # Points to team with ball possession
+        # Right side = territory triangle (next to field position)
         else:
-            return 'territory_indicator'
+            return 'territory_triangle'  # ▲=in opponent's territory, ▼=in own territory
     
     def detect(self, image):
         """Main detection method combining YOLO + OpenCV."""
@@ -240,7 +240,7 @@ def test_hybrid_detector():
     # Draw triangles
     for triangle in results['triangles']:
         x1, y1, x2, y2 = triangle['bbox']
-        color = (255, 165, 0) if triangle['type'] == 'possession_indicator' else (128, 0, 128)
+        color = (255, 165, 0) if triangle['type'] == 'possession_triangle' else (128, 0, 128)
         cv2.rectangle(display_image, (x1, y1), (x2, y2), color, 2)
         
         label = f"{triangle['type'][:4]}: {triangle['confidence']:.2f}"

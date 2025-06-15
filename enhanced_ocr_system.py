@@ -20,6 +20,8 @@ from pathlib import Path
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
+from collections import Counter, deque
+import copy
 
 # OCR Engine availability flags
 try:
@@ -88,157 +90,344 @@ class OCRResult:
         return self.confidence
 
 class EnhancedOCRSystem:
-    """
-    Production-grade OCR system designed specifically for football game HUD text extraction.
-    Features multiple preprocessing strategies, dual OCR engines, comprehensive error handling,
-    and intelligent fallback mechanisms.
-    """
-    
-    def __init__(self, gpu_enabled: bool = True, debug: bool = False, 
-                 max_retries: int = 3, fallback_enabled: bool = True):
-        """Initialize the enhanced OCR system with robust error handling."""
-        self.debug = debug
-        self.gpu_enabled = gpu_enabled
-        self.max_retries = max_retries
-        self.fallback_enabled = fallback_enabled
-        
-        # Engine status tracking
-        self.engine_status = {
-            'easyocr': EngineStatus.UNAVAILABLE,
-            'tesseract': EngineStatus.UNAVAILABLE
-        }
-        
-        # Performance metrics
-        self.performance_stats = {
-            'total_extractions': 0,
-            'successful_extractions': 0,
-            'engine_failures': {'easyocr': 0, 'tesseract': 0},
-            'fallback_uses': 0,
-            'average_confidence': 0.0
-        }
-        
-        # Initialize OCR engines with error handling
-        self.easyocr_reader = None
-        self._initialize_ocr_engines()
-        
-        # Game-specific text patterns for validation
-        self.text_patterns = self._initialize_text_patterns()
-        
-        # Common OCR errors and corrections
-        self.ocr_corrections = self._initialize_ocr_corrections()
-        
-        self._log_initialization_status()
-        
-    def _initialize_ocr_engines(self):
-        """Initialize both OCR engines with comprehensive error handling."""
-        
-        # Initialize EasyOCR
-        if EASYOCR_AVAILABLE:
-            try:
-                logger.info("Initializing EasyOCR...")
-                import time
-                start_time = time.time()
-                
-                self.easyocr_reader = easyocr.Reader(['en'], gpu=self.gpu_enabled, verbose=False)
-                
-                # Test the reader with a simple image
-                test_img = np.ones((50, 100, 3), dtype=np.uint8) * 255
-                test_result = self.easyocr_reader.readtext(test_img)
-                
-                init_time = time.time() - start_time
-                self.engine_status['easyocr'] = EngineStatus.AVAILABLE
-                logger.info(f"EasyOCR initialized successfully in {init_time:.2f}s")
-                
-            except Exception as e:
-                self.engine_status['easyocr'] = EngineStatus.FAILED
-                logger.error(f"EasyOCR initialization failed: {e}")
-                if self.debug:
-                    traceback.print_exc()
-                self.easyocr_reader = None
-        else:
-            logger.warning("EasyOCR not available - install with: pip install easyocr")
-        
-        # Test Tesseract
-        if TESSERACT_AVAILABLE:
-            try:
-                version = pytesseract.get_tesseract_version()
-                self.engine_status['tesseract'] = EngineStatus.AVAILABLE
-                logger.info(f"Tesseract {version} available")
-                
-                # Test with simple extraction
-                test_img = np.ones((50, 100), dtype=np.uint8) * 255
-                test_result = pytesseract.image_to_string(test_img)
-                
-            except Exception as e:
-                self.engine_status['tesseract'] = EngineStatus.FAILED
-                logger.error(f"Tesseract test failed: {e}")
-                if self.debug:
-                    traceback.print_exc()
-        else:
-            logger.warning("Tesseract not available - install with: pip install pytesseract")
-    
-    def _log_initialization_status(self):
-        """Log the initialization status."""
-        available_engines = [name for name, status in self.engine_status.items() 
-                           if status == EngineStatus.AVAILABLE]
-        
-        print(f"🚀 Enhanced OCR System initialized")
-        print(f"   • EasyOCR: {'✅' if self.engine_status['easyocr'] == EngineStatus.AVAILABLE else '❌'}")
-        print(f"   • Tesseract: {'✅' if self.engine_status['tesseract'] == EngineStatus.AVAILABLE else '❌'}")
-        print(f"   • GPU Enabled: {'✅' if self.gpu_enabled else '❌'}")
-        print(f"   • Available Engines: {len(available_engines)}")
-        
-        if not available_engines:
-            logger.critical("No OCR engines available! System will use fallback methods.")
-        elif len(available_engines) == 1:
-            logger.warning(f"Only {available_engines[0]} available. Consider installing both engines for redundancy.")
+    """Complete enhanced OCR system building on optimized preprocessing."""
 
-    def _initialize_text_patterns(self) -> Dict[str, List[re.Pattern]]:
-        """Initialize sport-specific text validation patterns."""
+    def __init__(self, optimized_paddle_ocr):
+        self.primary_ocr = optimized_paddle_ocr
+        self.temporal_history = deque(maxlen=5)
+        self.previous_state = None
+        
+        # Try to initialize secondary OCR engines
+        self.secondary_engines = self._init_secondary_engines()
+        
+        print("🚀 Enhanced OCR System initialized")
+        print(f"   Primary: Optimized PaddleOCR (0.939 baseline)")
+        print(f"   Secondary engines: {len(self.secondary_engines)}")
+
+    def _init_secondary_engines(self):
+        """Initialize secondary OCR engines for ensemble."""
+        engines = []
+        
+        # Try Tesseract
+        try:
+            import pytesseract
+            engines.append({
+                'name': 'tesseract',
+                'config': '--psm 8 -c tessedit_char_whitelist=0123456789stndrdthGoal&: ',
+                'weight': 0.25
+            })
+        except ImportError:
+            pass
+            
+        # Try EasyOCR
+        try:
+            import easyocr
+            reader = easyocr.Reader(['en'], gpu=True)
+            engines.append({
+                'name': 'easyocr',
+                'reader': reader,
+                'weight': 0.15
+            })
+        except ImportError:
+            pass
+            
+        return engines
+
+    def extract_enhanced(self, processed_image, frame_number):
+        """Enhanced extraction with ensemble + temporal + validation."""
+        
+        # 1. Primary OCR (optimized preprocessing)
+        primary_result = self._extract_primary(processed_image)
+        
+        # 2. Secondary OCR engines (if available)
+        secondary_results = self._extract_secondary(processed_image)
+        
+        # 3. Ensemble voting
+        ensemble_result = self._ensemble_vote(primary_result, secondary_results)
+        
+        # 4. Temporal filtering
+        filtered_result = self._temporal_filter(ensemble_result, frame_number)
+        
+        # 5. Game logic validation
+        validated_result = self._game_logic_validate(filtered_result)
+        
+        # 6. Calculate final confidence
+        final_result = self._calculate_final_confidence(validated_result)
+        
+        return final_result
+
+    def _extract_primary(self, processed_image):
+        """Extract using optimized PaddleOCR (0.939 baseline)."""
+        try:
+            paddle_result = self.primary_ocr.ocr(processed_image, cls=True)
+            if paddle_result and paddle_result[0]:
+                text = paddle_result[0][0][1][0]
+                confidence = paddle_result[0][0][1][1]
+                
+                parsed = self._parse_down_distance(text)
+                if parsed:
+                    parsed.update({
+                        'engine': 'paddle_optimized',
+                        'confidence': confidence,
+                        'text': text,
+                        'weight': 0.6
+                    })
+                    return parsed
+        except Exception as e:
+            print(f"⚠️ Primary OCR error: {e}")
+        
+        return None
+
+    def _extract_secondary(self, processed_image):
+        """Extract using secondary OCR engines."""
+        results = []
+        
+        for engine in self.secondary_engines:
+            try:
+                if engine['name'] == 'tesseract':
+                    import pytesseract
+                    text = pytesseract.image_to_string(
+                        processed_image, config=engine['config']
+                    ).strip()
+                    
+                    if text:
+                        parsed = self._parse_down_distance(text)
+                        if parsed:
+                            parsed.update({
+                                'engine': 'tesseract',
+                                'confidence': 0.8,
+                                'text': text,
+                                'weight': engine['weight']
+                            })
+                            results.append(parsed)
+                            
+                elif engine['name'] == 'easyocr':
+                    easy_results = engine['reader'].readtext(processed_image)
+                    if easy_results:
+                        best_result = max(easy_results, key=lambda x: x[2])
+                        parsed = self._parse_down_distance(best_result[1])
+                        if parsed:
+                            parsed.update({
+                                'engine': 'easyocr',
+                                'confidence': best_result[2],
+                                'text': best_result[1],
+                                'weight': engine['weight']
+                            })
+                            results.append(parsed)
+                            
+            except Exception as e:
+                print(f"⚠️ {engine['name']} error: {e}")
+        
+        return results
+
+    def _ensemble_vote(self, primary_result, secondary_results):
+        """Weighted ensemble voting across OCR engines."""
+        
+        if not primary_result and not secondary_results:
+            return None
+            
+        all_results = []
+        if primary_result:
+            all_results.append(primary_result)
+        all_results.extend(secondary_results)
+        
+        if len(all_results) == 1:
+            return all_results[0]
+        
+        # Vote on down and distance separately
+        down_votes = {}
+        distance_votes = {}
+        
+        for result in all_results:
+            down = result.get('down')
+            distance = result.get('distance')
+            weight = result.get('weight', 1.0)
+            
+            if down:
+                down_votes[down] = down_votes.get(down, 0) + weight
+            if distance is not None:
+                distance_votes[distance] = distance_votes.get(distance, 0) + weight
+        
+        # Get consensus
+        consensus_down = max(down_votes.items(), key=lambda x: x[1])[0] if down_votes else None
+        consensus_distance = max(distance_votes.items(), key=lambda x: x[1])[0] if distance_votes else None
+        
+        # Calculate ensemble confidence
+        total_weight = sum(r.get('weight', 1.0) for r in all_results)
+        down_confidence = down_votes.get(consensus_down, 0) / total_weight if consensus_down else 0
+        distance_confidence = distance_votes.get(consensus_distance, 0) / total_weight if consensus_distance else 0
+        
+        ensemble_confidence = (down_confidence + distance_confidence) / 2
+        
         return {
-            'down_distance': [
-                re.compile(r'^([1-4])(?:st|nd|rd|th)?\s*[&\s]+\s*(\d{1,2})$', re.IGNORECASE),
-                re.compile(r'^([1-4])\s*&\s*(\d+)$', re.IGNORECASE),
-                re.compile(r'^(\d+)\s*[&]\s*(\d+)$', re.IGNORECASE),
-            ],
-            'score': [
-                re.compile(r'^(\d{1,2})\s*[-:]\s*(\d{1,2})$'),
-                re.compile(r'^(\d{1,2})\s+(\d{1,2})$'),
-                re.compile(r'^HOME\s*(\d+)\s*[-]\s*AWAY\s*(\d+)$', re.IGNORECASE),
-            ],
-            'time': [
-                re.compile(r'^(\d{1,2}):(\d{2})$'),
-                re.compile(r'^(\d{1,2})\.(\d{2})$'),
-                re.compile(r'^(\d{1,2}):(\d{2})\s*(Q[1-4]|OT)$', re.IGNORECASE),
-            ],
-            'quarter': [
-                re.compile(r'^(Q[1-4]|OT|1st|2nd|3rd|4th)$', re.IGNORECASE),
-                re.compile(r'^([1-4])(?:st|nd|rd|th)?\s*QTR$', re.IGNORECASE),
-            ],
-            'team_names': [
-                re.compile(r'^[A-Z]{2,4}$'),  # Team abbreviations
-                re.compile(r'^[A-Z][a-z]+$'),  # Team names
-            ]
+            'engine': 'ensemble',
+            'down': consensus_down,
+            'distance': consensus_distance,
+            'confidence': ensemble_confidence,
+            'contributing_engines': [r['engine'] for r in all_results],
+            'ensemble_voting': True
         }
-    
-    def _initialize_ocr_corrections(self) -> Dict[str, str]:
-        """Common OCR misreads and their corrections."""
-        return {
-            # Common character mistakes
-            'O': '0', 'o': '0',
-            'I': '1', 'l': '1',
-            'S': '5', 's': '5',
-            'B': '8', 'G': '6',
-            'Z': '2', 'z': '2',
-            # Common down/distance mistakes
-            '1st': '1ST', '2nd': '2ND', '3rd': '3RD', '4th': '4TH',
-            'lst': '1ST', '2na': '2ND', '3ra': '3RD', '4tn': '4TH',
-            'Ist': '1ST', 'znd': '2ND', 'Srd': '3RD',
-            # Special characters
-            'a': '&', 'e': '&', '@': '&',
-            # Common team name fixes
-            'HOME': 'HOME', 'AWAY': 'AWAY',
-        }
+
+    def _temporal_filter(self, ocr_result, frame_number):
+        """Apply temporal consistency filtering."""
+        
+        if not ocr_result:
+            return ocr_result
+            
+        current_down = ocr_result.get('down')
+        current_distance = ocr_result.get('distance')
+        
+        # Store in temporal history
+        self.temporal_history.append({
+            'frame': frame_number,
+            'down': current_down,
+            'distance': current_distance,
+            'confidence': ocr_result.get('confidence', 0)
+        })
+        
+        # Need at least 3 frames for filtering
+        if len(self.temporal_history) < 3:
+            return ocr_result
+        
+        # Check consistency with recent frames
+        recent_downs = [r['down'] for r in self.temporal_history if r['down'] is not None]
+        recent_distances = [r['distance'] for r in self.temporal_history if r['distance'] is not None]
+        
+        if not recent_downs:
+            return ocr_result
+        
+        # Count occurrences
+        down_counter = Counter(recent_downs)
+        distance_counter = Counter(recent_distances)
+        
+        # Get most common values
+        most_common_down = down_counter.most_common(1)[0]
+        most_common_distance = distance_counter.most_common(1)[0] if recent_distances else (None, 0)
+        
+        # Calculate consistency scores
+        down_consistency = most_common_down[1] / len(recent_downs)
+        distance_consistency = most_common_distance[1] / len(recent_distances) if recent_distances else 0
+        
+        # Apply temporal correction if needed
+        temporal_corrected = False
+        if (current_down != most_common_down[0] and down_consistency >= 0.6):
+            print(f"🔄 Temporal correction: {current_down} → {most_common_down[0]} (consistency: {down_consistency:.2f})")
+            ocr_result['down'] = most_common_down[0]
+            temporal_corrected = True
+            
+        if (current_distance != most_common_distance[0] and distance_consistency >= 0.6):
+            print(f"🔄 Temporal correction: {current_distance} → {most_common_distance[0]} (consistency: {distance_consistency:.2f})")
+            ocr_result['distance'] = most_common_distance[0]
+            temporal_corrected = True
+        
+        # Add temporal metadata
+        ocr_result['temporal_corrected'] = temporal_corrected
+        ocr_result['temporal_consistency'] = (down_consistency + distance_consistency) / 2
+        
+        return ocr_result
+
+    def _game_logic_validate(self, ocr_result):
+        """Apply Madden game logic validation."""
+        
+        if not ocr_result:
+            return ocr_result
+            
+        down = ocr_result.get('down')
+        distance = ocr_result.get('distance')
+        
+        validation_score = 1.0
+        validation_notes = []
+        
+        # Rule 1: Valid ranges
+        if down and not (1 <= down <= 4):
+            validation_score *= 0.1
+            validation_notes.append(f"Invalid down: {down}")
+            
+        if distance is not None and not (0 <= distance <= 99):
+            validation_score *= 0.1
+            validation_notes.append(f"Invalid distance: {distance}")
+        
+        # Rule 2: Down progression logic
+        if self.previous_state and down:
+            prev_down = self.previous_state.get('down')
+            if prev_down:
+                valid_transitions = [prev_down, prev_down + 1, 1]
+                if down not in valid_transitions:
+                    validation_score *= 0.3
+                    validation_notes.append(f"Suspicious transition: {prev_down} → {down}")
+        
+        # Rule 3: Common pattern boosts
+        if down and distance is not None:
+            common_patterns = {
+                (1, 10): 1.2,   # Very common
+                (2, 7): 1.1,    # After 3-yard gain
+                (3, 1): 1.1,    # Short yardage
+                (4, 1): 1.05,   # 4th down conversion
+            }
+            
+            pattern = (down, distance)
+            if pattern in common_patterns:
+                validation_score *= common_patterns[pattern]
+                validation_notes.append(f"Common pattern: {pattern}")
+        
+        # Apply validation
+        original_confidence = ocr_result.get('confidence', 0)
+        validated_confidence = original_confidence * validation_score
+        
+        ocr_result['validation_score'] = validation_score
+        ocr_result['validated_confidence'] = validated_confidence
+        ocr_result['validation_notes'] = validation_notes
+        
+        if validation_notes:
+            print(f"🎮 Game logic: {validation_notes}")
+        
+        # Update state
+        self.previous_state = {'down': down, 'distance': distance}
+        
+        return ocr_result
+
+    def _calculate_final_confidence(self, result):
+        """Calculate final confidence score."""
+        
+        if not result:
+            return result
+            
+        base_confidence = result.get('confidence', 0)
+        temporal_consistency = result.get('temporal_consistency', 0)
+        validation_score = result.get('validation_score', 1.0)
+        
+        # Weighted final confidence
+        final_confidence = (
+            base_confidence * 0.5 +           # Base OCR
+            temporal_consistency * 0.3 +      # Temporal consistency
+            validation_score * 0.2            # Game logic
+        )
+        
+        result['final_confidence'] = min(1.0, final_confidence)
+        result['enhancement_applied'] = True
+        
+        return result
+
+    def _parse_down_distance(self, text):
+        """Parse down and distance from OCR text."""
+        import re
+        
+        # Pattern for "1st & 10", "3rd & Goal", etc.
+        pattern = re.compile(r'(\d+)(?:st|nd|rd|th)?\s*&\s*(\d+|Goal|goal)', re.IGNORECASE)
+        match = pattern.search(text)
+        
+        if match:
+            try:
+                down = int(match.group(1))
+                distance_str = match.group(2).lower()
+                distance = 0 if distance_str == 'goal' else int(distance_str)
+                
+                if 1 <= down <= 4 and 0 <= distance <= 30:
+                    return {'down': down, 'distance': distance}
+            except ValueError:
+                pass
+        
+        return None
 
     def enhance_image_for_ocr(self, image: np.ndarray, enhancement_type: str = "adaptive") -> List[np.ndarray]:
         """Enhance image with multiple preprocessing strategies for OCR."""

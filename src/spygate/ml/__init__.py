@@ -2,15 +2,11 @@
 Machine learning components for SpygateAI.
 """
 
-from .enhanced_game_analyzer import EnhancedGameAnalyzer
-from .enhanced_ocr import EnhancedOCR
-from .game_state import GameState
-from .visualization_engine import DetectionVisualizer, VisualizationConfig
+from .enhanced_game_analyzer import EnhancedGameAnalyzer, GameState
+from .simple_paddle_ocr import SimplePaddleOCRWrapper
 
 __all__ = [
     "EnhancedGameAnalyzer",
-    "EnhancedOCR",
-    "DetectionVisualizer",
-    "VisualizationConfig",
     "GameState",
+    "SimplePaddleOCRWrapper",
 ]

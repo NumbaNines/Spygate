@@ -77,7 +77,6 @@ from profile_picture_manager import ProfilePictureManager, is_emoji_profile
 from spygate.core.hardware import HardwareDetector
 from spygate.ml.cache_manager import GameAnalyzerCache, get_game_analyzer_cache
 from spygate.ml.enhanced_game_analyzer import EnhancedGameAnalyzer
-from spygate.ml.enhanced_ocr import EnhancedOCR
 from user_database import User, UserDatabase
 
 
@@ -328,13 +327,12 @@ class AnalysisWorker(QThread):
 
         # DUPLICATE CLIP PREVENTION SYSTEM
         self.duplicate_prevention = {
-            "created_clips": [],  # List of created clips with frame ranges
-            "last_clip_end_frame": 0,  # Frame number where last clip ended
-            "min_clip_gap_frames": 90,  # Minimum 3 seconds between clips (at 30fps)
-            "overlap_threshold": 0.3,  # 30% overlap threshold
-            "recent_clips_window": 600,  # 20 seconds window for rate limiting
-            "max_clips_per_minute": 8,  # Maximum clips in recent window
-            "last_down_distance": None,  # Track last down/distance to prevent duplicates
+            "created_clips": [],  # List of all created clips with timeframes
+            "last_clip_end_frame": 0,  # Track when the last clip ended
+            "min_clip_gap_frames": 60,  # Minimum 2 seconds between clips (at 30fps)
+            "overlap_threshold": 0.5,  # 50% overlap threshold for duplicate detection
+            "max_clips_per_minute": 6,  # Maximum 6 clips per minute to prevent spam
+            "recent_clips_window": 1800,  # 60 seconds window for rate limiting (at 30fps)
         }
 
     def _optimize_processing_speed(self):
@@ -732,18 +730,6 @@ class AnalysisWorker(QThread):
         if clip_duration > 1800:  # More than 60 seconds
             print(f"🚫 CLIP TOO LONG: {clip_duration/30.0:.1f}s duration (maximum 60s)")
             return True
-        # Strategy 5: Check for same down/distance within recent window
-        current_down_distance = f"{game_state.down}_{game_state.distance}" if hasattr(game_state, 'down') and hasattr(game_state, 'distance') else None
-        if current_down_distance and self.duplicate_prevention.get("last_down_distance") == current_down_distance:
-            # Check if we're too close to the last clip with same down/distance
-            if (current_frame - self.duplicate_prevention["last_clip_end_frame"]) < 300:  # 10 seconds
-                print(f"🚫 DUPLICATE SITUATION: Same down/distance ({current_down_distance}) too soon")
-                return True
-        
-        # Update last down/distance
-        if current_down_distance:
-            self.duplicate_prevention["last_down_distance"] = current_down_distance
-
 
         # All checks passed - not a duplicate
         return False
@@ -1400,25 +1386,6 @@ class AnalysisWorker(QThread):
                                             frame_number, fps, game_state
                                         )
                                     )
-
-                            # FIXED: Limit clip to current play only
-                            if (
-                                hasattr(self.analyzer, "game_history")
-                                and len(self.analyzer.game_history) > 2
-                            ):
-                                # Check if we can detect the next play starting
-                                recent_history = self.analyzer.game_history[-5:]
-                                for i in range(len(recent_history) - 1):
-                                    if recent_history[i].down != recent_history[i + 1].down:
-                                        # Down changed - play likely ended
-                                        frames_ahead = (len(recent_history) - i - 1) * 30
-                                        clip_end_frame = min(
-                                            clip_end_frame, frame_number + frames_ahead + 30
-                                        )
-                                        print(
-                                            f"🎯 Detected play end {frames_ahead/30:.1f}s ahead - limiting clip"
-                                        )
-                                        break
                                     print(
                                         f"🔄 USING NATURAL BOUNDARIES: {clip_start_frame} → {clip_end_frame} ({(clip_end_frame-clip_start_frame)/fps:.1f}s)"
                                     )
@@ -1442,18 +1409,13 @@ class AnalysisWorker(QThread):
                                 )
 
                                 # 🚨 CRITICAL DEBUG: Log game state BEFORE clip creation
-                                
-                                # 🚨 CRITICAL FIX: Deep copy game state to preserve it
-                                import copy
-                                clip_game_state = copy.deepcopy(game_state)
-                                clip_situation_context = copy.deepcopy(situation_context)
                                 print(f"🚨 PRE-CLIP GAME STATE DEBUG:")
-                                print(f"   Down: {getattr(clip_game_state, 'down', 'MISSING')}")
-                                print(f"   Distance: {getattr(clip_game_state, 'distance', 'MISSING')}")
+                                print(f"   Down: {getattr(game_state, 'down', 'MISSING')}")
+                                print(f"   Distance: {getattr(game_state, 'distance', 'MISSING')}")
                                 print(
                                     f"   Yard Line: {getattr(game_state, 'yard_line', 'MISSING')}"
                                 )
-                                print(f"   Quarter: {getattr(clip_game_state, 'quarter', 'MISSING')}")
+                                print(f"   Quarter: {getattr(game_state, 'quarter', 'MISSING')}")
                                 print(
                                     f"   Game Clock: {getattr(game_state, 'game_clock', 'MISSING')}"
                                 )
@@ -1469,8 +1431,8 @@ class AnalysisWorker(QThread):
                                     clip_start_frame,
                                     clip_end_frame,
                                     fps,
-                                    clip_game_state,
-                                    clip_situation_context,
+                                    game_state,
+                                    situation_context,
                                     boundary_info,
                                 )
                                 detected_clips.append(clip)
@@ -1767,13 +1729,6 @@ class AnalysisWorker(QThread):
         elif duration > max_duration:
             # Trim from the end to keep the most relevant part
             end_frame = start_frame + max_duration
-        # CRITICAL: Ensure we don't create clips longer than a typical play
-        max_play_duration = int(fps * 12)  # 12 seconds max for a single play
-        if duration > max_play_duration:
-            # Prefer keeping the beginning of the play
-            end_frame = start_frame + max_play_duration
-            print(f"⚠️ Limiting clip duration to {max_play_duration/fps:.1f}s (single play)")
-
 
         print(
             f"🎯 Natural boundaries: {start_frame} → {end_frame} ({(end_frame-start_frame)/fps:.1f}s)"
@@ -1831,9 +1786,9 @@ class AnalysisWorker(QThread):
         print(f"⚠️ NO GAME STATE BOUNDARIES DETECTED - Using minimal fallback")
 
         # Minimal clip: just enough to capture the moment
-        buffer_frames = int(fps * 2.0)  # 1.5 second buffer each side
+        buffer_frames = int(fps * 1.5)  # 1.5 second buffer each side
         start_frame = max(0, frame_number - buffer_frames)
-        end_frame = frame_number + int(fps * 3)  # Max 3 seconds after detection
+        end_frame = frame_number + buffer_frames
 
         print(
             f"   📍 Minimal clip: {start_frame} → {end_frame} ({(end_frame-start_frame)/fps:.1f}s)"
@@ -3171,7 +3126,14 @@ class SpygateDesktop(QMainWindow):
         # Initialize detected_clips list
         self.detected_clips = []
 
+        # Use enhanced analysis worker with fresh OCR data preservation
         self.analysis_worker = AnalysisWorker(video_path, situation_preferences=clip_preferences)
+        
+        # Enable enhanced OCR data preservation mode
+        if hasattr(self.analysis_worker, 'analyzer') and hasattr(self.analysis_worker.analyzer, 'enable_clip_creation_mode'):
+            print("🧊 Enabling enhanced OCR data preservation for accurate clip creation")
+            self.analysis_worker.analyzer.enable_clip_creation_mode()
+        
         self.analysis_worker.progress_updated.connect(
             self.update_analysis_progress
         )  # Fixed method name
@@ -3463,6 +3425,11 @@ class SpygateDesktop(QMainWindow):
 
     def on_analysis_complete(self, message, detected_clips):
         """Handle analysis completion"""
+        # Disable enhanced OCR data preservation mode
+        if hasattr(self, 'analysis_worker') and hasattr(self.analysis_worker, 'analyzer') and hasattr(self.analysis_worker.analyzer, 'disable_clip_creation_mode'):
+            print("⏰ Disabling enhanced OCR data preservation - returning to normal mode")
+            self.analysis_worker.analyzer.disable_clip_creation_mode()
+        
         # Get the video path from the worker
         video_path = (
             self.analysis_worker.video_path if hasattr(self, "analysis_worker") else "Unknown"

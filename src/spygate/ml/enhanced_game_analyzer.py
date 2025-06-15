@@ -30,8 +30,9 @@ from ultralytics import YOLO
 
 from ..core.hardware import HardwareDetector, HardwareTier
 from ..core.optimizer import TierOptimizer
-from .enhanced_ocr import EnhancedOCR
-from .situational_predictor import GameSituation, SituationalPredictor
+# Import the simple PaddleOCR wrapper
+from .simple_paddle_ocr import SimplePaddleOCRWrapper
+# Removed SituationalPredictor - using pure OCR detection only
 from .template_triangle_detector import TemplateTriangleDetector
 from .temporal_extraction_manager import ExtractionResult, TemporalExtractionManager
 from .yolov8_model import MODEL_CONFIGS, UI_CLASSES, EnhancedYOLOv8, OptimizationConfig
@@ -125,7 +126,23 @@ class GameState:
     quarter: Optional[int] = None
     time: Optional[str] = None
     confidence: float = 0.0
-    visualization_layers: dict[str, np.ndarray] = None
+    visualization_layers: dict[str, np.ndarray] = field(default_factory=dict)
+    state_indicators: dict[str, bool] = field(default_factory=dict)
+    # Additional fields for state persistence
+    score_visible: bool = False
+    play_elements_visible: bool = False
+    quarter_end_detected: bool = False
+    is_valid_gameplay: bool = True
+    can_track_stats: bool = True
+    can_generate_clips: bool = True
+    last_valid_down: Optional[int] = None
+    last_valid_possession: Optional[str] = None
+    last_valid_territory: Optional[str] = None
+    # Additional metadata fields
+    timestamp: Optional[float] = None
+    frame_number: Optional[int] = None
+    data_source: Optional[str] = None
+    ocr_confidence: Optional[float] = None
 
 
 @dataclass
@@ -299,8 +316,8 @@ class EnhancedGameAnalyzer:
         if hasattr(self.model, "conf"):
             self.model.conf = 0.25  # Default confidence threshold
 
-        # Initialize MAIN OCR engine with optimal preprocessing parameters (0.939 score from 20K sweep)
-        self.ocr = EnhancedOCR(hardware=self.hardware.detect_tier())  # PRIMARY OCR system
+        # Initialize MAIN OCR engine with simple PaddleOCR wrapper
+        self.ocr = SimplePaddleOCRWrapper()  # PRIMARY OCR system using PaddleOCR
 
         # Initialize game state tracking with SIZE LIMITS to prevent memory leaks
         self.current_state = None
@@ -395,9 +412,8 @@ class EnhancedGameAnalyzer:
         self.temporal_manager = TemporalExtractionManager()
         logger.info("🧠 Temporal extraction manager initialized for smart OCR voting")
 
-        # Initialize situational predictor for hybrid OCR+logic approach
-        self.situational_predictor = SituationalPredictor()
-        logger.info("🎯 Situational predictor initialized for hybrid OCR+logic validation")
+        # Removed situational predictor - using pure OCR detection only
+        logger.info("🎯 Pure OCR detection mode - no predictive logic")
 
         # Initialize temporal validation tracking for game clock with SIZE LIMIT
         self.game_clock_history = deque(
@@ -477,6 +493,62 @@ class EnhancedGameAnalyzer:
             "ocr_results": {},
             "yolo_detections": {},
         }
+        
+        # Initialize tracking attributes for extract_game_state
+        self.last_zone = None
+        self.last_formation = None
+        self.tracking_metrics = {
+            "zone_changes": [],
+            "formation_sequences": [],
+            "zone_stats": defaultdict(lambda: defaultdict(lambda: {"plays": 0, "yards": 0, "scores": 0}))
+        }
+        self.formation_history = deque(maxlen=10)
+        
+        # Initialize last game state for clip validation
+        self.last_game_state = None
+        
+        # Initialize state persistence attributes
+        self.detection_history = defaultdict(lambda: {
+            "last_seen": 0,
+            "state_frames": 0,
+            "confidence": 0.0,
+            "persisted_state": False
+        })
+        self.state_persistence = {
+            "max_frames_without_hud": 9,  # 0.3 seconds at 30fps
+            "min_frames_for_state": 3,
+            "detection_threshold": 0.5
+        }
+        self.hud_occlusion = {
+            "regions": {
+                "left": {"elements": ["possession_triangle_area", "score_away"], "is_visible": True, "confidence": 1.0},
+                "center": {"elements": ["down_distance_area", "game_clock_area"], "is_visible": True, "confidence": 1.0},
+                "right": {"elements": ["territory_triangle_area", "play_clock_area"], "is_visible": True, "confidence": 1.0}
+            },
+            "occlusion_pattern": None,
+            "last_known_values": {},
+            "min_visible_regions": 2,
+            "critical_pairs": [
+                ["down_distance_area", "game_clock_area"],
+                ["possession_triangle_area", "territory_triangle_area"]
+            ]
+        }
+        
+        # Initialize frame timestamps for clip creation
+        self.frame_timestamps = deque(maxlen=450)  # ~15 seconds at 30fps
+        
+        # Initialize game history for natural clip boundaries
+        self.game_history = deque(maxlen=100)  # Keep last 100 game states
+        
+        # Initialize play state tracking
+        self.play_state = {
+            "is_play_active": False,
+            "play_start_time": None,
+            "play_count": 0,
+            "current_play_duration": 0.0,
+            "last_preplay_time": None,
+            "last_playcall_time": None
+        }
 
     def enable_debug_mode(self, enabled=True):
         """Enable or disable debug data collection"""
@@ -522,416 +594,284 @@ class EnhancedGameAnalyzer:
         except Exception as e:
             self._log_debug(f"Error saving debug frame data: {str(e)}", "error")
 
-    def analyze_frame(
-        self, frame: np.ndarray, current_time: float = None, frame_number: int = None
-    ) -> GameState:
-        """Analyze a single frame and return game state with visualization layers."""
-        # Initialize frame cache if not exists (CRITICAL FIX: Don't reset every call!)
-        if not hasattr(self, "frame_cache"):
-            self.frame_cache = {}
-            self.frame_cache_ttl = 30  # seconds
-            self.max_frame_cache_size = 50  # frames
-
-        # Create copy for visualization
-        vis_frame = frame.copy()
-
-        # Use current time for temporal optimization
-        # Note: For burst sampling, current_time=None should bypass temporal manager
-        # Don't automatically generate a timestamp in this case
-        if current_time is None:
-            # Only generate timestamp if we don't explicitly want to bypass temporal manager
-            # For burst sampling, we want to keep current_time=None to disable temporal optimization
-            pass  # Keep current_time=None for burst sampling
-
-        # Run YOLOv8 detection
-        detections = self.model.detect(frame)
-
-        # Initialize visualization layers
-        layers = {
-            "original_frame": frame.copy(),  # Add original frame for OCR extraction
-            "hud_detection": frame.copy(),
-            "triangle_detection": frame.copy(),
-            "ocr_results": frame.copy(),
-        }
-
-        # Process triangle orientations
-        possession_results = []
-        territory_results = []
-
-        for detection in detections:
-            # Handle both old and new detection formats
-            if hasattr(detection, "cls"):
-                # Old format (direct detection object)
-                class_id = detection.cls
-                bbox = detection.xyxy[0] if hasattr(detection, "xyxy") else detection.bbox
+    def analyze_frame(self, frame, current_time=None, frame_number=None):
+        """
+        Enhanced frame analysis with OCR data preservation for clip creation.
+        
+        This method now implements a dual-mode system:
+        1. Normal mode: Uses temporal smoothing and caching for performance
+        2. Clip creation mode: Uses only fresh OCR data to prevent contamination
+        """
+        try:
+            # Check if we're in clip creation mode (set by analysis worker)
+            creating_clip = getattr(self, '_creating_clip', False)
+            
+            if creating_clip:
+                print(f"🧊 CLIP CREATION MODE: Using fresh OCR only at frame {frame_number}")
+                # Force fresh OCR extraction without temporal smoothing
+                return self._analyze_frame_fresh_ocr(frame, current_time, frame_number)
             else:
-                # New format (dictionary)
-                class_name = detection.get("class", "")
-                class_id = None
-                for name, id in self.class_map.items():
-                    if name == class_name:
-                        class_id = id
-                        break
-                bbox = detection.get("bbox", [])
+                # Normal analysis with temporal smoothing and caching
+                return self._analyze_frame_normal(frame, current_time, frame_number)
+                
+        except Exception as e:
+            logger.error(f"Frame analysis error: {e}")
+            return None
 
-            if class_id == self.class_map.get("possession_triangle_area"):
-                # Extract ROI from YOLO detection
-                if len(bbox) >= 4:
-                    x1, y1, x2, y2 = bbox[:4]
-                    roi = frame[int(y1) : int(y2), int(x1) : int(x2)]
-
-                    # Use proven template matching (97.6% accuracy) to find possession triangles
-                    triangles = self.triangle_detector.detect_triangles_in_roi(roi, "possession")
-                    if triangles:
-                        # Select the best single triangle
-                        best_triangle = self.triangle_detector.select_best_single_triangles(
-                            triangles, "possession"
-                        )
-                        if best_triangle:
-                            possession_results.append(best_triangle)
-                            self.last_possession_direction = best_triangle["direction"]
-
-            elif class_id == self.class_map.get("territory_triangle_area"):
-                # Extract ROI from YOLO detection
-                if len(bbox) >= 4:
-                    x1, y1, x2, y2 = bbox[:4]
-                    roi = frame[int(y1) : int(y2), int(x1) : int(x2)]
-
-                    # Use proven template matching (97.6% accuracy) to find territory triangles
-                    triangles = self.triangle_detector.detect_triangles_in_roi(roi, "territory")
-                    if triangles:
-                        # Select the best single triangle
-                        best_triangle = self.triangle_detector.select_best_single_triangles(
-                            triangles, "territory"
-                        )
-                        if best_triangle:
-                            territory_results.append(best_triangle)
-                            self.last_territory_direction = best_triangle["direction"]
-
-        # Update game state with triangle information and detect flips
-        if possession_results:
-            # Use highest confidence result
-            best_possession = max(possession_results, key=lambda x: x["confidence"])
-            new_possession_direction = best_possession["direction"]
-
-            # Detect possession change (triangle flip)
-            if (
-                self.last_possession_direction
-                and self.last_possession_direction != new_possession_direction
-            ):
-                self._handle_possession_change(
-                    self.last_possession_direction, new_possession_direction
-                )
-
-            self.game_state["possession"] = {
-                "direction": new_possession_direction,
-                "confidence": best_possession["confidence"],
-                "team_with_ball": self._get_team_with_ball(new_possession_direction),
-            }
-            self.last_possession_direction = new_possession_direction
-        elif self.last_possession_direction:
-            # Use last known direction with reduced confidence
-            self.game_state["possession"] = {
-                "direction": self.last_possession_direction,
-                "confidence": self.direction_confidence_threshold / 2,
-                "team_with_ball": self._get_team_with_ball(self.last_possession_direction),
-            }
-
-        if territory_results:
-            # Use highest confidence result
-            best_territory = max(territory_results, key=lambda x: x["confidence"])
-            new_territory_direction = best_territory["direction"]
-
-            # Detect territory change (triangle flip)
-            if (
-                self.last_territory_direction
-                and self.last_territory_direction != new_territory_direction
-            ):
-                self._handle_territory_change(
-                    self.last_territory_direction, new_territory_direction
-                )
-
-            self.game_state["territory"] = {
-                "direction": new_territory_direction,
-                "confidence": best_territory["confidence"],
-                "field_context": self._get_field_context(new_territory_direction),
-            }
-            self.last_territory_direction = new_territory_direction
-        elif self.last_territory_direction:
-            # Use last known direction with reduced confidence
-            self.game_state["territory"] = {
-                "direction": self.last_territory_direction,
-                "confidence": self.direction_confidence_threshold / 2,
-                "field_context": self._get_field_context(self.last_territory_direction),
-            }
-
-        # Process NEW 8-class model detections for enhanced HUD analysis
-        down_distance_regions = []
-        game_clock_regions = []
-        play_clock_regions = []
-
-        for detection in detections:
-            # Handle both old and new detection formats for 8-class processing
-            if hasattr(detection, "cls"):
-                # Old format (direct detection object)
-                class_id = detection.cls
-                bbox = detection.xyxy[0] if hasattr(detection, "xyxy") else detection.bbox
-                confidence = float(detection.conf) if hasattr(detection, "conf") else 0.5
-            else:
-                # New format (dictionary)
-                class_name = detection.get("class", "")
-                class_id = None
-                for name, id in self.class_map.items():
-                    if name == class_name:
-                        class_id = id
-                        break
-                bbox = detection.get("bbox", [])
-                confidence = float(detection.get("confidence", 0.5))
-
-            # Process specific down_distance_area detections
-            if class_id == self.class_map.get("down_distance_area"):
-                if len(bbox) >= 4:
-                    x1, y1, x2, y2 = bbox[:4]
-                    down_distance_regions.append(
-                        {
-                            "bbox": [int(x1), int(y1), int(x2), int(y2)],
-                            "confidence": confidence,
-                            "roi": frame[int(y1) : int(y2), int(x1) : int(x2)],
-                        }
-                    )
-
-            # Process game_clock_area detections
-            elif class_id == self.class_map.get("game_clock_area"):
-                if len(bbox) >= 4:
-                    x1, y1, x2, y2 = bbox[:4]
-                    game_clock_regions.append(
-                        {
-                            "bbox": [int(x1), int(y1), int(x2), int(y2)],
-                            "confidence": confidence,
-                            "roi": frame[int(y1) : int(y2), int(x1) : int(x2)],
-                        }
-                    )
-
-            # Process play_clock_area detections
-            elif class_id == self.class_map.get("play_clock_area"):
-                if len(bbox) >= 4:
-                    x1, y1, x2, y2 = bbox[:4]
-                    play_clock_regions.append(
-                        {
-                            "bbox": [int(x1), int(y1), int(x2), int(y2)],
-                            "confidence": confidence,
-                            "roi": frame[int(y1) : int(y2), int(x1) : int(x2)],
-                        }
-                    )
-
-        # Process detections and update visualization layers
-        logger.debug(f"🎯 Processing {len(detections)} detections through unified OCR pipeline")
-        game_state = self._process_detections(detections, layers, current_time)
-        game_state.visualization_layers = layers
-
-        # INTELLIGENT STATE PERSISTENCE: Replace naive persistence with smarter logic
-        if not hasattr(self, "last_game_state"):
-            self.last_game_state = GameState()
-        if not hasattr(self, "persistence_counters"):
-            self.persistence_counters = {"down": 0, "distance": 0, "quarter": 0, "time": 0}
-        if not hasattr(self, "last_quarter"):
-            self.last_quarter = None
-
-        # Reset persistence when quarter changes (new quarter = potential reset)
-        if game_state.quarter is not None and self.last_quarter != game_state.quarter:
-            print(
-                f"🔄 QUARTER CHANGE: {self.last_quarter} → {game_state.quarter}, resetting down/distance persistence"
+    def _analyze_frame_fresh_ocr(self, frame, current_time=None, frame_number=None):
+        """
+        Fresh OCR analysis for clip creation - no temporal smoothing or caching.
+        This ensures clips get labeled with the exact OCR data that triggered detection.
+        """
+        try:
+            # Step 1: YOLO detection (always fresh)
+            detections = self.model.detect(frame)
+            
+            if not detections or len(detections) == 0:
+                return None
+                
+            # Step 2: Extract HUD region
+            hud_region = None
+            for detection in detections:
+                if detection.class_name == 'hud':
+                    hud_region = self._extract_region(frame, detection.bbox)
+                    break
+                    
+            if hud_region is None:
+                return None
+                
+            # Step 3: Fresh OCR extraction (bypass all caching)
+            fresh_ocr_data = self._extract_fresh_ocr_data(hud_region, frame_number)
+            
+            if not fresh_ocr_data:
+                return None
+                
+            # Step 4: Create game state from fresh data
+            game_state = self._create_game_state_from_fresh_ocr(
+                fresh_ocr_data, detections, current_time, frame_number
             )
-            self.persistence_counters["down"] = 0
-            self.persistence_counters["distance"] = 0
-            self.last_quarter = game_state.quarter
+            
+            # Step 5: Store this as the authoritative clip data
+            if game_state:
+                self._store_clip_detection_data(game_state, frame_number)
+                print(f"✅ FRESH OCR PRESERVED: Down {game_state.down} & {game_state.distance} at frame {frame_number}")
+                
+            return game_state
+            
+        except Exception as e:
+            logger.error(f"Fresh OCR analysis error: {e}")
+            return None
 
-        # Smart persistence with frame limits (max 10 frames = ~0.33 seconds at 30fps)
-        MAX_PERSISTENCE_FRAMES = 10
-
-        # Down persistence - FIXED: Only apply persistence when OCR fails (down is None)
-        # CRITICAL FIX: Don't overwrite fresh OCR results with stale persistence data
-        if game_state.down is not None:
-            # Fresh OCR result - reset persistence counter and update last known value
-            self.persistence_counters["down"] = 0
-            print(f"✅ FRESH OCR: down={game_state.down} (resetting persistence)")
-        elif self.last_game_state.down is not None:
-            # OCR failed - use persistence only if within frame limit
-            if self.persistence_counters["down"] < MAX_PERSISTENCE_FRAMES:
-                game_state.down = self.last_game_state.down
-                self.persistence_counters["down"] += 1
-                print(
-                    f"🔄 STATE PERSISTENCE: Using down={game_state.down} from previous frame ({self.persistence_counters['down']}/{MAX_PERSISTENCE_FRAMES})"
+    def _analyze_frame_normal(self, frame, current_time=None, frame_number=None):
+        """
+        Normal frame analysis with temporal smoothing and caching for performance.
+        """
+        try:
+            # Use existing analysis logic with temporal smoothing
+            detections = self.model.detect(frame)
+            
+            if not detections or len(detections) == 0:
+                return None
+                
+            # Extract game state using existing method
+            game_state_dict = self.extract_game_state(frame)
+            
+            # Convert dict to GameState object if needed
+            if isinstance(game_state_dict, dict):
+                game_state = GameState(
+                    down=game_state_dict.get('down'),
+                    distance=game_state_dict.get('distance'),
+                    yard_line=game_state_dict.get('yard_line'),
+                    territory=game_state_dict.get('territory'),
+                    quarter=game_state_dict.get('quarter'),
+                    time=game_state_dict.get('game_clock'),  # Fixed: use 'time' field
+                    possession_team=game_state_dict.get('possession_team'),
+                    timestamp=current_time,
+                    frame_number=frame_number,
+                    confidence=game_state_dict.get('confidence', 0.0)
                 )
             else:
-                print(
-                    f"⏰ PERSISTENCE EXPIRED: Allowing down to become None after {MAX_PERSISTENCE_FRAMES} frames"
-                )
-                self.persistence_counters["down"] = 0
+                game_state = game_state_dict
+            
+            return game_state
+            
+        except Exception as e:
+            logger.error(f"Normal frame analysis error: {e}")
+            return None
 
-        # Distance persistence - FIXED: Only apply persistence when OCR fails (distance is None)
-        # CRITICAL FIX: Don't overwrite fresh OCR results with stale persistence data
-        if game_state.distance is not None:
-            # Fresh OCR result - reset persistence counter and update last known value
-            self.persistence_counters["distance"] = 0
-            print(f"✅ FRESH OCR: distance={game_state.distance} (resetting persistence)")
-        elif self.last_game_state.distance is not None:
-            # OCR failed - use persistence only if within frame limit
-            if self.persistence_counters["distance"] < MAX_PERSISTENCE_FRAMES:
-                game_state.distance = self.last_game_state.distance
-                self.persistence_counters["distance"] += 1
-                print(
-                    f"🔄 STATE PERSISTENCE: Using distance={game_state.distance} from previous frame ({self.persistence_counters['distance']}/{MAX_PERSISTENCE_FRAMES})"
-                )
-            else:
-                print(
-                    f"⏰ PERSISTENCE EXPIRED: Allowing distance to become None after {MAX_PERSISTENCE_FRAMES} frames"
-                )
-                self.persistence_counters["distance"] = 0
+    def _extract_fresh_ocr_data(self, hud_region, frame_number):
+        """
+        Extract OCR data without any temporal smoothing or caching.
+        This is the authoritative OCR extraction for clip creation.
+        """
+        try:
+            fresh_data = {}
+            
+            # Extract down and distance with fresh OCR
+            down_distance_region = self._locate_down_distance_region(hud_region)
+            if down_distance_region is not None:
+                # Use enhanced OCR directly without temporal manager
+                down_text = self.ocr.extract_text(down_distance_region)
+                down, distance = self._parse_down_distance_text(down_text)
+                
+                fresh_data['down'] = down
+                fresh_data['distance'] = distance
+                fresh_data['down_distance_text'] = down_text
+                fresh_data['down_distance_confidence'] = self._calculate_ocr_confidence(down_text)
+                
+                print(f"🔍 FRESH DOWN/DISTANCE: '{down_text}' -> Down {down} & {distance}")
+            
+            # Extract yard line with fresh OCR
+            yard_line_region = self._locate_yard_line_region(hud_region)
+            if yard_line_region is not None:
+                yard_line_text = self.ocr.extract_text(yard_line_region)
+                yard_line, territory = self._parse_yard_line_text(yard_line_text)
+                
+                fresh_data['yard_line'] = yard_line
+                fresh_data['territory'] = territory
+                fresh_data['yard_line_text'] = yard_line_text
+                fresh_data['yard_line_confidence'] = self._calculate_ocr_confidence(yard_line_text)
+                
+                print(f"🔍 FRESH YARD LINE: '{yard_line_text}' -> {territory} {yard_line}")
+            
+            # Extract game clock with fresh OCR
+            game_clock_region = self._locate_game_clock_region(hud_region)
+            if game_clock_region is not None:
+                clock_text = self.ocr.extract_text(game_clock_region)
+                quarter, time_remaining = self._parse_game_clock_text(clock_text)
+                
+                fresh_data['quarter'] = quarter
+                fresh_data['game_clock'] = time_remaining
+                fresh_data['clock_text'] = clock_text
+                fresh_data['clock_confidence'] = self._calculate_ocr_confidence(clock_text)
+                
+                print(f"🔍 FRESH GAME CLOCK: '{clock_text}' -> Q{quarter} {time_remaining}")
+            
+            # Add timestamp for tracking
+            fresh_data['extracted_at_frame'] = frame_number
+            fresh_data['extraction_method'] = 'fresh_ocr'
+            
+            return fresh_data
+            
+        except Exception as e:
+            logger.error(f"Fresh OCR extraction error: {e}")
+            return None
 
-        # Quarter persistence - FIXED: Only apply persistence when OCR fails (quarter is None)
-        # CRITICAL FIX: Don't overwrite fresh OCR results with stale persistence data
-        if game_state.quarter is not None:
-            # Fresh OCR result - reset persistence counter and update last known value
-            self.persistence_counters["quarter"] = 0
-            print(f"✅ FRESH OCR: quarter={game_state.quarter} (resetting persistence)")
-        elif self.last_game_state.quarter is not None:
-            # OCR failed - use persistence only if within frame limit (longer for quarter)
-            if self.persistence_counters["quarter"] < 60:  # 2 seconds
-                game_state.quarter = self.last_game_state.quarter
-                self.persistence_counters["quarter"] += 1
-                print(
-                    f"🔄 STATE PERSISTENCE: Using quarter={game_state.quarter} from previous frame ({self.persistence_counters['quarter']}/60)"
-                )
-            else:
-                print(f"⏰ PERSISTENCE EXPIRED: Allowing quarter to become None after 60 frames")
-                self.persistence_counters["quarter"] = 0
-
-        # Time persistence - FIXED: Only apply persistence when OCR fails (time is None)
-        # CRITICAL FIX: Don't overwrite fresh OCR results with stale persistence data
-        if game_state.time is not None:
-            # Fresh OCR result - reset persistence counter and update last known value
-            self.persistence_counters["time"] = 0
-            print(f"✅ FRESH OCR: time={game_state.time} (resetting persistence)")
-        elif self.last_game_state.time is not None:
-            # OCR failed - use persistence only if within frame limit (moderate duration)
-            if self.persistence_counters["time"] < 30:  # 1 second
-                game_state.time = self.last_game_state.time
-                self.persistence_counters["time"] += 1
-                print(
-                    f"🔄 STATE PERSISTENCE: Using time={game_state.time} from previous frame ({self.persistence_counters['time']}/30)"
-                )
-            else:
-                print(f"⏰ PERSISTENCE EXPIRED: Allowing time to become None after 30 frames")
-                self.persistence_counters["time"] = 0
-
-        # Update last_game_state for next frame (only update non-None values)
-        if game_state.down is not None:
-            self.last_game_state.down = game_state.down
-        if game_state.distance is not None:
-            self.last_game_state.distance = game_state.distance
-        if game_state.quarter is not None:
-            self.last_game_state.quarter = game_state.quarter
-        if game_state.time is not None:
-            self.last_game_state.time = game_state.time
-
-        # Debug: Log what _process_detections extracted
-        logger.debug(
-            f"🔍 _process_detections results: down={game_state.down}, distance={game_state.distance}, yard_line={game_state.yard_line}, time={game_state.time}"
-        )
-
-        # 🔥 CRITICAL FIX: Enhanced OCR data merging from both extraction paths
-        # Ensure all OCR results from both systems are properly integrated
-        if hasattr(self, "game_state") and self.game_state:
-            logger.debug(f"🔄 Merging OCR results: self.game_state = {self.game_state}")
-            logger.debug(
-                f"🔄 Current GameState: down={game_state.down}, distance={game_state.distance}, yard_line={game_state.yard_line}"
+    def _create_game_state_from_fresh_ocr(self, fresh_ocr_data, detections, current_time, frame_number):
+        """
+        Create a GameState object from fresh OCR data without any temporal smoothing.
+        """
+        try:
+            # Extract possession and territory from triangles (these are visual, not OCR)
+            possession_team = self._extract_possession_from_triangles(detections)
+            territory_info = self._extract_territory_from_triangles(detections)
+            
+            # Create game state with fresh OCR data
+            game_state = GameState(
+                # Fresh OCR data
+                down=fresh_ocr_data.get('down'),
+                distance=fresh_ocr_data.get('distance'),
+                yard_line=fresh_ocr_data.get('yard_line'),
+                territory=fresh_ocr_data.get('territory'),
+                quarter=fresh_ocr_data.get('quarter'),
+                time=fresh_ocr_data.get('game_clock'),  # Fixed: use 'time' field
+                
+                # Visual detection data
+                possession_team=possession_team,
+                
+                # Metadata
+                timestamp=current_time,
+                frame_number=frame_number,
+                confidence=self._calculate_overall_confidence(fresh_ocr_data),
+                
+                # Mark as fresh data
+                data_source='fresh_ocr',
+                ocr_confidence=fresh_ocr_data.get('down_distance_confidence', 0.0)
             )
+            
+            return game_state
+            
+        except Exception as e:
+            logger.error(f"Game state creation from fresh OCR error: {e}")
+            return None
 
-            # Prioritize _process_detections results, but fill gaps with pre-processed results
-            # This ensures we get the BEST results from either system
-
-            # Down/Distance: Use _process_detections if available, otherwise use pre-processed
-            if game_state.down is None and "down" in self.game_state:
-                game_state.down = self.game_state["down"]
-                logger.debug(f"📝 Using pre-processed down: {game_state.down}")
-            if game_state.distance is None and "distance" in self.game_state:
-                game_state.distance = self.game_state["distance"]
-                logger.debug(f"📝 Using pre-processed distance: {game_state.distance}")
-
-            # Yard Line: Merge results intelligently
-            if game_state.yard_line is None and "yard_line" in self.game_state:
-                game_state.yard_line = self.game_state["yard_line"]
-                logger.debug(f"📝 Using pre-processed yard_line: {game_state.yard_line}")
-
-            # Time/Quarter: Merge clock information
-            if game_state.time is None and "time" in self.game_state:
-                game_state.time = self.game_state["time"]
-                logger.debug(f"📝 Using pre-processed time: {game_state.time}")
-            if game_state.quarter is None and "quarter" in self.game_state:
-                game_state.quarter = self.game_state["quarter"]
-                logger.debug(f"📝 Using pre-processed quarter: {game_state.quarter}")
-
-            # Scores: Merge score information
-            if game_state.score_away is None and "away_score" in self.game_state:
-                game_state.score_away = self.game_state["away_score"]
-                logger.debug(f"📝 Using pre-processed away_score: {game_state.score_away}")
-            if game_state.score_home is None and "home_score" in self.game_state:
-                game_state.score_home = self.game_state["home_score"]
-                logger.debug(f"📝 Using pre-processed home_score: {game_state.score_home}")
-
-            # Team names
-            if game_state.away_team is None and "away_team" in self.game_state:
-                game_state.away_team = self.game_state["away_team"]
-                logger.debug(f"📝 Using pre-processed away_team: {game_state.away_team}")
-            if game_state.home_team is None and "home_team" in self.game_state:
-                game_state.home_team = self.game_state["home_team"]
-                logger.debug(f"📝 Using pre-processed home_team: {game_state.home_team}")
-
-            logger.debug(
-                f"✅ Final merged GameState: down={game_state.down}, distance={game_state.distance}, yard_line={game_state.yard_line}, time={game_state.time}"
-            )
-
-            # Clear the temporary game_state dictionary to prevent stale data
-            self.game_state.clear()
-
-        # Detect burst sampling mode and handle accordingly
-        is_burst_mode = current_time is None
-        if is_burst_mode:
-            logger.debug(
-                f"🎯 BURST MODE: Adding frame {frame_number or 'unknown'} to consensus system"
-            )
-
-            # Create frame result for burst consensus
-            frame_result = {
-                "timestamp": frame_number / 30.0 if frame_number else 0.0,  # Estimate timestamp
-                "down": game_state.down,
-                "distance": game_state.distance,
-                "yard_line": game_state.yard_line,
-                "game_clock": game_state.time,
-                "play_clock": None,  # Add if available
-                "possession_team": game_state.possession_team,
-                "territory": game_state.territory,
-                "confidence": self._calculate_frame_confidence(game_state),
-                "method": "yolo_ocr_hybrid",
+    def _store_clip_detection_data(self, game_state, frame_number):
+        """
+        Store the authoritative game state data for clip creation.
+        This prevents data contamination from subsequent frames.
+        """
+        try:
+            if not hasattr(self, '_clip_detection_data'):
+                self._clip_detection_data = {}
+                
+            # Store with frame number as key
+            self._clip_detection_data[frame_number] = {
+                'game_state': game_state,
+                'down': game_state.down,
+                'distance': game_state.distance,
+                'yard_line': game_state.yard_line,
+                'territory': game_state.territory,
+                'quarter': game_state.quarter,
+                'game_clock': game_state.time,  # Fixed: use 'time' field
+                'confidence': game_state.confidence,
+                'stored_at': time.time(),
+                'data_source': 'fresh_ocr_for_clip'
             }
+            
+            # Keep only recent data (last 100 frames)
+            if len(self._clip_detection_data) > 100:
+                oldest_frame = min(self._clip_detection_data.keys())
+                del self._clip_detection_data[oldest_frame]
+                
+        except Exception as e:
+            logger.error(f"Error storing clip detection data: {e}")
 
-            # Add to burst consensus system
-            self.add_burst_result(frame_result, frame_number)
+    def get_clip_detection_data(self, frame_number):
+        """
+        Retrieve the authoritative game state data for a specific frame.
+        This is used by the clip creation system to get contamination-free data.
+        """
+        if hasattr(self, '_clip_detection_data'):
+            return self._clip_detection_data.get(frame_number)
+        return None
 
-        # Cache the complete analysis result
-        if self.cache_enabled and self.advanced_cache:
-            try:
-                serialized_result = self._serialize_game_state(game_state)
-                self.advanced_cache.set_frame_analysis(frame, serialized_result, "v2_optimized")
-                logger.debug("💾 Cached frame analysis result")
-            except Exception as e:
-                logger.debug(f"Cache storage failed: {e}")
+    def _calculate_ocr_confidence(self, text):
+        """
+        Calculate confidence score for OCR text based on various factors.
+        """
+        if not text or len(text.strip()) == 0:
+            return 0.0
+            
+        confidence = 0.5  # Base confidence
+        
+        # Length factor (reasonable length text is more confident)
+        if 2 <= len(text.strip()) <= 10:
+            confidence += 0.2
+            
+        # Character type factor (alphanumeric is more confident)
+        if any(c.isdigit() for c in text):
+            confidence += 0.2
+            
+        # Common patterns factor
+        if any(pattern in text.upper() for pattern in ['ST', 'ND', 'RD', 'TH', '&']):
+            confidence += 0.1
+            
+        return min(confidence, 1.0)
 
-        # Save debug data
-        self._save_debug_frame_data(frame_number, frame, game_state, detections, {})
-
-        return game_state
+    def _calculate_overall_confidence(self, fresh_ocr_data):
+        """
+        Calculate overall confidence based on all extracted OCR data.
+        """
+        confidences = []
+        
+        for key in ['down_distance_confidence', 'yard_line_confidence', 'clock_confidence']:
+            if key in fresh_ocr_data:
+                confidences.append(fresh_ocr_data[key])
+                
+        if confidences:
+            return sum(confidences) / len(confidences)
+        else:
+            return 0.5  # Default confidence
 
     def _calculate_frame_confidence(self, game_state: GameState) -> float:
         """Calculate overall confidence score for a frame's analysis results."""
@@ -1893,45 +1833,76 @@ class EnhancedGameAnalyzer:
 
     def extract_game_state(self, frame: np.ndarray) -> dict[str, Any]:
         """Extract complete game state from a frame."""
-        game_state = super().extract_game_state(frame)
+        # FIXED: Removed circular call to analyze_frame to prevent infinite recursion
+        # Instead, directly process the frame using YOLO and OCR
+        
+        # Direct YOLO detection without calling analyze_frame
+        detections = self.model.detect(frame)
+        
+        # Process detections to get game state
+        game_state_obj = self._process_detections(detections, {}, None)
+        
+        # Convert GameState object to dictionary
+        game_state = {}
+        if game_state_obj:
+            # Extract all relevant fields from GameState
+            game_state = {
+                "possession_team": game_state_obj.possession_team,
+                "territory": game_state_obj.territory,
+                "down": game_state_obj.down,
+                "distance": game_state_obj.distance,
+                "yard_line": game_state_obj.yard_line,
+                "score_home": game_state_obj.score_home,
+                "score_away": game_state_obj.score_away,
+                "home_team": game_state_obj.home_team,
+                "away_team": game_state_obj.away_team,
+                "quarter": game_state_obj.quarter,
+                "time": game_state_obj.time,
+                "confidence": game_state_obj.confidence,
+                "visualization_layers": game_state_obj.visualization_layers,
+            }
 
-        # Get current field zone if yard line available
-        if game_state.get("yard_line") and game_state.get("territory"):
-            current_territory, current_zone = self._get_field_zone(
-                game_state["yard_line"], game_state["territory"]
-            )
-
-            # Track zone change
-            current_zone_full = f"{current_territory}_{current_zone}"
-            if self.last_zone != current_zone_full:
-                self.tracking_metrics["zone_changes"].append(
-                    {
-                        "timestamp": time.time(),
-                        "from_zone": self.last_zone,
-                        "to_zone": current_zone_full,
-                        "yard_line": game_state["yard_line"],
-                    }
+            # Get current field zone if yard line available
+            if game_state.get("yard_line") and game_state.get("territory"):
+                current_territory, current_zone = self._get_field_zone(
+                    game_state["yard_line"], game_state["territory"]
                 )
-                self.last_zone = current_zone_full
 
-            # Update zone statistics
-            self._update_zone_stats(game_state)
+                # Track zone change
+                current_zone_full = f"{current_territory}_{current_zone}"
+                if hasattr(self, 'last_zone') and self.last_zone != current_zone_full:
+                    if not hasattr(self, 'tracking_metrics'):
+                        self.tracking_metrics = {"zone_changes": [], "formation_sequences": []}
+                    self.tracking_metrics["zone_changes"].append(
+                        {
+                            "timestamp": time.time(),
+                            "from_zone": getattr(self, 'last_zone', None),
+                            "to_zone": current_zone_full,
+                            "yard_line": game_state["yard_line"],
+                        }
+                    )
+                    self.last_zone = current_zone_full
 
-            # Add zone info to game state
-            game_state["field_zone"] = {"territory": current_territory, "zone_name": current_zone}
+                # Update zone statistics
+                self._update_zone_stats(game_state)
 
-        # Track formation matches internally
-        if game_state.get("formation"):
-            formation_matched = self._detect_formation_match(game_state["formation"])
-            if formation_matched:
-                self.tracking_metrics["formation_sequences"].append(
-                    {
-                        "timestamp": time.time(),
-                        "formation": game_state["formation"],
-                        "previous_formation": self.last_formation,
-                        "field_zone": self.last_zone,  # Include zone context
-                    }
-                )
+                # Add zone info to game state
+                game_state["field_zone"] = {"territory": current_territory, "zone_name": current_zone}
+
+            # Track formation matches internally
+            if game_state.get("formation"):
+                formation_matched = self._detect_formation_match(game_state["formation"])
+                if formation_matched:
+                    if not hasattr(self, 'tracking_metrics'):
+                        self.tracking_metrics = {"zone_changes": [], "formation_sequences": []}
+                    self.tracking_metrics["formation_sequences"].append(
+                        {
+                            "timestamp": time.time(),
+                            "formation": game_state["formation"],
+                            "previous_formation": getattr(self, 'last_formation', None),
+                            "field_zone": getattr(self, 'last_zone', None),  # Include zone context
+                        }
+                    )
 
         return game_state
 
@@ -2391,6 +2362,58 @@ class EnhancedGameAnalyzer:
             # HUD is visible - reset counters and update state
             self.hud_state["is_visible"] = True
             self.hud_state["frames_since_visible"] = 0
+            
+    def detect_objects(self, frame: np.ndarray) -> list[dict]:
+        """Detect objects in frame using YOLO model."""
+        try:
+            # Run YOLO detection
+            results = self.model(frame)
+            
+            detections = []
+            for r in results:
+                if r.boxes is not None:
+                    for box in r.boxes:
+                        detection = {
+                            "class": self.model.names[int(box.cls)],
+                            "confidence": float(box.conf),
+                            "bbox": box.xyxy[0].tolist() if hasattr(box, 'xyxy') else box.xywh[0].tolist()
+                        }
+                        detections.append(detection)
+            
+            return detections
+        except Exception as e:
+            logger.error(f"Error in object detection: {e}")
+            return []
+            
+    def parse_detections(self, detections: list[dict]) -> GameState:
+        """Parse detections into a GameState object."""
+        game_state = self._get_pooled_game_state()
+        
+        # Initialize state indicators
+        game_state.state_indicators = {}
+        
+        for detection in detections:
+            class_name = detection["class"]
+            confidence = detection["confidence"]
+            
+            # Update state indicators
+            if class_name in self.ui_classes:
+                game_state.state_indicators[class_name] = confidence > self.confidence_threshold
+                
+        return game_state
+        
+    def update_play_state(self, current_state: GameState) -> None:
+        """Update play state based on current game state."""
+        # This is a simplified version - the full implementation would track play boundaries
+        if hasattr(current_state, 'state_indicators'):
+            preplay_visible = current_state.state_indicators.get("preplay_indicator", False)
+            playcall_visible = current_state.state_indicators.get("play_call_screen", False)
+            
+            # Update play state tracking
+            if preplay_visible:
+                self.play_state["last_preplay_time"] = time.time()
+            if playcall_visible:
+                self.play_state["last_playcall_time"] = time.time()
             self.hud_state["in_game_interruption"] = False
 
             # Store last valid state
@@ -3344,49 +3367,8 @@ class EnhancedGameAnalyzer:
                 parsed_result = self._parse_down_distance_text(down_distance_text)
 
                 if parsed_result:
-                    # HYBRID APPROACH: Validate OCR with situational logic
-                    ocr_down = parsed_result.get("down")
-                    ocr_distance = parsed_result.get("distance")
-                    ocr_confidence = parsed_result.get("confidence", 0.0)
-
-                    if ocr_down and ocr_distance:
-                        # Create current game situation for logic validation
-                        current_situation = GameSituation(
-                            down=ocr_down,
-                            distance=ocr_distance,
-                            yard_line=self.game_state.get("yard_line"),
-                            territory=self.game_state.get("territory", {}).get("field_context"),
-                            possession_team=self.game_state.get("possession", {}).get(
-                                "team_with_ball"
-                            ),
-                            quarter=self.game_state.get("quarter"),
-                            time_remaining=self.game_state.get("time"),
-                        )
-
-                        # Validate OCR result with game logic
-                        validation_result = self.situational_predictor.validate_ocr_with_logic(
-                            ocr_down, ocr_distance, ocr_confidence, current_situation
-                        )
-
-                        # Use hybrid result
-                        if validation_result["correction_applied"]:
-                            logger.info(
-                                f"🎯 HYBRID: Logic corrected OCR {ocr_down}&{ocr_distance} → {validation_result['recommended_down']}&{validation_result['recommended_distance']} ({validation_result['reasoning']})"
-                            )
-                            parsed_result["down"] = validation_result["recommended_down"]
-                            parsed_result["distance"] = validation_result["recommended_distance"]
-                            parsed_result["confidence"] = validation_result["final_confidence"]
-                            parsed_result["hybrid_correction"] = True
-                            parsed_result["original_ocr"] = validation_result["original_ocr"]
-                            parsed_result["logic_reasoning"] = validation_result["reasoning"]
-                        else:
-                            # OCR was validated by logic
-                            parsed_result["confidence"] = validation_result["final_confidence"]
-                            parsed_result["hybrid_validation"] = True
-                            parsed_result["logic_reasoning"] = validation_result["reasoning"]
-
-                        # Update situational predictor with current state
-                        self.situational_predictor.update_game_state(current_situation)
+                    # Pure OCR mode - no predictive logic validation
+                    # Use OCR result as-is without any game logic interference
 
                     # Add metadata
                     parsed_result["method"] = "hybrid_ocr_logic"
@@ -3477,88 +3459,7 @@ class EnhancedGameAnalyzer:
 
                 return best_result
 
-            # LOGIC-ONLY FALLBACK: When OCR completely fails, try pure game logic
-            if hasattr(self, "situational_predictor"):
-                try:
-                    # Create current game situation from available context
-                    current_situation = GameSituation(
-                        down=None,  # OCR failed
-                        distance=None,  # OCR failed
-                        yard_line=self.game_state.get("yard_line"),
-                        territory=self.game_state.get("territory", {}).get("field_context"),
-                        possession_team=self.game_state.get("possession", {}).get("team_with_ball"),
-                        quarter=self.game_state.get("quarter"),
-                        time_remaining=self.game_state.get("time"),
-                    )
-
-                    # Try pure logic prediction
-                    logic_prediction = self.situational_predictor._predict_from_game_logic(
-                        current_situation
-                    )
-
-                    if (
-                        logic_prediction.predicted_down
-                        and logic_prediction.predicted_distance
-                        and logic_prediction.confidence > 0.4
-                    ):  # Minimum confidence threshold
-
-                        # Create result from logic prediction
-                        logic_result = {
-                            "down": logic_prediction.predicted_down,
-                            "distance": logic_prediction.predicted_distance,
-                            "confidence": logic_prediction.confidence,
-                            "method": "logic_only_fallback",
-                            "source": "8class_down_distance_area",
-                            "region_confidence": confidence,
-                            "region_bbox": region_data["bbox"],
-                            "logic_only": True,
-                            "logic_reasoning": logic_prediction.reasoning,
-                            "ocr_failed": True,
-                        }
-
-                        # Update situational predictor with current state
-                        self.situational_predictor.update_game_state(current_situation)
-
-                        logger.info(
-                            f"🧠 LOGIC-ONLY: OCR failed, using pure logic → {logic_prediction.predicted_down}&{logic_prediction.predicted_distance} ({logic_prediction.reasoning})"
-                        )
-
-                        # FIXED: Unified result handling - add to appropriate confidence system
-                        if not is_burst_mode and hasattr(self, "temporal_manager"):
-                            # Normal mode: Add to temporal manager for time-based confidence voting
-                            extraction_result = ExtractionResult(
-                                value=logic_result,
-                                confidence=logic_result["confidence"],
-                                timestamp=current_time,
-                                raw_text="OCR_FAILED",
-                                method="logic_only",
-                            )
-                            self.temporal_manager.add_extraction_result(
-                                "down_distance", extraction_result
-                            )
-                            logger.debug(
-                                f"⏰ TEMPORAL: Added logic-only down/distance result to temporal manager"
-                            )
-                        else:
-                            # Burst mode: Results will be handled by burst consensus system in analyze_frame()
-                            logger.debug(
-                                f"🎯 BURST: Logic-only down/distance result will be handled by burst consensus"
-                            )
-
-                        return logic_result
-                    else:
-                        if current_time is None:  # Burst sampling debug
-                            print(
-                                f"🧠 LOGIC-ONLY: Insufficient confidence ({logic_prediction.confidence:.3f}) or missing prediction"
-                            )
-                            print(
-                                f"🧠 Available context: yard_line={current_situation.yard_line}, territory={current_situation.territory}, possession={current_situation.possession_team}"
-                            )
-
-                except Exception as e:
-                    logger.error(f"Logic-only fallback failed: {e}")
-                    if current_time is None:  # Burst sampling debug
-                        logger.debug(f"🚨 LOGIC-ONLY EXCEPTION: {e}")
+            # No logic-only fallback - pure OCR detection only
 
             return None
 
@@ -3736,34 +3637,7 @@ class EnhancedGameAnalyzer:
 
             # LOGIC-ONLY FALLBACK: When OCR completely fails, use game context
             # Game clock can be estimated from quarter and game flow
-            if hasattr(self, "game_state"):
-                try:
-                    quarter = self.game_state.get("quarter")
-                    if quarter and 1 <= quarter <= 4:
-                        # Estimate typical game clock based on quarter
-                        estimated_minutes = 15 - ((quarter - 1) * 3)  # Rough estimate
-                        if estimated_minutes > 0:
-                            logic_result = {
-                                "minutes": estimated_minutes,
-                                "seconds": 0,
-                                "time_string": f"{estimated_minutes:02d}:00",
-                                "confidence": 0.3,  # Low confidence for logic estimate
-                                "method": "logic_only_fallback",
-                                "source": "8class_game_clock_area",
-                                "region_confidence": confidence,
-                                "region_bbox": region_data["bbox"],
-                                "logic_only": True,
-                                "logic_reasoning": f"Estimated from quarter {quarter}",
-                            }
-
-                            if current_time is None:  # Burst sampling mode
-                                print(
-                                    f"🧠 LOGIC-ONLY: Game clock OCR failed, using quarter-based estimate → {logic_result['time_string']} (Quarter {quarter})"
-                                )
-
-                            return logic_result
-                except Exception as e:
-                    logger.debug(f"Game clock logic fallback failed: {e}")
+            # No logic-only fallback - pure OCR detection only
 
             return None
 
@@ -3923,41 +3797,7 @@ class EnhancedGameAnalyzer:
 
                 return best_result
 
-            # LOGIC-ONLY FALLBACK: When OCR completely fails, use game context
-            # Play clock can be estimated based on game flow and typical patterns
-            if hasattr(self, "game_state"):
-                try:
-                    # Estimate play clock based on game situation
-                    # Typical play clock is 40 seconds, but varies by situation
-                    estimated_seconds = 25  # Default mid-range estimate
-
-                    # Adjust based on game context if available
-                    down = self.game_state.get("down")
-                    if down:
-                        if down == 1:
-                            estimated_seconds = 30  # More time on 1st down
-                        elif down >= 3:
-                            estimated_seconds = 20  # Less time on 3rd/4th down
-
-                    logic_result = {
-                        "seconds": estimated_seconds,
-                        "confidence": 0.25,  # Low confidence for logic estimate
-                        "method": "logic_only_fallback",
-                        "source": "8class_play_clock_area",
-                        "region_confidence": confidence,
-                        "region_bbox": region_data["bbox"],
-                        "logic_only": True,
-                        "logic_reasoning": f"Estimated {estimated_seconds}s based on down {down if down else 'unknown'}",
-                    }
-
-                    if current_time is None:  # Burst sampling mode
-                        print(
-                            f"🧠 LOGIC-ONLY: Play clock OCR failed, using situation-based estimate → {logic_result['seconds']}s (Down {down if down else 'unknown'})"
-                        )
-
-                    return logic_result
-                except Exception as e:
-                    logger.debug(f"Play clock logic fallback failed: {e}")
+            # No logic-only fallback - pure OCR detection only
 
             return None
 
@@ -5422,732 +5262,3 @@ class EnhancedGameAnalyzer:
         """Estimate confidence of yard line OCR result."""
         if not text:
             return 0.0
-
-        confidence = 0.5  # Base confidence
-
-        # Boost confidence for valid patterns
-        import re
-
-        if re.match(r"^[AH]\d+$", text):
-            confidence += 0.3  # Strong pattern match
-        elif re.match(r"^\d+$", text):
-            confidence += 0.2  # Midfield pattern
-
-        # Boost for reasonable yard numbers
-        numbers = re.findall(r"\d+", text)
-        if numbers:
-            yard_num = int(numbers[0])
-            if 0 <= yard_num <= 50:
-                confidence += 0.2
-
-        return min(1.0, confidence)
-
-    def _calculate_yard_line_quality_score(self, text: str) -> float:
-        """Calculate quality score for yard line text."""
-        if not text:
-            return 0.0
-
-        score = 0.5  # Base score
-
-        # Pattern quality
-        import re
-
-        if re.match(r"^[AH]\d+$", text):
-            score += 0.3  # Perfect pattern
-        elif re.match(r"^\d+$", text):
-            score += 0.2  # Midfield pattern
-
-        # Length appropriateness (2-3 characters)
-        if 2 <= len(text) <= 3:
-            score += 0.2
-
-        return min(1.0, score)
-
-    def add_burst_result(self, frame_result: dict[str, Any], frame_number: int = None) -> None:
-        """
-        Add a frame analysis result to the burst consensus system.
-
-        Args:
-            frame_result: Analysis result from a single frame
-            frame_number: Optional frame number for tracking
-        """
-        burst_entry = {
-            "frame_number": frame_number,
-            "timestamp": frame_result.get("timestamp"),
-            "down": frame_result.get("down"),
-            "distance": frame_result.get("distance"),
-            "yard_line": frame_result.get("yard_line"),
-            "game_clock": frame_result.get("game_clock"),
-            "play_clock": frame_result.get("play_clock"),
-            "possession_team": frame_result.get("possession_team"),
-            "territory": frame_result.get("territory"),
-            "confidence": frame_result.get("confidence", 0.0),
-            "method": frame_result.get("method", "unknown"),
-        }
-
-        self.burst_results.append(burst_entry)
-
-        # Keep only the most recent frames
-        if len(self.burst_results) > self.max_burst_frames:
-            self.burst_results.pop(0)
-
-        logger.debug(f"🎯 Added burst result: {burst_entry}")
-
-    def get_burst_consensus(self) -> dict[str, Any]:
-        """
-        Analyze all burst results and return consensus decision.
-
-        Returns:
-            Dictionary with consensus results and confidence scores
-        """
-        if not self.burst_results:
-            return {"error": "No burst results available"}
-
-        logger.info(f"🎯 BURST CONSENSUS: Analyzing {len(self.burst_results)} frame results")
-
-        # Separate analysis for each field
-        consensus = {
-            "down_distance": self._get_down_distance_consensus(),
-            "game_clock": self._get_game_clock_consensus(),
-            "play_clock": self._get_play_clock_consensus(),
-            "yard_line": self._get_yard_line_consensus(),
-            "possession": self._get_possession_consensus(),
-            "territory": self._get_territory_consensus(),
-            "summary": {
-                "total_frames": len(self.burst_results),
-                "consensus_method": "confidence_weighted_voting",
-            },
-        }
-
-        logger.info(f"🎯 BURST CONSENSUS COMPLETE: {consensus['summary']}")
-        return consensus
-
-    def _get_down_distance_consensus(self) -> dict[str, Any]:
-        """Get consensus for down and distance from burst results."""
-        down_votes = {}
-        distance_votes = {}
-
-        for result in self.burst_results:
-            down = result.get("down")
-            distance = result.get("distance")
-            confidence = result.get("confidence", 0.0)
-
-            if down is not None:
-                key = f"{down}"
-                if key not in down_votes:
-                    down_votes[key] = {"votes": 0, "total_confidence": 0.0, "frames": []}
-                down_votes[key]["votes"] += 1
-                down_votes[key]["total_confidence"] += confidence
-                down_votes[key]["frames"].append(result.get("frame_number", "unknown"))
-
-            if distance is not None:
-                key = f"{distance}"
-                if key not in distance_votes:
-                    distance_votes[key] = {"votes": 0, "total_confidence": 0.0, "frames": []}
-                distance_votes[key]["votes"] += 1
-                distance_votes[key]["total_confidence"] += confidence
-                distance_votes[key]["frames"].append(result.get("frame_number", "unknown"))
-
-        # Find best down
-        best_down = None
-        best_down_score = 0
-        if down_votes:
-            for down_str, data in down_votes.items():
-                # Score = votes * average_confidence
-                avg_confidence = data["total_confidence"] / data["votes"]
-                score = data["votes"] * avg_confidence
-                if score > best_down_score:
-                    best_down_score = score
-                    best_down = int(down_str)
-
-        # Find best distance
-        best_distance = None
-        best_distance_score = 0
-        if distance_votes:
-            for distance_str, data in distance_votes.items():
-                avg_confidence = data["total_confidence"] / data["votes"]
-                score = data["votes"] * avg_confidence
-                if score > best_distance_score:
-                    best_distance_score = score
-                    best_distance = int(distance_str)
-
-        # Temporal validation check
-        temporal_validation = None
-        if best_down and best_distance:
-            # Check if this progression makes sense
-            temporal_validation = self._validate_down_distance_progression(best_down, best_distance)
-
-        result = {
-            "down": best_down,
-            "distance": best_distance,
-            "down_confidence": best_down_score / len(self.burst_results) if best_down else 0.0,
-            "distance_confidence": (
-                best_distance_score / len(self.burst_results) if best_distance else 0.0
-            ),
-            "down_votes": down_votes,
-            "distance_votes": distance_votes,
-            "temporal_validation": temporal_validation,
-        }
-
-        logger.info(
-            f"🎯 DOWN/DISTANCE CONSENSUS: {best_down} & {best_distance} (conf: {result['down_confidence']:.2f}, {result['distance_confidence']:.2f})"
-        )
-        return result
-
-    def _get_game_clock_consensus(self) -> dict[str, Any]:
-        """Get consensus for game clock from burst results."""
-        clock_votes = {}
-
-        for result in self.burst_results:
-            clock = result.get("game_clock")
-            confidence = result.get("confidence", 0.0)
-
-            if clock:
-                if clock not in clock_votes:
-                    clock_votes[clock] = {"votes": 0, "total_confidence": 0.0, "frames": []}
-                clock_votes[clock]["votes"] += 1
-                clock_votes[clock]["total_confidence"] += confidence
-                clock_votes[clock]["frames"].append(result.get("frame_number", "unknown"))
-
-        # Find best clock with temporal validation
-        best_clock = None
-        best_score = 0
-        temporal_issues = []
-
-        for clock, data in clock_votes.items():
-            avg_confidence = data["total_confidence"] / data["votes"]
-            score = data["votes"] * avg_confidence
-
-            # Apply temporal validation penalty
-            is_valid, reason = self._validate_game_clock_temporal(clock)
-            if not is_valid:
-                temporal_issues.append(f"{clock}: {reason}")
-                score *= 0.5  # Penalty for temporal issues
-
-            if score > best_score:
-                best_score = score
-                best_clock = clock
-
-        result = {
-            "game_clock": best_clock,
-            "confidence": best_score / len(self.burst_results) if best_clock else 0.0,
-            "votes": clock_votes,
-            "temporal_issues": temporal_issues,
-        }
-
-        logger.info(f"🎯 GAME CLOCK CONSENSUS: {best_clock} (conf: {result['confidence']:.2f})")
-        if temporal_issues:
-            logger.warning(f"⚠️ Temporal issues detected: {temporal_issues}")
-
-        return result
-
-    def _get_play_clock_consensus(self) -> dict[str, Any]:
-        """Get consensus for play clock from burst results."""
-        clock_votes = {}
-
-        for result in self.burst_results:
-            clock = result.get("play_clock")
-            confidence = result.get("confidence", 0.0)
-
-            if clock:
-                if clock not in clock_votes:
-                    clock_votes[clock] = {"votes": 0, "total_confidence": 0.0}
-                clock_votes[clock]["votes"] += 1
-                clock_votes[clock]["total_confidence"] += confidence
-
-        # Find best play clock
-        best_clock = None
-        best_score = 0
-
-        for clock, data in clock_votes.items():
-            avg_confidence = data["total_confidence"] / data["votes"]
-            score = data["votes"] * avg_confidence
-
-            if score > best_score:
-                best_score = score
-                best_clock = clock
-
-        result = {
-            "play_clock": best_clock,
-            "confidence": best_score / len(self.burst_results) if best_clock else 0.0,
-            "votes": clock_votes,
-        }
-
-        logger.info(f"🎯 PLAY CLOCK CONSENSUS: {best_clock} (conf: {result['confidence']:.2f})")
-        return result
-
-    def _get_yard_line_consensus(self) -> dict[str, Any]:
-        """Get consensus for yard line from burst results."""
-        yard_votes = {}
-
-        for result in self.burst_results:
-            yard_line = result.get("yard_line")
-            confidence = result.get("confidence", 0.0)
-
-            if yard_line is not None:
-                key = str(yard_line)
-                if key not in yard_votes:
-                    yard_votes[key] = {"votes": 0, "total_confidence": 0.0}
-                yard_votes[key]["votes"] += 1
-                yard_votes[key]["total_confidence"] += confidence
-
-        # Find best yard line
-        best_yard_line = None
-        best_score = 0
-
-        for yard_str, data in yard_votes.items():
-            avg_confidence = data["total_confidence"] / data["votes"]
-            score = data["votes"] * avg_confidence
-
-            if score > best_score:
-                best_score = score
-                best_yard_line = int(yard_str)
-
-        result = {
-            "yard_line": best_yard_line,
-            "confidence": best_score / len(self.burst_results) if best_yard_line else 0.0,
-            "votes": yard_votes,
-        }
-
-        logger.info(f"🎯 YARD LINE CONSENSUS: {best_yard_line} (conf: {result['confidence']:.2f})")
-        return result
-
-    def _get_possession_consensus(self) -> dict[str, Any]:
-        """Get consensus for possession from burst results."""
-        possession_votes = {}
-
-        for result in self.burst_results:
-            possession = result.get("possession_team")
-            confidence = result.get("confidence", 0.0)
-
-            if possession:
-                if possession not in possession_votes:
-                    possession_votes[possession] = {"votes": 0, "total_confidence": 0.0}
-                possession_votes[possession]["votes"] += 1
-                possession_votes[possession]["total_confidence"] += confidence
-
-        # Find best possession
-        best_possession = None
-        best_score = 0
-
-        for possession, data in possession_votes.items():
-            avg_confidence = data["total_confidence"] / data["votes"]
-            score = data["votes"] * avg_confidence
-
-            if score > best_score:
-                best_score = score
-                best_possession = possession
-
-        result = {
-            "possession_team": best_possession,
-            "confidence": best_score / len(self.burst_results) if best_possession else 0.0,
-            "votes": possession_votes,
-        }
-
-        logger.info(
-            f"🎯 POSSESSION CONSENSUS: {best_possession} (conf: {result['confidence']:.2f})"
-        )
-        return result
-
-    def _get_territory_consensus(self) -> dict[str, Any]:
-        """Get consensus for territory from burst results."""
-        territory_votes = {}
-
-        for result in self.burst_results:
-            territory = result.get("territory")
-            confidence = result.get("confidence", 0.0)
-
-            if territory:
-                if territory not in territory_votes:
-                    territory_votes[territory] = {"votes": 0, "total_confidence": 0.0}
-                territory_votes[territory]["votes"] += 1
-                territory_votes[territory]["total_confidence"] += confidence
-
-        # Find best territory
-        best_territory = None
-        best_score = 0
-
-        for territory, data in territory_votes.items():
-            avg_confidence = data["total_confidence"] / data["votes"]
-            score = data["votes"] * avg_confidence
-
-            if score > best_score:
-                best_score = score
-                best_territory = territory
-
-        result = {
-            "territory": best_territory,
-            "confidence": best_score / len(self.burst_results) if best_territory else 0.0,
-            "votes": territory_votes,
-        }
-
-        logger.info(f"🎯 TERRITORY CONSENSUS: {best_territory} (conf: {result['confidence']:.2f})")
-        return result
-
-    def _validate_down_distance_progression(self, down: int, distance: int) -> dict[str, Any]:
-        """Validate if down/distance makes sense in context of previous plays."""
-        if not self.burst_results or len(self.burst_results) < 2:
-            return {"valid": True, "reason": "Insufficient history for validation"}
-
-        # Look for patterns that suggest this is reasonable
-        down_counts = {}
-        for result in self.burst_results:
-            result_down = result.get("down")
-            if result_down:
-                down_counts[result_down] = down_counts.get(result_down, 0) + 1
-
-        # Check for impossible progressions
-        if down == 4 and distance > 25:
-            return {"valid": False, "reason": f"Unlikely 4th & {distance} situation"}
-
-        if down == 1 and distance > 30:
-            return {"valid": False, "reason": f"Impossible 1st & {distance} situation"}
-
-        return {"valid": True, "reason": "Progression appears reasonable"}
-
-    def clear_burst_results(self) -> None:
-        """Clear burst consensus results."""
-        self.burst_results = []
-
-    def _should_process_region(
-        self, current_roi: np.ndarray, region_type: str, similarity_threshold: float = 0.95
-    ) -> bool:
-        """
-        Determine if region needs processing based on visual changes.
-
-        Args:
-            current_roi: Current region of interest
-            region_type: Type of region (down_distance, game_clock, etc.)
-            similarity_threshold: Threshold for considering regions similar
-
-        Returns:
-            True if region should be processed, False if cached result can be used
-        """
-        try:
-            if hasattr(self, "previous_regions") and region_type in self.previous_regions:
-                previous_roi = self.previous_regions[region_type]
-
-                # Ensure both ROIs have the same dimensions
-                if current_roi.shape != previous_roi.shape:
-                    self.previous_regions[region_type] = current_roi.copy()
-                    return True
-
-                # Calculate structural similarity using template matching
-                if current_roi.size > 0 and previous_roi.size > 0:
-                    # Convert to grayscale if needed
-                    if len(current_roi.shape) == 3:
-                        current_gray = cv2.cvtColor(current_roi, cv2.COLOR_BGR2GRAY)
-                    else:
-                        current_gray = current_roi
-
-                    if len(previous_roi.shape) == 3:
-                        previous_gray = cv2.cvtColor(previous_roi, cv2.COLOR_BGR2GRAY)
-                    else:
-                        previous_gray = previous_roi
-
-                    # Use template matching for similarity
-                    result = cv2.matchTemplate(current_gray, previous_gray, cv2.TM_CCOEFF_NORMED)
-                    similarity = result[0][0] if result.size > 0 else 0.0
-
-                    if similarity > similarity_threshold:
-                        return False  # Skip processing, use cached result
-
-            # Store current region for next comparison
-            self.previous_regions[region_type] = current_roi.copy()
-            return True
-
-        except Exception as e:
-            # If comparison fails, always process the region
-            logger.debug(f"Region similarity check failed for {region_type}: {e}")
-            self.previous_regions[region_type] = current_roi.copy()
-            return True
-
-    def _get_pooled_game_state(self) -> GameState:
-        """Get a GameState object from the pool for memory efficiency."""
-        try:
-            if self.object_pools["game_state_pool"]:
-                game_state = self.object_pools["game_state_pool"].pop()
-                # Reset the game state
-                game_state.possession_team = None
-                game_state.territory = None
-                game_state.down = None
-                game_state.distance = None
-                game_state.yard_line = None
-                game_state.score_home = None
-                game_state.score_away = None
-                game_state.home_team = None
-                game_state.away_team = None
-                game_state.quarter = None
-                game_state.time = None
-                game_state.confidence = 0.0
-                game_state.visualization_layers = None
-                return game_state
-            else:
-                # Pool is empty, create new one
-                return GameState()
-        except Exception:
-            return GameState()
-
-    def _return_pooled_game_state(self, game_state: GameState) -> None:
-        """Return a GameState object to the pool."""
-        try:
-            if len(self.object_pools["game_state_pool"]) < 10:
-                self.object_pools["game_state_pool"].append(game_state)
-        except Exception:
-            pass  # If return fails, just let it be garbage collected
-
-    def _get_cached_preprocessing(
-        self, roi: np.ndarray, preprocess_type: str
-    ) -> Optional[np.ndarray]:
-        """Get cached preprocessing result if available."""
-        try:
-            # Create a simple hash of the ROI for caching
-            roi_hash = hash(roi.tobytes()) if roi.size > 0 else 0
-            cache_key = f"{preprocess_type}_{roi_hash}_{roi.shape}"
-
-            if cache_key in self.preprocessing_cache:
-                return self.preprocessing_cache[cache_key].copy()
-            return None
-        except Exception:
-            return None
-
-    def _cache_preprocessing_result(
-        self, roi: np.ndarray, preprocess_type: str, result: np.ndarray
-    ) -> None:
-        """Cache preprocessing result for future use."""
-        try:
-            # Limit cache size to prevent memory bloat
-            if len(self.preprocessing_cache) > 50:
-                # Remove oldest entries (simple FIFO)
-                oldest_key = next(iter(self.preprocessing_cache))
-                del self.preprocessing_cache[oldest_key]
-
-            roi_hash = hash(roi.tobytes()) if roi.size > 0 else 0
-            cache_key = f"{preprocess_type}_{roi_hash}_{roi.shape}"
-            self.preprocessing_cache[cache_key] = result.copy()
-        except Exception:
-            pass  # If caching fails, continue without cache
-
-    def _get_cached_kernel(self, kernel_type: str, size: tuple) -> Optional[np.ndarray]:
-        """Get cached morphological kernel."""
-        try:
-            cache_key = f"{kernel_type}_{size}"
-            if cache_key not in self.object_pools["cv2_kernels"]:
-                if kernel_type == "ellipse":
-                    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, size)
-                elif kernel_type == "rect":
-                    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, size)
-                else:
-                    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, size)
-                self.object_pools["cv2_kernels"][cache_key] = kernel
-            return self.object_pools["cv2_kernels"][cache_key]
-        except Exception:
-            return None
-
-    def _analyze_triangle_direction(
-        self, region_roi: np.ndarray, triangle_type: str
-    ) -> Optional[str]:
-        """Analyze triangle direction using template matching (proven 97.6% accuracy)."""
-        try:
-            if region_roi is None or region_roi.size == 0:
-                return None
-
-            # Convert to grayscale if needed
-            if len(region_roi.shape) == 3:
-                gray = cv2.cvtColor(region_roi, cv2.COLOR_BGR2GRAY)
-            else:
-                gray = region_roi.copy()
-
-            # Apply preprocessing for better template matching
-            gray = cv2.GaussianBlur(gray, (3, 3), 0)
-
-            # Define triangle templates (simple geometric shapes)
-            h, w = gray.shape
-            template_size = min(h, w) // 4
-
-            if template_size < 10:  # Too small to analyze
-                return None
-
-            # Create triangle templates for different directions
-            templates = {}
-
-            # Left-pointing triangle (for possession)
-            left_template = np.zeros((template_size, template_size), dtype=np.uint8)
-            pts = np.array(
-                [[template_size - 1, template_size // 2], [0, 0], [0, template_size - 1]], np.int32
-            )
-            cv2.fillPoly(left_template, [pts], 255)
-            templates["left"] = left_template
-
-            # Right-pointing triangle (for possession)
-            right_template = np.zeros((template_size, template_size), dtype=np.uint8)
-            pts = np.array(
-                [
-                    [0, template_size // 2],
-                    [template_size - 1, 0],
-                    [template_size - 1, template_size - 1],
-                ],
-                np.int32,
-            )
-            cv2.fillPoly(right_template, [pts], 255)
-            templates["right"] = right_template
-
-            # Up-pointing triangle (for territory)
-            up_template = np.zeros((template_size, template_size), dtype=np.uint8)
-            pts = np.array(
-                [
-                    [template_size // 2, 0],
-                    [0, template_size - 1],
-                    [template_size - 1, template_size - 1],
-                ],
-                np.int32,
-            )
-            cv2.fillPoly(up_template, [pts], 255)
-            templates["up"] = up_template
-
-            # Down-pointing triangle (for territory)
-            down_template = np.zeros((template_size, template_size), dtype=np.uint8)
-            pts = np.array(
-                [[template_size // 2, template_size - 1], [0, 0], [template_size - 1, 0]], np.int32
-            )
-            cv2.fillPoly(down_template, [pts], 255)
-            templates["down"] = down_template
-
-            # Perform template matching
-            best_match = None
-            best_score = 0.0
-
-            for direction, template in templates.items():
-                # Skip irrelevant directions based on triangle type
-                if triangle_type == "possession" and direction in ["up", "down"]:
-                    continue
-                if triangle_type == "territory" and direction in ["left", "right"]:
-                    continue
-
-                # Template matching
-                result = cv2.matchTemplate(gray, template, cv2.TM_CCOEFF_NORMED)
-                _, max_val, _, _ = cv2.minMaxLoc(result)
-
-                if max_val > best_score:
-                    best_score = max_val
-                    best_match = direction
-
-            # Return result if confidence is high enough
-            if best_score > 0.3:  # Threshold for triangle detection
-                logger.debug(
-                    f"Triangle direction detected: {best_match} (confidence: {best_score:.3f})"
-                )
-                return best_match
-
-            return None
-
-        except Exception as e:
-            logger.error(f"Error in triangle direction analysis: {e}")
-            return None
-
-    def export_debug_data(self, output_dir="debug_output"):
-        """Export all collected debug data for analysis"""
-        if not self.debug_mode:
-            print("Debug mode not enabled - no data to export")
-            return
-
-        try:
-            os.makedirs(output_dir, exist_ok=True)
-
-            # Export clips data
-            clips_file = os.path.join(output_dir, "debug_clips_data.json")
-            with open(clips_file, "w") as f:
-                json.dump(self.debug_data["clips"], f, indent=2, default=str)
-
-            # Export logs
-            logs_file = os.path.join(output_dir, "analysis_logs.txt")
-            with open(logs_file, "w") as f:
-                f.write("\n".join(self.debug_data["logs"]))
-
-            # Export frame analysis data
-            frame_data_file = os.path.join(output_dir, "frame_analysis_data.pkl")
-            with open(frame_data_file, "wb") as f:
-                pickle.dump(self.debug_data["frame_analysis"], f)
-
-            # Export OCR and YOLO data separately
-            ocr_file = os.path.join(output_dir, "ocr_results.json")
-            with open(ocr_file, "w") as f:
-                json.dump(self.debug_data["ocr_results"], f, indent=2, default=str)
-
-            yolo_file = os.path.join(output_dir, "yolo_detections.json")
-            with open(yolo_file, "w") as f:
-                json.dump(self.debug_data["yolo_detections"], f, indent=2, default=str)
-
-            # Create summary report
-            summary = {
-                "analysis_summary": {
-                    "total_frames_analyzed": len(self.debug_data["frame_analysis"]),
-                    "total_clips_detected": len(self.debug_data["clips"]),
-                    "total_log_entries": len(self.debug_data["logs"]),
-                    "export_timestamp": datetime.now().isoformat(),
-                },
-                "clip_situations": [clip["situation"] for clip in self.debug_data["clips"]],
-                "common_issues": self._analyze_common_issues(),
-            }
-
-            summary_file = os.path.join(output_dir, "debug_summary.json")
-            with open(summary_file, "w") as f:
-                json.dump(summary, f, indent=2)
-
-            print(f"🔍 Debug data exported to {output_dir}/")
-            print(f"   - {len(self.debug_data['clips'])} clips detected")
-            print(f"   - {len(self.debug_data['frame_analysis'])} frames analyzed")
-            print(f"   - {len(self.debug_data['logs'])} log entries")
-
-            return output_dir
-
-        except Exception as e:
-            print(f"Error exporting debug data: {str(e)}")
-            return None
-
-    def _analyze_common_issues(self):
-        """Analyze debug data for common issues"""
-        issues = []
-
-        # Check for repeated "1st & 10" clips
-        first_down_clips = [
-            c for c in self.debug_data["clips"] if "1st & 10" in c.get("situation", "")
-        ]
-        if len(first_down_clips) > len(self.debug_data["clips"]) * 0.7:  # More than 70%
-            issues.append(
-                {
-                    "type": "excessive_first_downs",
-                    "description": f'{len(first_down_clips)} out of {len(self.debug_data["clips"])} clips labeled as "1st & 10"',
-                    "severity": "high",
-                }
-            )
-
-        # Check for low OCR confidence
-        low_confidence_ocr = []
-        for frame_data in self.debug_data["frame_analysis"].values():
-            ocr_results = frame_data.get("ocr_results", {})
-            for region, result in ocr_results.items():
-                if result.get("confidence", 1.0) < 0.5:
-                    low_confidence_ocr.append((region, result.get("confidence", 0)))
-
-        if len(low_confidence_ocr) > 10:
-            issues.append(
-                {
-                    "type": "low_ocr_confidence",
-                    "description": f"{len(low_confidence_ocr)} OCR results with confidence < 0.5",
-                    "severity": "medium",
-                }
-            )
-
-        # Check for state persistence patterns
-        persistence_logs = [log for log in self.debug_data["logs"] if "persistence" in log.lower()]
-        if len(persistence_logs) > 50:
-            issues.append(
-                {
-                    "type": "excessive_state_persistence",
-                    "description": f"{len(persistence_logs)} state persistence events detected",
-                    "severity": "medium",
-                }
-            )
-
-        return issues

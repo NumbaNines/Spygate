@@ -3128,12 +3128,14 @@ class SpygateDesktop(QMainWindow):
 
         # Use enhanced analysis worker with fresh OCR data preservation
         self.analysis_worker = AnalysisWorker(video_path, situation_preferences=clip_preferences)
-        
+
         # Enable enhanced OCR data preservation mode
-        if hasattr(self.analysis_worker, 'analyzer') and hasattr(self.analysis_worker.analyzer, 'enable_clip_creation_mode'):
+        if hasattr(self.analysis_worker, "analyzer") and hasattr(
+            self.analysis_worker.analyzer, "enable_clip_creation_mode"
+        ):
             print("🧊 Enabling enhanced OCR data preservation for accurate clip creation")
             self.analysis_worker.analyzer.enable_clip_creation_mode()
-        
+
         self.analysis_worker.progress_updated.connect(
             self.update_analysis_progress
         )  # Fixed method name
@@ -3426,10 +3428,14 @@ class SpygateDesktop(QMainWindow):
     def on_analysis_complete(self, message, detected_clips):
         """Handle analysis completion"""
         # Disable enhanced OCR data preservation mode
-        if hasattr(self, 'analysis_worker') and hasattr(self.analysis_worker, 'analyzer') and hasattr(self.analysis_worker.analyzer, 'disable_clip_creation_mode'):
+        if (
+            hasattr(self, "analysis_worker")
+            and hasattr(self.analysis_worker, "analyzer")
+            and hasattr(self.analysis_worker.analyzer, "disable_clip_creation_mode")
+        ):
             print("⏰ Disabling enhanced OCR data preservation - returning to normal mode")
             self.analysis_worker.analyzer.disable_clip_creation_mode()
-        
+
         # Get the video path from the worker
         video_path = (
             self.analysis_worker.video_path if hasattr(self, "analysis_worker") else "Unknown"

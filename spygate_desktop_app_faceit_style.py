@@ -328,12 +328,13 @@ class AnalysisWorker(QThread):
 
         # DUPLICATE CLIP PREVENTION SYSTEM
         self.duplicate_prevention = {
-            "created_clips": [],  # List of all created clips with timeframes
-            "last_clip_end_frame": 0,  # Track when the last clip ended
-            "min_clip_gap_frames": 60,  # Minimum 2 seconds between clips (at 30fps)
-            "overlap_threshold": 0.5,  # 50% overlap threshold for duplicate detection
-            "max_clips_per_minute": 6,  # Maximum 6 clips per minute to prevent spam
-            "recent_clips_window": 1800,  # 60 seconds window for rate limiting (at 30fps)
+            "created_clips": [],  # List of created clips with frame ranges
+            "last_clip_end_frame": 0,  # Frame number where last clip ended
+            "min_clip_gap_frames": 90,  # Minimum 3 seconds between clips (at 30fps)
+            "overlap_threshold": 0.3,  # 30% overlap threshold
+            "recent_clips_window": 600,  # 20 seconds window for rate limiting
+            "max_clips_per_minute": 8,  # Maximum clips in recent window
+            "last_down_distance": None,  # Track last down/distance to prevent duplicates
         }
 
     def _optimize_processing_speed(self):
@@ -731,6 +732,18 @@ class AnalysisWorker(QThread):
         if clip_duration > 1800:  # More than 60 seconds
             print(f"🚫 CLIP TOO LONG: {clip_duration/30.0:.1f}s duration (maximum 60s)")
             return True
+        # Strategy 5: Check for same down/distance within recent window
+        current_down_distance = f"{game_state.down}_{game_state.distance}" if hasattr(game_state, 'down') and hasattr(game_state, 'distance') else None
+        if current_down_distance and self.duplicate_prevention.get("last_down_distance") == current_down_distance:
+            # Check if we're too close to the last clip with same down/distance
+            if (current_frame - self.duplicate_prevention["last_clip_end_frame"]) < 300:  # 10 seconds
+                print(f"🚫 DUPLICATE SITUATION: Same down/distance ({current_down_distance}) too soon")
+                return True
+        
+        # Update last down/distance
+        if current_down_distance:
+            self.duplicate_prevention["last_down_distance"] = current_down_distance
+
 
         # All checks passed - not a duplicate
         return False
@@ -1429,13 +1442,18 @@ class AnalysisWorker(QThread):
                                 )
 
                                 # 🚨 CRITICAL DEBUG: Log game state BEFORE clip creation
+                                
+                                # 🚨 CRITICAL FIX: Deep copy game state to preserve it
+                                import copy
+                                clip_game_state = copy.deepcopy(game_state)
+                                clip_situation_context = copy.deepcopy(situation_context)
                                 print(f"🚨 PRE-CLIP GAME STATE DEBUG:")
-                                print(f"   Down: {getattr(game_state, 'down', 'MISSING')}")
-                                print(f"   Distance: {getattr(game_state, 'distance', 'MISSING')}")
+                                print(f"   Down: {getattr(clip_game_state, 'down', 'MISSING')}")
+                                print(f"   Distance: {getattr(clip_game_state, 'distance', 'MISSING')}")
                                 print(
                                     f"   Yard Line: {getattr(game_state, 'yard_line', 'MISSING')}"
                                 )
-                                print(f"   Quarter: {getattr(game_state, 'quarter', 'MISSING')}")
+                                print(f"   Quarter: {getattr(clip_game_state, 'quarter', 'MISSING')}")
                                 print(
                                     f"   Game Clock: {getattr(game_state, 'game_clock', 'MISSING')}"
                                 )
@@ -1451,8 +1469,8 @@ class AnalysisWorker(QThread):
                                     clip_start_frame,
                                     clip_end_frame,
                                     fps,
-                                    game_state,
-                                    situation_context,
+                                    clip_game_state,
+                                    clip_situation_context,
                                     boundary_info,
                                 )
                                 detected_clips.append(clip)
@@ -1749,6 +1767,13 @@ class AnalysisWorker(QThread):
         elif duration > max_duration:
             # Trim from the end to keep the most relevant part
             end_frame = start_frame + max_duration
+        # CRITICAL: Ensure we don't create clips longer than a typical play
+        max_play_duration = int(fps * 12)  # 12 seconds max for a single play
+        if duration > max_play_duration:
+            # Prefer keeping the beginning of the play
+            end_frame = start_frame + max_play_duration
+            print(f"⚠️ Limiting clip duration to {max_play_duration/fps:.1f}s (single play)")
+
 
         print(
             f"🎯 Natural boundaries: {start_frame} → {end_frame} ({(end_frame-start_frame)/fps:.1f}s)"

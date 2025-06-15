@@ -68,16 +68,46 @@ from PyQt6.QtWidgets import (
 # Add project paths
 current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir))
-sys.path.insert(0, str(current_dir / "spygate"))
+sys.path.insert(0, str(current_dir / "src"))
+sys.path.insert(0, str(current_dir / "src" / "spygate"))
 
-from formation_editor import FormationEditor
+# Import project modules with fallbacks
+try:
+    from formation_editor import FormationEditor
+except ImportError:
+    FormationEditor = None
 
-# Import other dependencies
-from profile_picture_manager import ProfilePictureManager, is_emoji_profile
-from spygate.core.hardware import HardwareDetector
-from spygate.ml.cache_manager import GameAnalyzerCache, get_game_analyzer_cache
-from spygate.ml.enhanced_game_analyzer import EnhancedGameAnalyzer
-from user_database import User, UserDatabase
+try:
+    from profile_picture_manager import ProfilePictureManager, is_emoji_profile
+except ImportError:
+    ProfilePictureManager = None
+    is_emoji_profile = lambda x: False
+
+try:
+    from src.spygate.core.hardware import HardwareDetector
+except ImportError:
+    try:
+        from spygate.core.hardware import HardwareDetector
+    except ImportError:
+        HardwareDetector = None
+
+try:
+    from src.spygate.ml.cache_manager import GameAnalyzerCache, get_game_analyzer_cache
+    from src.spygate.ml.enhanced_game_analyzer import EnhancedGameAnalyzer
+except ImportError:
+    try:
+        from spygate.ml.cache_manager import GameAnalyzerCache, get_game_analyzer_cache
+        from spygate.ml.enhanced_game_analyzer import EnhancedGameAnalyzer
+    except ImportError:
+        GameAnalyzerCache = None
+        get_game_analyzer_cache = lambda: None
+        EnhancedGameAnalyzer = None
+
+try:
+    from user_database import User, UserDatabase
+except ImportError:
+    User = None
+    UserDatabase = None
 
 
 class AnalysisWorker(QThread):

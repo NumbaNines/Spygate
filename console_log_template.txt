@@ -1,0 +1,19 @@
+
+# Save your SpygateAI console output to this file for real-time monitoring
+# Example usage:
+# 1. Run your SpygateAI analysis
+# 2. Copy the console output to this file
+# 3. Use the debug analyzer's "Browse..." button to select this file
+# 4. Click "Start Real-time Monitoring"
+
+# The debug analyzer will automatically parse lines like:
+# ✅ CLIP REGISTERED: situation_name (start_frame-end_frame) - Total tracked: N
+# 🔍 CLIP FORMATTING DEBUG: Down=X, Distance=Y, Formatted='text'
+# 🔄 STATE PERSISTENCE: Preserved property=value from previous frame (count/max)
+# 🚫 DUPLICATE DETECTED: X.X% overlap with existing clip
+# 🆕 New Play Detected: play_type
+# ❌ NO YOLO DETECTIONS in this frame
+# 🎯 BOUNDARY-AWARE Detection at Xs (Frame N):
+# 🚨 ANALYSIS COMPLETE - RECEIVED N CLIPS FROM WORKER:
+
+# Paste your console output below this line:

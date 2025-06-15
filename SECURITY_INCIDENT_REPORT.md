@@ -1,7 +1,7 @@
 # Security Incident Report - Step 11
 
-**Date:** June 11, 2025  
-**Time:** 13:41 - 13:47  
+**Date:** June 11, 2025
+**Time:** 13:41 - 13:47
 **Severity:** HIGH
 
 ## Incident Summary

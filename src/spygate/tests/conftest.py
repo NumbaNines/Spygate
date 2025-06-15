@@ -2,11 +2,11 @@
 
 import os
 import shutil
-from unittest.mock import MagicMock, patch
-import numpy as np
-import cv2
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
+import cv2
+import numpy as np
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -203,11 +203,7 @@ def mock_yolo_model():
     """Mock YOLOv8 model for testing."""
     model = MagicMock(spec=EnhancedYOLOv8)
     model.detect_hud_elements.return_value = [
-        {
-            "class_name": "hud",
-            "bbox": [0, 0, 1920, 100],
-            "confidence": 0.95
-        }
+        {"class_name": "hud", "bbox": [0, 0, 1920, 100], "confidence": 0.95}
     ]
     return model
 
@@ -234,8 +230,8 @@ def game_analyzer(mock_hardware_detector, mock_yolo_model, mock_ocr):
         optimization_config=OptimizationConfig(
             enable_dynamic_switching=True,
             enable_adaptive_batch_size=True,
-            enable_performance_monitoring=True
-        )
+            enable_performance_monitoring=True,
+        ),
     )
     analyzer.model = mock_yolo_model
     analyzer.ocr = mock_ocr
@@ -257,7 +253,7 @@ def mock_cv2():
             cv2.CAP_PROP_FRAME_COUNT: 300,
             cv2.CAP_PROP_FPS: 30,
             cv2.CAP_PROP_FRAME_WIDTH: 1920,
-            cv2.CAP_PROP_FRAME_HEIGHT: 1080
+            cv2.CAP_PROP_FRAME_HEIGHT: 1080,
         }.get(x, 0)
         yield mock_cap
 
@@ -267,26 +263,24 @@ def test_frame():
     """Create a test frame with HUD elements."""
     # Create base frame
     frame = np.zeros((720, 1280, 3), dtype=np.uint8)
-    
+
     # Add HUD bar
     cv2.rectangle(frame, (100, 100), (500, 150), (128, 128, 128), -1)
-    
+
     # Add possession triangle (left)
     pts = np.array([[50, 120], [80, 120], [65, 140]], np.int32)
     pts = pts.reshape((-1, 1, 2))
     cv2.fillPoly(frame, [pts], (255, 0, 0))
-    
+
     # Add territory triangle (right)
     pts = np.array([[520, 120], [550, 120], [535, 140]], np.int32)
     pts = pts.reshape((-1, 1, 2))
     cv2.fillPoly(frame, [pts], (0, 0, 255))
-    
+
     # Add text elements
-    cv2.putText(frame, "1ST & 10", (120, 130), 
-                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-    cv2.putText(frame, "OWN 25", (220, 130),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-    
+    cv2.putText(frame, "1ST & 10", (120, 130), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+    cv2.putText(frame, "OWN 25", (220, 130), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+
     return frame
 
 
@@ -296,28 +290,28 @@ def test_frame_sequence():
     frames = []
     for i in range(5):
         frame = np.zeros((720, 1280, 3), dtype=np.uint8)
-        
+
         # Add HUD bar
         cv2.rectangle(frame, (100, 100), (500, 150), (128, 128, 128), -1)
-        
+
         # Add possession triangle (left)
         pts = np.array([[50, 120], [80, 120], [65, 140]], np.int32)
         pts = pts.reshape((-1, 1, 2))
         cv2.fillPoly(frame, [pts], (255, 0, 0))
-        
+
         # Add territory triangle (right)
         pts = np.array([[520, 120], [550, 120], [535, 140]], np.int32)
         pts = pts.reshape((-1, 1, 2))
         cv2.fillPoly(frame, [pts], (0, 0, 255))
-        
+
         # Add text elements with changing down
-        cv2.putText(frame, f"{i+1}ST & 10", (120, 130), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-        cv2.putText(frame, "OWN 25", (220, 130),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-        
+        cv2.putText(
+            frame, f"{i+1}ST & 10", (120, 130), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2
+        )
+        cv2.putText(frame, "OWN 25", (220, 130), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+
         frames.append(frame)
-    
+
     return frames
 
 
@@ -327,5 +321,5 @@ def pytest_addoption(parser):
         "--show-plot",
         action="store_true",
         default=False,
-        help="Show visualization plots during tests"
+        help="Show visualization plots during tests",
     )

@@ -12,8 +12,8 @@ import numpy as np
 import pytesseract
 from PIL import Image
 
-from . import Detection
 from ...spygate.ml.yolov8_model import EnhancedYOLOv8
+from . import Detection
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,11 @@ class SituationDetector:
             device: Device to run on ('cuda' or 'cpu')
         """
         # Initialize YOLOv8 detector
-        model_path = str(yolo_weights) if yolo_weights else "hud_region_training/runs/hud_regions_fresh_1749629437/weights/best.pt"
+        model_path = (
+            str(yolo_weights)
+            if yolo_weights
+            else "hud_region_training/runs/hud_regions_fresh_1749629437/weights/best.pt"
+        )
         self.detector = EnhancedYOLOv8(model_path=model_path, device=device)
 
         # Configure Tesseract
@@ -110,9 +114,9 @@ class SituationDetector:
         data = {}
 
         for detection in detections:
-            bbox = detection['bbox']
-            conf = detection['confidence'] 
-            label = detection['class']
+            bbox = detection["bbox"]
+            conf = detection["confidence"]
+            label = detection["class"]
             if conf < 0.25:
                 continue
 

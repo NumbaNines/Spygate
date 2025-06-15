@@ -4,8 +4,8 @@ Startup script for SpygateAI Discord Bot
 Run this file to start the bot
 """
 
-import sys
 import os
+import sys
 from pathlib import Path
 
 # Add the project root to Python path
@@ -16,4 +16,4 @@ from spygate_discord.bot.spygate_bot import main
 
 if __name__ == "__main__":
     print("🚀 Starting SpygateAI Discord Bot...")
-    main() 
+    main()

@@ -1,0 +1,73 @@
+✅ CLIP REGISTERED: fourth_quarter (18120-19020) - Total tracked: 7
+📡 EMITTING CLIP SIGNAL for fourth_quarter
+🎯 BOUNDARY-AWARE Detection at 624.0s (Frame 18720):
+🎬 FINAL CLIP RECEIVED IN DESKTOP APP:
+🔍 CLIP FORMATTING DEBUG: Down=2, Distance=10, Formatted='2nd & 10'
+   📊 Clip Data from Worker:
+   Situation: 2nd & 10
+      Situation: '2nd & 10'
+   Play Type: turnover_recovery
+      Start Frame: 18120
+   🆕 New Play Detected: turnover_recovery
+   🏁 Play Ended
+      End Frame: 19020
+   📍 Recommended Start: 619.0s
+      Start Time: 302.0s
+   📍 Recommended End: 622.0s
+      End Time: 317.0s
+🎯 Enhanced Detection at 624.0s (Frame 18720):
+      Confidence: 0.0
+      Thumbnail: None
+🔍 CLIP FORMATTING DEBUG: Down=2, Distance=10, Formatted='2nd & 10'
+      Approved: None
+   Situation: 2nd & 10
+   🔄 Converted to Dictionary:
+   Pressure: low
+      Dict Situation: '2nd & 10'
+   Leverage: 0.70
+      Dict Start Time: 302.0s
+   🏈 Down & Distance: 2 & 10
+   ✅ Added to detected_clips list (total: 21)
+   🎯 Active Clip Tags: 1st_down, 2nd_down, 3rd_down, 3rd_long, 4th_down...
+   🎯 This clip will show as: '2nd & 10' in the UI
+🎬 STARTING FULL PLAY TRACKING: turnover_recovery at frame 18720
+❌ NO YOLO DETECTIONS in this frame
+🔄 STATE PERSISTENCE: Preserved down=2 from previous frame (9/10)
+🔄 STATE PERSISTENCE: Preserved distance=10 from previous frame (9/10)
+🔄 STATE PERSISTENCE: Preserved quarter=4 from previous frame (19/60)
+🔄 STATE PERSISTENCE: Preserved time=08:24 from previous frame (3/30)
+🔄 PLAY START: Possession change away_team → None at frame 18960
+🎬 CLIP START: turnover_recovery (long_yardage) at frame 18810
+🔄 BOUNDARY STATE UPDATE: {'last_down': 2, 'last_distance': 10, 'last_game_clock': '08:24', 'last_quarter': 4}
+✅ CLIP MATCHES at frame 18960: ['2nd_down']
+   🎯 EXACT VALUES USED FOR CLIP: Down=2, Distance=10
+   📋 User wants: ['1st_down', '2nd_down', '3rd_down', '3rd_long', '4th_down', 'red_zone', 'goal_line', 'midfield', 'deep_territory', 'touchdown', 'field_goal', 'pat', 'safety', 'two_minute_drill', 'overtime', 'penalty', 'turnover', 'sack', 'blitz', 'play_action', 'screen_pass', 'trick_play', 'big_play', 'explosive_play', 'three_and_out', 'sustained_drive']
+✅ CLIP SHOULD BE CREATED at frame 18960
+🔄 USING NATURAL BOUNDARIES: 18360 → 19260 (15.0s)
+🚫 DUPLICATE DETECTED: 73.3% overlap with existing clip
+   New: 18360-19260, Existing: 18120-19020
+🚫 SKIPPED DUPLICATE CLIP at frame 18960
+🎬 STARTING FULL PLAY TRACKING: turnover_recovery at frame 18960
+🎬 Animation, text, and stop button stopped and hidden
+🚨 ANALYSIS COMPLETE - RECEIVED 21 CLIPS FROM WORKER:
+   Clip 1: 'Unknown Down & Distance' at 2.5s
+   Clip 2: '2nd & 10' at 6.0s
+   Clip 3: '2nd & 10' at 22.0s
+   Clip 4: '2nd & 10' at 38.0s
+   Clip 5: '2nd & 10' at 54.0s
+   Clip 6: '3rd & 3 💥 (Big Play)' at 70.0s
+   Clip 7: '1st & 10' at 86.0s
+   Clip 8: '1st & 10' at 102.0s
+   Clip 9: '2nd & 10' at 118.0s
+   Clip 10: '2nd & 10 🎯 (Red Zone) 💥 (Big Play)' at 134.0s
+   Clip 11: '1st & 10 🎯 (Red Zone)' at 150.0s
+   Clip 12: '1st & 10 🏁 (Goal Line) 💥 (Big Play)' at 166.0s
+   Clip 13: '1st & 10' at 182.0s
+   Clip 14: '1st & 10' at 198.0s
+   Clip 15: '1st & 10' at 214.0s
+   Clip 16: 'Unknown Down & Distance' at 234.5s
+   Clip 17: '1st & 10' at 238.0s
+   Clip 18: '1st & 10' at 254.0s
+   Clip 19: '⏰ Two Minute Drill' at 270.0s
+   Clip 20: '⏰ Two Minute Drill' at 286.0s
+   Clip 21: '2nd & 10' at 302.0s

@@ -105,8 +105,8 @@ SpygateAI has achieved a **major breakthrough** in football game analysis with t
 **Production-Ready Interface Improvements**:
 
 1. **Clean Upload Interface**: Removed emoji clutter from upload interface for professional appearance
-2. **Consistent Button Sizing**: Harmonized stop button and browse files button dimensions for visual consistency  
-3. **Improved Navigation Flow**: 
+2. **Consistent Button Sizing**: Harmonized stop button and browse files button dimensions for visual consistency
+3. **Improved Navigation Flow**:
    - "Upload New Video" button now directs users to analyze tab for streamlined workflow
    - "Play Builder" button redirects to gameplan tab for logical feature access
 4. **Modern Window Styling**: Added subtle rounded corners (12px) to main window for contemporary appearance
@@ -120,7 +120,7 @@ SpygateAI has achieved a **major breakthrough** in football game analysis with t
 
 **Backend Architecture Implementation - Completed June 11, 2025**:
 
-1. **5-Class YOLOv8 Model System**: 
+1. **5-Class YOLOv8 Model System**:
    - Streamlined detection model focusing on essential HUD elements
    - Classes: `hud`, `possession_triangle_area`, `territory_triangle_area`, `preplay_indicator`, `play_call_screen`
    - Enhanced accuracy with focused class structure vs previous 8-class system
@@ -449,28 +449,28 @@ UI_CLASSES = [
 class HUDRegionManager:
     """
     Robust HUD detection with facecam occlusion handling:
-    
+
     1. Region-Based Detection:
        - HUD divided into 4 key regions (top_left, top_right, bottom_left, bottom_right)
        - Each region contains specific game state elements
        - Minimum 2 regions required for valid state
-       
+
     2. Critical Element Pairs:
        - down_distance + possession_triangle
        - territory_triangle + yardline
        - At least one pair must be fully visible
-       
+
     3. Occlusion Pattern Detection:
        - Learns consistent facecam placement in first 10 seconds
        - Adapts thresholds for known occluded regions
        - Maintains state with partial visibility
-       
+
     4. State Persistence:
        - Stores last known values for occluded elements
        - Validates state changes using visible elements
        - Graceful degradation with partial occlusion
     """
-    
+
     def __init__(self):
         self.regions = {
             "top_left": ["score", "quarter", "time"],
@@ -615,23 +615,23 @@ HARDWARE_TIERS = {
 ```python
 def detect_hud_elements(frame) -> dict:
     """Enhanced hybrid detection pipeline."""
-    
+
     # Stage 1: YOLOv8 Detection
     yolo_regions = detect_with_yolo(frame)
-    
+
     # Stage 2: OpenCV Processing
     processed_regions = []
     for region in yolo_regions:
         elements = process_region_with_opencv(frame, region)
         region.elements = elements
         processed_regions.append(region)
-    
+
     # Stage 3: Temporal Smoothing
     smoothed_regions = apply_temporal_smoothing(processed_regions)
-    
+
     # Stage 4: Final Validation
     validated_regions = validate_detections(smoothed_regions)
-    
+
     return {
         'regions': validated_regions,
         'processing_time': processing_time,
@@ -642,13 +642,13 @@ def detect_hud_elements(frame) -> dict:
 **Performance Metrics and Monitoring**:
 
 ```python
-@dataclass 
+@dataclass
 class PerformanceMetrics:
     inference_times: deque = field(default_factory=lambda: deque(maxlen=100))
     memory_usage: deque = field(default_factory=lambda: deque(maxlen=100))
     accuracy_scores: deque = field(default_factory=lambda: deque(maxlen=50))
     gpu_utilization: deque = field(default_factory=lambda: deque(maxlen=100))
-    
+
     def get_average_metrics(self) -> dict:
         return {
             "avg_inference_time": np.mean(self.inference_times),
@@ -664,24 +664,24 @@ class PerformanceMetrics:
 class PlayStateDetection:
     """
     Play state is determined through UI element sequences:
-    
+
     1. Play Start Detection:
        - Pre-play indicator disappears after being visible
        - HUD remains visible
        - Play count increments
-       
+
     2. Play End Detection:
        - Either pre-play indicator or play call screen reappears
        - Play duration is calculated
        - State resets for next play
-       
+
     3. Tracked Metrics (No Clips):
        - play_count: Total plays detected
        - play_duration: Duration of each play
        - play_start_time: When play began
        - last_preplay_time: Last pre-play indicator
        - last_playcall_time: Last play call screen
-       
+
     4. State Indicators (Direct YOLO Classes):
        - preplay_indicator: Pre-play UI element
        - play_call_screen: Play selection UI

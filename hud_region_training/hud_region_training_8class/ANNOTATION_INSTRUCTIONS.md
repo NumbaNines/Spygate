@@ -8,7 +8,7 @@
 - **Contains**: Down and distance text (e.g., "3rd & 8", "1st & 10")
 - **Shape**: Rectangle around the down/distance text
 
-### 6. game_clock_area  
+### 6. game_clock_area
 - **Location**: Usually center of HUD
 - **Contains**: Quarter and game time (e.g., "1st 12:34", "4th 2:00")
 - **Shape**: Rectangle around the game clock

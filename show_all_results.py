@@ -5,13 +5,15 @@ Displays information about each visualization file
 """
 
 import os
-import cv2
 from pathlib import Path
+
+import cv2
+
 
 def main():
     print("🎯 SPYGATE TEMPLATE MATCHING - ALL RESULTS")
     print("=" * 60)
-    
+
     # Find all visualization files
     vis_files = []
     for i in range(1, 26):
@@ -19,10 +21,10 @@ def main():
         matches = list(Path(".").glob(pattern))
         if matches:
             vis_files.append((i, matches[0]))
-    
+
     print(f"📁 Found {len(vis_files)} visualization files")
     print()
-    
+
     # Based on our console output, here's what each image detected:
     detections_summary = {
         1: {"yolo": 1, "templates": 3, "main": "Territory UP triangles (▲)"},
@@ -49,25 +51,25 @@ def main():
         22: {"yolo": 3, "templates": 8, "main": "Territory UP + Possession LEFT"},
         23: {"yolo": 0, "templates": 0, "main": "No detections (menu/transition)"},
         24: {"yolo": 3, "templates": 12, "main": "Possession RIGHT + Territory DOWN"},
-        25: {"yolo": 3, "templates": 8, "main": "Possession LEFT + Territory DOWN"}
+        25: {"yolo": 3, "templates": 8, "main": "Possession LEFT + Territory DOWN"},
     }
-    
+
     for i, vis_file in vis_files:
         summary = detections_summary.get(i, {"yolo": "?", "templates": "?", "main": "Unknown"})
-        
+
         print(f"📸 Image {i:2d}: {vis_file.name}")
         print(f"   🎯 YOLO: {summary['yolo']} detections")
         print(f"   🔍 Templates: {summary['templates']} matches")
         print(f"   📋 Main findings: {summary['main']}")
         print(f"   🖼️  File: {vis_file}")
-        
+
         # Check file size
         if vis_file.exists():
             size_kb = vis_file.stat().st_size // 1024
             print(f"   📊 Size: {size_kb}KB")
-        
+
         print()
-    
+
     print("=" * 60)
     print("🔍 WHAT TO LOOK FOR IN THE IMAGES:")
     print("=" * 60)
@@ -94,5 +96,6 @@ def main():
     print("   Look for the colored bounding boxes")
     print("   Yellow boxes show the actual triangles found!")
 
+
 if __name__ == "__main__":
-    main() 
+    main()

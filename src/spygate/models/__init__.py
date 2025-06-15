@@ -2,4 +2,4 @@
 
 from .tracking import TrackingData
 
-__all__ = ['TrackingData']
+__all__ = ["TrackingData"]

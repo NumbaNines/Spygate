@@ -1,0 +1,10 @@
+{
+  "keras_accuracy": 0.0,
+  "paddle_accuracy": 0,
+  "keras_correct": 0,
+  "paddle_correct": 0,
+  "keras_total": 15,
+  "paddle_total": 0,
+  "custom_baseline": 0.0,
+  "winner": "tie"
+}

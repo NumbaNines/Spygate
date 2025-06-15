@@ -1,0 +1,10 @@
+{
+  "trained_models": {},
+  "total_regions": 4,
+  "successful_training": 0,
+  "training_config": {
+    "epochs": 20,
+    "base_model": "microsoft/trocr-base-printed",
+    "device": "cuda"
+  }
+}

@@ -102,7 +102,7 @@ class YOLOModelSelector:
             enable_auto_optimization=True,
             max_inference_time=1.0 / 30.0,  # Target 30 FPS
             min_accuracy=0.85,
-            max_memory_usage=0.8
+            max_memory_usage=0.8,
         )
 
     def get_model(self, performance_target: Optional[float] = None) -> EnhancedYOLOv8:
@@ -128,7 +128,7 @@ class YOLOModelSelector:
                 model_path=model_path,
                 hardware_tier=self.hardware.tier,
                 confidence=0.25,
-                optimization_config=self.optimization_config
+                optimization_config=self.optimization_config,
             )
             logger.info(f"Loaded model {model_key} for hardware tier {self.hardware.tier.name}")
         except Exception as e:

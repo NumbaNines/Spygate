@@ -597,6 +597,7 @@ def shutdown_memory_manager():
 @dataclass
 class MemoryStats:
     """GPU memory statistics."""
+
     total: int = 0
     used: int = 0
     free: int = 0
@@ -605,69 +606,71 @@ class MemoryStats:
 
 class GPUMemoryManager:
     """Manages GPU memory allocation and optimization."""
-    
+
     def __init__(self, hardware=None):
         """Initialize the GPU memory manager."""
         self.hardware = hardware
         self.lock = threading.Lock()
         self.stats_history = deque(maxlen=100)
-        
+
     def get_memory_stats(self) -> MemoryStats:
         """Get current GPU memory statistics."""
         if not TORCH_AVAILABLE or not torch.cuda.is_available():
             return MemoryStats()
-            
+
         try:
             device = torch.cuda.current_device()
             stats = MemoryStats(
                 total=torch.cuda.get_device_properties(device).total_memory,
                 used=torch.cuda.memory_allocated(device),
                 free=torch.cuda.memory_reserved(device) - torch.cuda.memory_allocated(device),
-                utilization=torch.cuda.memory_allocated(device) / torch.cuda.get_device_properties(device).total_memory
+                utilization=torch.cuda.memory_allocated(device)
+                / torch.cuda.get_device_properties(device).total_memory,
             )
             self.stats_history.append(stats)
             return stats
         except Exception as e:
             logger.warning(f"Failed to get GPU memory stats: {e}")
             return MemoryStats()
-            
+
     def optimize_memory(self):
         """Optimize GPU memory usage."""
         if not TORCH_AVAILABLE or not torch.cuda.is_available():
             return
-            
+
         try:
             with self.lock:
                 # Clear cache
                 torch.cuda.empty_cache()
-                
+
                 # Force garbage collection
                 import gc
+
                 gc.collect()
-                
+
                 logger.info("GPU memory optimized")
         except Exception as e:
             logger.warning(f"Failed to optimize GPU memory: {e}")
-            
+
     def get_optimal_batch_size(self, target_memory_usage: float = 0.8) -> int:
         """Calculate optimal batch size based on available memory."""
         if not TORCH_AVAILABLE or not torch.cuda.is_available():
             return 1
-            
+
         try:
             stats = self.get_memory_stats()
             available_memory = stats.total * (1 - stats.utilization)
-            
+
             # Start with hardware tier's default batch size
             if self.hardware:
                 base_batch_size = self.hardware.config.get("batch_size", 4)
             else:
                 base_batch_size = 4
-                
+
             # Adjust based on available memory
             memory_factor = available_memory / (stats.total * target_memory_usage)
             optimal_batch_size = max(1, int(base_batch_size * memory_factor))
-            
+
             return optimal_batch_size
         except Exception as e:
             logger.warning(f"Failed to calculate optimal batch size: {e}")

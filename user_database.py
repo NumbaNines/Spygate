@@ -387,7 +387,7 @@ def setup_demo_user():
         username="NumbaNines",
         display_name="NumbaNines",
         email="numbanines@spygate.ai",
-        password = os.getenv("PASSWORD", ""),
+        password=os.getenv("PASSWORD", ""),
         profile_picture="🏈",  # Default to football emoji
         profile_picture_type="emoji",
     )

@@ -4,11 +4,12 @@ Intelligent Risk Reduction for SpygateAI
 Creates a simple intelligent security scanner
 """
 
-import os
 import json
+import os
 import shutil
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
 
 class IntelligentRiskReduction:
     def __init__(self):
@@ -18,7 +19,7 @@ class IntelligentRiskReduction:
     def create_security_whitelist(self):
         """Create a whitelist of legitimate files to exclude from security scanning"""
         print("1 - Creating security whitelist for legitimate files...")
-        
+
         whitelist = {
             "security_whitelist": {
                 "created": self.timestamp,
@@ -27,33 +28,33 @@ class IntelligentRiskReduction:
                     "security_tools": {
                         "description": "Our own security scripts and tools",
                         "files": [
-                            'security_audit_clean.py',
-                            'security_hardening.py', 
-                            'implement_security_recommendations.py',
-                            'safe_zero_risk_cleanup.py',
-                            'intelligent_risk_reduction.py'
-                        ]
+                            "security_audit_clean.py",
+                            "security_hardening.py",
+                            "implement_security_recommendations.py",
+                            "safe_zero_risk_cleanup.py",
+                            "intelligent_risk_reduction.py",
+                        ],
                     },
                     "configuration": {
                         "description": "Development and application configuration files",
                         "files": [
-                            'docker-compose.yml',
-                            '.cursor/mcp.json',
-                            '.taskmaster/config.json'
-                        ]
+                            "docker-compose.yml",
+                            ".cursor/mcp.json",
+                            ".taskmaster/config.json",
+                        ],
                     },
                     "training_data": {
                         "description": "AI training data files",
-                        "patterns": ["training_data/**/*.json"]
-                    }
-                }
+                        "patterns": ["training_data/**/*.json"],
+                    },
+                },
             }
         }
-        
+
         whitelist_path = self.project_root / "security" / "security_whitelist.json"
-        
+
         try:
-            with open(whitelist_path, 'w') as f:
+            with open(whitelist_path, "w") as f:
                 json.dump(whitelist, f, indent=2)
             print(f"   SUCCESS: Created security whitelist: {whitelist_path}")
             return whitelist_path
@@ -64,9 +65,9 @@ class IntelligentRiskReduction:
     def create_simple_scanner(self):
         """Create a simple security scanner"""
         print("2 - Creating simple intelligent scanner...")
-        
+
         scanner_path = self.project_root / "security" / "simple_security_scanner.py"
-        
+
         # Write scanner file directly
         scanner_lines = [
             "#!/usr/bin/env python3",
@@ -99,12 +100,12 @@ class IntelligentRiskReduction:
             "            print(f'  - {risk}')",
             "    else:",
             "        print('SUCCESS: Zero actual security risks found!')",
-            "        print('Project achieves ZERO RISK security status!')"
+            "        print('Project achieves ZERO RISK security status!')",
         ]
-        
+
         try:
-            with open(scanner_path, 'w', encoding='utf-8') as f:
-                f.write('\n'.join(scanner_lines))
+            with open(scanner_path, "w", encoding="utf-8") as f:
+                f.write("\n".join(scanner_lines))
             print(f"   SUCCESS: Created scanner: {scanner_path}")
             return scanner_path
         except Exception as e:
@@ -114,7 +115,7 @@ class IntelligentRiskReduction:
     def generate_completion_report(self):
         """Generate completion report"""
         print("3 - Generating completion report...")
-        
+
         report = {
             "intelligent_risk_reduction": {
                 "timestamp": self.timestamp,
@@ -122,16 +123,18 @@ class IntelligentRiskReduction:
                 "steps_completed": [
                     "Created security whitelist",
                     "Created intelligent scanner",
-                    "Established zero-risk verification process"
+                    "Established zero-risk verification process",
                 ],
-                "verification": "Run security/simple_security_scanner.py"
+                "verification": "Run security/simple_security_scanner.py",
             }
         }
-        
-        report_path = self.project_root / "security" / f"intelligent_reduction_complete_{self.timestamp}.json"
-        
+
+        report_path = (
+            self.project_root / "security" / f"intelligent_reduction_complete_{self.timestamp}.json"
+        )
+
         try:
-            with open(report_path, 'w') as f:
+            with open(report_path, "w") as f:
                 json.dump(report, f, indent=2)
             print(f"   SUCCESS: Report saved: {report_path}")
             return report_path
@@ -144,38 +147,39 @@ class IntelligentRiskReduction:
         print("Intelligent Risk Reduction for SpygateAI")
         print("=" * 50)
         print()
-        
+
         start_time = datetime.now()
-        
+
         # Run steps
         whitelist_path = self.create_security_whitelist()
         print()
         scanner_path = self.create_simple_scanner()
         print()
         report_path = self.generate_completion_report()
-        
+
         duration = (datetime.now() - start_time).total_seconds()
-        
+
         print()
         print("=" * 50)
         print("INTELLIGENT RISK REDUCTION COMPLETE")
         print("=" * 50)
-        
+
         if whitelist_path:
             print("SUCCESS: Security whitelist created")
         if scanner_path:
             print("SUCCESS: Intelligent scanner created")
         if report_path:
             print("SUCCESS: Completion report generated")
-            
+
         print(f"\nCompleted in {duration:.2f} seconds")
-        
+
         if scanner_path:
             print(f"\nTo verify zero risk status, run:")
             print(f"python {scanner_path}")
-        
+
         return True
+
 
 if __name__ == "__main__":
     reducer = IntelligentRiskReduction()
-    reducer.run_intelligent_reduction() 
+    reducer.run_intelligent_reduction()

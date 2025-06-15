@@ -1,0 +1,84 @@
+{
+  "situation_mappings": {
+    "third_and_long": ["3rd_long", "3rd_down"],
+    "third_and_long_red_zone": ["3rd_long", "red_zone"],
+    "third_and_short": ["3rd_down"],
+    "third_and_short_goal_line": ["3rd_down", "goal_line"],
+    "third_and_short_red_zone": ["3rd_down", "red_zone"],
+    "third_down": ["3rd_down"],
+    "third_down_red_zone": ["3rd_down", "red_zone"],
+    "fourth_down": ["4th_down"],
+    "fourth_down_goal_line": ["4th_down", "goal_line"],
+    "fourth_down_red_zone": ["4th_down", "red_zone"],
+    "goal_line_offense": ["goal_line"],
+    "goal_line_defense": ["goal_line"],
+    "red_zone_offense": ["red_zone"],
+    "red_zone_defense": ["red_zone"],
+    "backed_up_offense": ["deep_territory"],
+    "scoring_position": ["red_zone"],
+    "two_minute_drill": ["two_minute_drill"],
+    "fourth_quarter": []
+  },
+  "special_detectors": {
+    "penalty": {
+      "indicators": ["FLAG", "PENALTY", "HOLDING", "OFFSIDE", "FALSE START"],
+      "color_threshold": 0.3,
+      "yellow_hsv_range": {
+        "lower": [20, 100, 100],
+        "upper": [30, 255, 255]
+      }
+    },
+    "pat": {
+      "text_patterns": ["PAT", "P.A.T", "POINT AFTER", "EXTRA POINT", "XP"],
+      "confidence_threshold": 0.7
+    },
+    "turnover": {
+      "possession_change_required": true,
+      "exclude_punt": true,
+      "exclude_kickoff": true
+    },
+    "touchdown": {
+      "score_change": 6,
+      "celebration_detection": false
+    },
+    "field_goal": {
+      "score_change": 3,
+      "kick_detection": false
+    },
+    "safety": {
+      "score_change": 2,
+      "end_zone_required": true
+    }
+  },
+  "clip_boundaries": {
+    "pre_play_buffer": 3.0,
+    "post_play_buffer": 2.0,
+    "min_clip_duration": 2.0,
+    "max_clip_duration": 30.0,
+    "turnover_pre_buffer": 5.0,
+    "touchdown_post_buffer": 5.0,
+    "big_play_pre_buffer": 4.0
+  },
+  "duplicate_prevention": {
+    "min_gap_between_clips": 3.0,
+    "overlap_threshold": 0.5,
+    "max_clips_per_minute": 4,
+    "recent_window_seconds": 60
+  },
+  "performance_optimization": {
+    "frame_skip_intervals": {
+      "20_percent_clips": 16,
+      "40_percent_clips": 12,
+      "60_percent_clips": 8,
+      "80_percent_clips": 6,
+      "100_percent_clips": 4
+    },
+    "priority_situations": [
+      "fourth_down",
+      "third_and_long",
+      "red_zone",
+      "two_minute_drill",
+      "turnover"
+    ]
+  }
+}

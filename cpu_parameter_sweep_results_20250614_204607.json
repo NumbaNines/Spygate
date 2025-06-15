@@ -1,0 +1,436 @@
+{
+  "completed_combinations": 20,
+  "total_combinations": 1000,
+  "best_score": 0.8856703889369963,
+  "best_combination": {
+    "gamma": "off",
+    "sharpening": true,
+    "scale": 3.0,
+    "threshold": "otsu",
+    "clahe_clip": 2.0,
+    "clahe_grid": [
+      8,
+      8
+    ],
+    "blur": [
+      5,
+      5
+    ]
+  },
+  "all_results": [
+    {
+      "combo_num": 1,
+      "params": {
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.8170368966689476,
+      "detections": 65,
+      "avg_confidence": 0.7386241380984967,
+      "timestamp": "2025-06-14T20:44:01.464266"
+    },
+    {
+      "combo_num": 2,
+      "params": {
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 4.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.8263078327420392,
+      "detections": 79,
+      "avg_confidence": 0.7518683324886274,
+      "timestamp": "2025-06-14T20:44:08.419897"
+    },
+    {
+      "combo_num": 3,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 4.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.7926844608156305,
+      "detections": 95,
+      "avg_confidence": 0.7038349440223293,
+      "timestamp": "2025-06-14T20:44:15.362147"
+    },
+    {
+      "combo_num": 4,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.8391162820791793,
+      "detections": 59,
+      "avg_confidence": 0.7701661172559706,
+      "timestamp": "2025-06-14T20:44:19.787958"
+    },
+    {
+      "combo_num": 5,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.8388666487954279,
+      "detections": 108,
+      "avg_confidence": 0.769809498279183,
+      "timestamp": "2025-06-14T20:44:24.895224"
+    },
+    {
+      "combo_num": 6,
+      "params": {
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 3.0,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.8856703889369963,
+      "detections": 65,
+      "avg_confidence": 0.8366719841957092,
+      "timestamp": "2025-06-14T20:44:29.318254"
+    },
+    {
+      "combo_num": 7,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.8415396910521291,
+      "detections": 62,
+      "avg_confidence": 0.7736281300744703,
+      "timestamp": "2025-06-14T20:44:36.202261"
+    },
+    {
+      "combo_num": 8,
+      "params": {
+        "gamma": "off",
+        "sharpening": false,
+        "scale": 7.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.7977235496044158,
+      "detections": 47,
+      "avg_confidence": 0.7110336422920227,
+      "timestamp": "2025-06-14T20:44:47.049914"
+    },
+    {
+      "combo_num": 9,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.8130814942976703,
+      "detections": 92,
+      "avg_confidence": 0.7329735632823862,
+      "timestamp": "2025-06-14T20:44:51.171861"
+    },
+    {
+      "combo_num": 10,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 3.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.8388062016169229,
+      "detections": 90,
+      "avg_confidence": 0.7697231451670329,
+      "timestamp": "2025-06-14T20:44:56.567207"
+    },
+    {
+      "combo_num": 11,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.8404875777165095,
+      "detections": 90,
+      "avg_confidence": 0.772125111023585,
+      "timestamp": "2025-06-14T20:45:01.337401"
+    },
+    {
+      "combo_num": 12,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 2.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.838210992142558,
+      "detections": 96,
+      "avg_confidence": 0.7688728459179401,
+      "timestamp": "2025-06-14T20:45:07.262513"
+    },
+    {
+      "combo_num": 13,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.809454347985856,
+      "detections": 47,
+      "avg_confidence": 0.7277919256940801,
+      "timestamp": "2025-06-14T20:45:13.932230"
+    },
+    {
+      "combo_num": 14,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.8708218581676483,
+      "detections": 75,
+      "avg_confidence": 0.8154597973823547,
+      "timestamp": "2025-06-14T20:45:18.194554"
+    },
+    {
+      "combo_num": 15,
+      "params": {
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.821775891661644,
+      "detections": 50,
+      "avg_confidence": 0.7453941309452057,
+      "timestamp": "2025-06-14T20:45:24.411275"
+    },
+    {
+      "combo_num": 16,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 5.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.7902528293430805,
+      "detections": 64,
+      "avg_confidence": 0.7003611847758293,
+      "timestamp": "2025-06-14T20:45:32.428198"
+    },
+    {
+      "combo_num": 17,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 4.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.8345053385133328,
+      "detections": 92,
+      "avg_confidence": 0.763579055019047,
+      "timestamp": "2025-06-14T20:45:38.950820"
+    },
+    {
+      "combo_num": 18,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 7.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.7853384533681367,
+      "detections": 19,
+      "avg_confidence": 0.7147692190973383,
+      "timestamp": "2025-06-14T20:45:50.612976"
+    },
+    {
+      "combo_num": 19,
+      "params": {
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 4.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.8518762868642806,
+      "detections": 50,
+      "avg_confidence": 0.788394695520401,
+      "timestamp": "2025-06-14T20:45:55.480774"
+    },
+    {
+      "combo_num": 20,
+      "params": {
+        "gamma": "off",
+        "sharpening": false,
+        "scale": 7.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.7558407891127799,
+      "detections": 36,
+      "avg_confidence": 0.6512011273039712,
+      "timestamp": "2025-06-14T20:46:07.005008"
+    }
+  ],
+  "elapsed_time": 132.74799132347107
+}

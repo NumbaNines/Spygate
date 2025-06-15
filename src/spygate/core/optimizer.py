@@ -255,8 +255,12 @@ class TierOptimizer:
     def get_model_config(self, model_type: str) -> dict[str, any]:
         """Get model-specific configuration for YOLO or other models."""
         # Use half precision for medium+ tiers
-        use_half_precision = self.hardware.tier in [HardwareTier.MEDIUM, HardwareTier.HIGH, HardwareTier.ULTRA]
-        
+        use_half_precision = self.hardware.tier in [
+            HardwareTier.MEDIUM,
+            HardwareTier.HIGH,
+            HardwareTier.ULTRA,
+        ]
+
         base_config = {
             "device": "cuda" if self.should_use_gpu(model_type) else "cpu",
             "batch_size": self.get_batch_size(model_type),
@@ -267,13 +271,13 @@ class TierOptimizer:
             "enable_preprocessing": True,
             "enable_postprocessing": True,
         }
-        
+
         # Model-specific configurations
         if model_type.lower() in ["yolov8", "yolo"]:
             yolo_config = {
                 "imgsz": 640,  # Standard YOLO input size
                 "conf": 0.25,  # Confidence threshold
-                "iou": 0.45,   # IoU threshold
+                "iou": 0.45,  # IoU threshold
                 "agnostic_nms": False,
                 "max_det": 1000,
                 "retina_masks": True,
@@ -288,35 +292,43 @@ class TierOptimizer:
                 "stream_buffer": False,
                 "line_width": None,
             }
-            
+
             # Adjust based on hardware tier
             if self.hardware.tier == HardwareTier.ULTRA:
-                yolo_config.update({
-                    "imgsz": 640,
-                    "conf": 0.25,
-                    "max_det": 1000,
-                })
+                yolo_config.update(
+                    {
+                        "imgsz": 640,
+                        "conf": 0.25,
+                        "max_det": 1000,
+                    }
+                )
             elif self.hardware.tier == HardwareTier.HIGH:
-                yolo_config.update({
-                    "imgsz": 640,
-                    "conf": 0.3,
-                    "max_det": 500,
-                })
+                yolo_config.update(
+                    {
+                        "imgsz": 640,
+                        "conf": 0.3,
+                        "max_det": 500,
+                    }
+                )
             elif self.hardware.tier == HardwareTier.MEDIUM:
-                yolo_config.update({
-                    "imgsz": 480,
-                    "conf": 0.35,
-                    "max_det": 300,
-                })
+                yolo_config.update(
+                    {
+                        "imgsz": 480,
+                        "conf": 0.35,
+                        "max_det": 300,
+                    }
+                )
             else:  # LOW
-                yolo_config.update({
-                    "imgsz": 320,
-                    "conf": 0.4,
-                    "max_det": 100,
-                })
-            
+                yolo_config.update(
+                    {
+                        "imgsz": 320,
+                        "conf": 0.4,
+                        "max_det": 100,
+                    }
+                )
+
             base_config.update(yolo_config)
-        
+
         return base_config
 
     def update_profile(self, hardware: Optional[HardwareDetector] = None):

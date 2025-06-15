@@ -18,7 +18,7 @@ class TrackingPipeline:
         self._frame_count = 0
         self._last_frame_time = 0.0
         self.current_frame = 0
-        self.tracking_data: List[TrackingData] = []
+        self.tracking_data: list[TrackingData] = []
 
     def process_frame(self, frame: np.ndarray, timestamp: float) -> TrackingData:
         """

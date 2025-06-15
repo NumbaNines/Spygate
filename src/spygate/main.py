@@ -27,12 +27,8 @@ from PyQt6.QtWidgets import (
 
 # Global variables to track what's available
 FULL_FUNCTIONALITY = True
-AVAILABLE_MODULES = {
-    "database": False,
-    "yolov8": False,
-    "main_window": False,
-    "services": False
-}
+AVAILABLE_MODULES = {"database": False, "yolov8": False, "main_window": False, "services": False}
+
 
 def check_imports():
     """Check which modules are available and create fallbacks."""
@@ -41,9 +37,11 @@ def check_imports():
     # Database module
     try:
         from spygate.database.config import init_db
+
         AVAILABLE_MODULES["database"] = True
     except ImportError as e:
         logging.warning(f"Database module unavailable: {e}")
+
         def init_db():
             logging.info("Database initialization skipped - module not available")
 
@@ -52,6 +50,7 @@ def check_imports():
         import cv2
         import torch
         from ultralytics import YOLO
+
         AVAILABLE_MODULES["yolov8"] = True
         logging.info("✅ YOLOv8 integration available!")
     except ImportError as e:
@@ -60,6 +59,7 @@ def check_imports():
     # Main window module
     try:
         from spygate.gui.components.main_window import MainWindow as CustomMainWindow
+
         AVAILABLE_MODULES["main_window"] = True
         MainWindow = CustomMainWindow
     except ImportError as e:
@@ -70,6 +70,7 @@ def check_imports():
     try:
         from spygate.services.analysis import AnalysisService
         from spygate.services.video import VideoService
+
         AVAILABLE_MODULES["services"] = True
     except ImportError as e:
         logging.warning(f"Services module unavailable: {e}")
@@ -78,8 +79,10 @@ def check_imports():
 
     return MainWindow, AnalysisService, VideoService
 
+
 def create_fallback_main_window():
     """Create a fallback main window class when the custom one is not available."""
+
     class FallbackMainWindow(QMainWindow):
         def __init__(self, video_service=None, analysis_service=None):
             super().__init__()
@@ -215,6 +218,7 @@ SpygateAI HUD Detection: {'✅ Ready for Analysis' if AVAILABLE_MODULES.get('yol
         def _test_functionality(self):
             try:
                 from spygate.simple_main import test_functionality
+
                 if test_functionality():
                     self._log("✅ Core functionality test passed!")
                 else:
@@ -237,18 +241,22 @@ SpygateAI HUD Detection: {'✅ Ready for Analysis' if AVAILABLE_MODULES.get('yol
 
                 self.progress_bar.setValue(40)
                 # Use SpygateAI's custom 5-class HUD detection model
-                model_path = os.path.join(project_root, "hud_region_training/runs/hud_regions_fresh_1749629437/weights/best.pt")
+                model_path = os.path.join(
+                    project_root,
+                    "hud_region_training/runs/hud_regions_fresh_1749629437/weights/best.pt",
+                )
                 from ultralytics import YOLO  # Import moved inside the method
+
                 model = YOLO(model_path)
                 self.progress_bar.setValue(60)
-                
+
                 # Define the 5 custom classes
                 class_names = {
                     0: "hud",
-                    1: "possession_triangle_area", 
+                    1: "possession_triangle_area",
                     2: "territory_triangle_area",
                     3: "preplay_indicator",
-                    4: "play_call_screen"
+                    4: "play_call_screen",
                 }
 
                 # Test with demo image if available
@@ -282,7 +290,7 @@ SpygateAI HUD Detection: {'✅ Ready for Analysis' if AVAILABLE_MODULES.get('yol
                     self,
                     "Select Video/Image",
                     "",
-                    "Media Files (*.mp4 *.avi *.mov *.jpg *.jpeg *.png);;All Files (*.*)"
+                    "Media Files (*.mp4 *.avi *.mov *.jpg *.jpeg *.png);;All Files (*.*)",
                 )
 
                 if file_path:
@@ -291,8 +299,12 @@ SpygateAI HUD Detection: {'✅ Ready for Analysis' if AVAILABLE_MODULES.get('yol
                     self.progress_bar.setValue(0)
 
                     # Load model
-                    model_path = os.path.join(project_root, "hud_region_training/runs/hud_regions_fresh_1749629437/weights/best.pt")
+                    model_path = os.path.join(
+                        project_root,
+                        "hud_region_training/runs/hud_regions_fresh_1749629437/weights/best.pt",
+                    )
                     from ultralytics import YOLO  # Import moved inside the method
+
                     model = YOLO(model_path)
 
                     # Process file
@@ -309,7 +321,7 @@ SpygateAI HUD Detection: {'✅ Ready for Analysis' if AVAILABLE_MODULES.get('yol
                             1: "possession_triangle_area",
                             2: "territory_triangle_area",
                             3: "preplay_indicator",
-                            4: "play_call_screen"
+                            4: "play_call_screen",
                         }.get(cls_id, f"class_{cls_id}")
                         self._log(f"   {cls_name}: {conf:.3f}")
 
@@ -323,8 +335,10 @@ SpygateAI HUD Detection: {'✅ Ready for Analysis' if AVAILABLE_MODULES.get('yol
 
     return FallbackMainWindow
 
+
 def create_fallback_analysis_service():
     """Create a fallback analysis service when the custom one is not available."""
+
     class FallbackAnalysisService:
         def __init__(self, video_service):
             self.video_service = video_service
@@ -332,17 +346,21 @@ def create_fallback_analysis_service():
 
     return FallbackAnalysisService
 
+
 def create_fallback_video_service():
     """Create a fallback video service when the custom one is not available."""
+
     class FallbackVideoService:
         def __init__(self):
             logging.info("Using fallback video service")
 
     return FallbackVideoService
 
+
 def init_error_tracking():
     """Initialize error tracking system."""
     logging.info("Error tracking initialized")
+
 
 def setup_logging(log_file="spygate.log"):
     """Set up logging configuration."""
@@ -350,17 +368,18 @@ def setup_logging(log_file="spygate.log"):
     logging.basicConfig(
         level=logging.INFO,
         format=log_format,
-        handlers=[
-            logging.FileHandler(log_file),
-            logging.StreamHandler(sys.stdout)
-        ]
+        handlers=[logging.FileHandler(log_file), logging.StreamHandler(sys.stdout)],
     )
+
 
 def initialize_services(modules):
     """Initialize application services."""
     video_service = modules.get("video_service", create_fallback_video_service())()
-    analysis_service = modules.get("analysis_service", create_fallback_analysis_service())(video_service)
+    analysis_service = modules.get("analysis_service", create_fallback_analysis_service())(
+        video_service
+    )
     return video_service, analysis_service
+
 
 def main():
     """Main application entry point."""
@@ -378,10 +397,9 @@ def main():
     app = QApplication(sys.argv)
 
     # Initialize services
-    video_service, analysis_service = initialize_services({
-        "video_service": VideoService,
-        "analysis_service": AnalysisService
-    })
+    video_service, analysis_service = initialize_services(
+        {"video_service": VideoService, "analysis_service": AnalysisService}
+    )
 
     # Create and show main window
     window = MainWindow(video_service, analysis_service)
@@ -389,6 +407,7 @@ def main():
 
     # Start application event loop
     return app.exec()
+
 
 if __name__ == "__main__":
     sys.exit(main())

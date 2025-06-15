@@ -1,0 +1,228 @@
+{
+  "completed_combinations": 10,
+  "total_combinations": 1000,
+  "best_score": 0.8856703889369963,
+  "best_combination": {
+    "gamma": "off",
+    "sharpening": true,
+    "scale": 3.0,
+    "threshold": "otsu",
+    "clahe_clip": 2.0,
+    "clahe_grid": [
+      8,
+      8
+    ],
+    "blur": [
+      5,
+      5
+    ]
+  },
+  "all_results": [
+    {
+      "combo_num": 1,
+      "params": {
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.8170368966689476,
+      "detections": 65,
+      "avg_confidence": 0.7386241380984967,
+      "timestamp": "2025-06-14T20:44:01.464266"
+    },
+    {
+      "combo_num": 2,
+      "params": {
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 4.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.8263078327420392,
+      "detections": 79,
+      "avg_confidence": 0.7518683324886274,
+      "timestamp": "2025-06-14T20:44:08.419897"
+    },
+    {
+      "combo_num": 3,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 4.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.7926844608156305,
+      "detections": 95,
+      "avg_confidence": 0.7038349440223293,
+      "timestamp": "2025-06-14T20:44:15.362147"
+    },
+    {
+      "combo_num": 4,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.8391162820791793,
+      "detections": 59,
+      "avg_confidence": 0.7701661172559706,
+      "timestamp": "2025-06-14T20:44:19.787958"
+    },
+    {
+      "combo_num": 5,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.8388666487954279,
+      "detections": 108,
+      "avg_confidence": 0.769809498279183,
+      "timestamp": "2025-06-14T20:44:24.895224"
+    },
+    {
+      "combo_num": 6,
+      "params": {
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 3.0,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.8856703889369963,
+      "detections": 65,
+      "avg_confidence": 0.8366719841957092,
+      "timestamp": "2025-06-14T20:44:29.318254"
+    },
+    {
+      "combo_num": 7,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.8415396910521291,
+      "detections": 62,
+      "avg_confidence": 0.7736281300744703,
+      "timestamp": "2025-06-14T20:44:36.202261"
+    },
+    {
+      "combo_num": 8,
+      "params": {
+        "gamma": "off",
+        "sharpening": false,
+        "scale": 7.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.7977235496044158,
+      "detections": 47,
+      "avg_confidence": 0.7110336422920227,
+      "timestamp": "2025-06-14T20:44:47.049914"
+    },
+    {
+      "combo_num": 9,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.8130814942976703,
+      "detections": 92,
+      "avg_confidence": 0.7329735632823862,
+      "timestamp": "2025-06-14T20:44:51.171861"
+    },
+    {
+      "combo_num": 10,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 3.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.8388062016169229,
+      "detections": 90,
+      "avg_confidence": 0.7697231451670329,
+      "timestamp": "2025-06-14T20:44:56.567207"
+    }
+  ],
+  "elapsed_time": 62.304683446884155
+}

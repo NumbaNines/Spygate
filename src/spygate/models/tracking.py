@@ -3,15 +3,17 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
+
 @dataclass
 class TrackingData:
     """Represents tracking data for game analysis."""
+
     frame_number: int
     timestamp: float
-    game_state: Dict[str, any]
-    detections: List[Dict[str, any]]
+    game_state: dict[str, any]
+    detections: list[dict[str, any]]
     confidence: float
-    metadata: Optional[Dict[str, any]] = None
+    metadata: Optional[dict[str, any]] = None
 
     def get_team_players(self, team_id: int) -> dict[int, tuple[int, int]]:
         """

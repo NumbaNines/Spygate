@@ -1,0 +1,13 @@
+Scale Factor Optimization Summary
+========================================
+
+Total tests: 1125
+Average confidence: 0.000
+Average text count: 0.0
+
+Top 5 combinations:
+1. 1.0x NEAREST: Confidence=0.000, Texts=0
+2. 1.0x LINEAR: Confidence=0.000, Texts=0
+3. 1.0x CUBIC: Confidence=0.000, Texts=0
+4. 1.0x LANCZOS4: Confidence=0.000, Texts=0
+5. 1.0x AREA: Confidence=0.000, Texts=0

@@ -1,0 +1,15 @@
+CLAHE Optimization Summary (GPU Accelerated)
+=============================================
+
+Total processing time: 7.7s
+Average time per test: 0.03s
+Total tests: 300
+Average confidence: 0.000
+Average text count: 0.0
+
+Best combination: Clip_1.0_Grid_4x4
+Clip Limit: 1.0
+Grid Size: 4x4
+Confidence: 0.000
+Text Count: 0.0
+Success Rate: 0.0%

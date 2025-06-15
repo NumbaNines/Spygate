@@ -1,0 +1,28 @@
+{
+  "timestamp": "2025-06-14T22:45:47.121128",
+  "best_score": 0.939,
+  "best_combination": {
+    "gamma": 0.8,
+    "sharpening": false,
+    "scale": 3.5,
+    "threshold": "adaptive_mean",
+    "clahe_clip": 1.0,
+    "clahe_grid": [
+      4,
+      4
+    ],
+    "blur": [
+      3,
+      3
+    ],
+    "adaptive_block_size": 13,
+    "adaptive_c_constant": 3,
+    "morph_kernel_size": [
+      3,
+      3
+    ]
+  },
+  "completed_combinations": 20000,
+  "total_combinations": 20000,
+  "coverage_percentage": 15.432098765432098
+}

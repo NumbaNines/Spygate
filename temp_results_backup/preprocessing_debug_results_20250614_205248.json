@@ -1,0 +1,5546 @@
+{
+  "completed_combinations": 100,
+  "total_combinations": 1000,
+  "best_score": 0.7557745924592019,
+  "best_combination": {
+    "gamma": 0.5,
+    "sharpening": true,
+    "scale": 4.0,
+    "threshold": "otsu",
+    "clahe_clip": 1.0,
+    "clahe_grid": [
+      4,
+      4
+    ],
+    "blur": [
+      3,
+      3
+    ]
+  },
+  "debug_regions_tested": [
+    "down_distance",
+    "territory",
+    "debug_down_region_original",
+    "debug_down_distance_region"
+  ],
+  "all_results": [
+    {
+      "combo_num": 1,
+      "params": {
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.5752457278966904,
+      "detections": 2,
+      "avg_confidence": 0.7789224684238434,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.7815523743629456,
+          "texts": [
+            [
+              "128",
+              0.7815523743629456
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7762925624847412,
+          "texts": [
+            [
+              "1st &.10",
+              0.7762925624847412
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:04.578934"
+    },
+    {
+      "combo_num": 2,
+      "params": {
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 4.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.5952077585458755,
+      "detections": 2,
+      "avg_confidence": 0.8074396550655365,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.7682985663414001,
+          "texts": [
+            [
+              "728",
+              0.7682985663414001
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8465807437896729,
+          "texts": [
+            [
+              "1st & 1O",
+              0.8465807437896729
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:04.923561"
+    },
+    {
+      "combo_num": 3,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 4.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6199036258459091,
+      "detections": 2,
+      "avg_confidence": 0.8427194654941559,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.8061307072639465,
+          "texts": [
+            [
+              "v28",
+              0.8061307072639465
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8793082237243652,
+          "texts": [
+            [
+              "1st & 1O",
+              0.8793082237243652
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:05.158586"
+    },
+    {
+      "combo_num": 4,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.6295596796274185,
+      "detections": 2,
+      "avg_confidence": 0.8565138280391693,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9143328666687012,
+          "texts": [
+            [
+              "128",
+              0.9143328666687012
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7986947894096375,
+          "texts": [
+            [
+              "ist&10",
+              0.7986947894096375
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:05.805659"
+    },
+    {
+      "combo_num": 5,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.5761000654101371,
+      "detections": 4,
+      "avg_confidence": 0.7372858077287674,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.699883222579956,
+          "texts": [
+            [
+              "8 8MAD",
+              0.699883222579956
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.745532214641571,
+          "texts": [
+            [
+              "t28",
+              0.745532214641571
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.699883222579956,
+          "texts": [
+            [
+              "8 8MAD",
+              0.699883222579956
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8038445711135864,
+          "texts": [
+            [
+              "1st & 1o",
+              0.8038445711135864
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:06.185711"
+    },
+    {
+      "combo_num": 6,
+      "params": {
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 3.0,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6657314664125442,
+      "detections": 4,
+      "avg_confidence": 0.8653306663036346,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.7829126715660095,
+          "texts": [
+            [
+              "18 MAD",
+              0.7829126715660095
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9995959997177124,
+          "texts": [
+            [
+              "28",
+              0.9995959997177124
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.7829126715660095,
+          "texts": [
+            [
+              "18 MAD",
+              0.7829126715660095
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8959013223648071,
+          "texts": [
+            [
+              "1st & 1O",
+              0.8959013223648071
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:06.676582"
+    },
+    {
+      "combo_num": 7,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.5200047993659973,
+      "detections": 1,
+      "avg_confidence": 0.7214354276657104,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7214354276657104,
+          "texts": [
+            [
+              "15t8.d0",
+              0.7214354276657104
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:07.190743"
+    },
+    {
+      "combo_num": 8,
+      "params": {
+        "gamma": "off",
+        "sharpening": false,
+        "scale": 7.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.0,
+      "detections": 0,
+      "avg_confidence": 0.0,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        }
+      },
+      "timestamp": "2025-06-14T20:52:07.693311"
+    },
+    {
+      "combo_num": 9,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.39646937727928155,
+      "detections": 2,
+      "avg_confidence": 0.5235276818275452,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.5235276818275452,
+          "texts": [
+            [
+              "S18MAD",
+              0.5235276818275452
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.5235276818275452,
+          "texts": [
+            [
+              "S18MAD",
+              0.5235276818275452
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        }
+      },
+      "timestamp": "2025-06-14T20:52:08.252910"
+    },
+    {
+      "combo_num": 10,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 3.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.6742811638116837,
+      "detections": 2,
+      "avg_confidence": 0.9204016625881195,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9880200028419495,
+          "texts": [
+            [
+              "v28",
+              0.9880200028419495
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8527833223342896,
+          "texts": [
+            [
+              "1st &10",
+              0.8527833223342896
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:08.794469"
+    },
+    {
+      "combo_num": 11,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6799485164880752,
+      "detections": 2,
+      "avg_confidence": 0.9284978806972504,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9666784405708313,
+          "texts": [
+            [
+              "728",
+              0.9666784405708313
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8903173208236694,
+          "texts": [
+            [
+              "1st & 1O",
+              0.8903173208236694
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:09.428720"
+    },
+    {
+      "combo_num": 12,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 2.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6560534244775771,
+      "detections": 4,
+      "avg_confidence": 0.8515048921108246,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.7542451024055481,
+          "texts": [
+            [
+              "818MAn",
+              0.7542451024055481
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9980156421661377,
+          "texts": [
+            [
+              "28",
+              0.9980156421661377
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.7542451024055481,
+          "texts": [
+            [
+              "818MAn",
+              0.7542451024055481
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8995137214660645,
+          "texts": [
+            [
+              "1st&1O",
+              0.8995137214660645
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:09.553235"
+    },
+    {
+      "combo_num": 13,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.43808749556541443,
+      "detections": 1,
+      "avg_confidence": 0.604410707950592,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.604410707950592,
+          "texts": [
+            [
+              "jst & 10",
+              0.604410707950592
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:10.115809"
+    },
+    {
+      "combo_num": 14,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.724335809648037,
+      "detections": 4,
+      "avg_confidence": 0.9490511566400528,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.9002805352210999,
+          "texts": [
+            [
+              "818 M4D",
+              0.9002805352210999
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9997509121894836,
+          "texts": [
+            [
+              "28",
+              0.9997509121894836
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.9002805352210999,
+          "texts": [
+            [
+              "818 M4D",
+              0.9002805352210999
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9958926439285278,
+          "texts": [
+            [
+              "1st & 1O",
+              0.9958926439285278
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:10.664891"
+    },
+    {
+      "combo_num": 15,
+      "params": {
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.5673086190223694,
+      "detections": 1,
+      "avg_confidence": 0.7890123128890991,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7890123128890991,
+          "texts": [
+            [
+              "1st &.10",
+              0.7890123128890991
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:10.792405"
+    },
+    {
+      "combo_num": 16,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 5.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.47088827133178707,
+      "detections": 1,
+      "avg_confidence": 0.6512689590454102,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.6512689590454102,
+          "texts": [
+            [
+              "1st810",
+              0.6512689590454102
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:11.004436"
+    },
+    {
+      "combo_num": 17,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 4.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.681117205619812,
+      "detections": 2,
+      "avg_confidence": 0.9301674365997314,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9497580528259277,
+          "texts": [
+            [
+              "v28",
+              0.9497580528259277
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9105768203735352,
+          "texts": [
+            [
+              "1st & 1O",
+              0.9105768203735352
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:11.326698"
+    },
+    {
+      "combo_num": 18,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 7.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.0,
+      "detections": 0,
+      "avg_confidence": 0.0,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        }
+      },
+      "timestamp": "2025-06-14T20:52:11.867431"
+    },
+    {
+      "combo_num": 19,
+      "params": {
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 4.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.5837494993209839,
+      "detections": 1,
+      "avg_confidence": 0.8124992847442627,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8124992847442627,
+          "texts": [
+            [
+              "1st&10",
+              0.8124992847442627
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:12.018950"
+    },
+    {
+      "combo_num": 20,
+      "params": {
+        "gamma": "off",
+        "sharpening": false,
+        "scale": 7.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.0,
+      "detections": 0,
+      "avg_confidence": 0.0,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        }
+      },
+      "timestamp": "2025-06-14T20:52:12.113467"
+    },
+    {
+      "combo_num": 21,
+      "params": {
+        "gamma": 1.2,
+        "sharpening": true,
+        "scale": 3.0,
+        "threshold": "otsu",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6991332221031189,
+      "detections": 2,
+      "avg_confidence": 0.9559046030044556,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9701381325721741,
+          "texts": [
+            [
+              "728",
+              0.9701381325721741
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9416710734367371,
+          "texts": [
+            [
+              "1st & 1O",
+              0.9416710734367371
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:12.677549"
+    },
+    {
+      "combo_num": 22,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 7.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.0,
+      "detections": 0,
+      "avg_confidence": 0.0,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        }
+      },
+      "timestamp": "2025-06-14T20:52:12.789063"
+    },
+    {
+      "combo_num": 23,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 4.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.6028820413351059,
+      "detections": 2,
+      "avg_confidence": 0.8184029161930084,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.8348007202148438,
+          "texts": [
+            [
+              "v28",
+              0.8348007202148438
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8020051121711731,
+          "texts": [
+            [
+              "ist& 10",
+              0.8020051121711731
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:13.007092"
+    },
+    {
+      "combo_num": 24,
+      "params": {
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.6352380055189133,
+      "detections": 2,
+      "avg_confidence": 0.8646257221698761,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.8603422045707703,
+          "texts": [
+            [
+              "728",
+              0.8603422045707703
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8689092397689819,
+          "texts": [
+            [
+              "1st& 1O",
+              0.8689092397689819
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:13.371660"
+    },
+    {
+      "combo_num": 25,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.576929344534874,
+      "detections": 2,
+      "avg_confidence": 0.78132763504982,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9969937801361084,
+          "texts": [
+            [
+              "28",
+              0.9969937801361084
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.5656614899635315,
+          "texts": [
+            [
+              "iotQ10",
+              0.5656614899635315
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:13.950696"
+    },
+    {
+      "combo_num": 26,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.5059411960840224,
+      "detections": 2,
+      "avg_confidence": 0.6799159944057465,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.5655114054679871,
+          "texts": [
+            [
+              "726",
+              0.5655114054679871
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7943205833435059,
+          "texts": [
+            [
+              "ist.& 1o",
+              0.7943205833435059
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:14.574781"
+    },
+    {
+      "combo_num": 27,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.597368397116661,
+      "detections": 2,
+      "avg_confidence": 0.8105262815952301,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9198790192604065,
+          "texts": [
+            [
+              ".28",
+              0.9198790192604065
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7011735439300537,
+          "texts": [
+            [
+              "1st&10",
+              0.7011735439300537
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:15.257386"
+    },
+    {
+      "combo_num": 28,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": false,
+        "scale": 5.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.0,
+      "detections": 0,
+      "avg_confidence": 0.0,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        }
+      },
+      "timestamp": "2025-06-14T20:52:15.402906"
+    },
+    {
+      "combo_num": 29,
+      "params": {
+        "gamma": 1.2,
+        "sharpening": true,
+        "scale": 2.0,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.7263018614053727,
+      "detections": 4,
+      "avg_confidence": 0.9518598020076752,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.9110842347145081,
+          "texts": [
+            [
+              "818 MAD",
+              0.9110842347145081
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9992952942848206,
+          "texts": [
+            [
+              "28",
+              0.9992952942848206
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.9110842347145081,
+          "texts": [
+            [
+              "818 MAD",
+              0.9110842347145081
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.985975444316864,
+          "texts": [
+            [
+              "1st & 1O",
+              0.985975444316864
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:15.618949"
+    },
+    {
+      "combo_num": 30,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 4.0,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.720393525660038,
+      "detections": 4,
+      "avg_confidence": 0.9434193223714828,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.9485472440719604,
+          "texts": [
+            [
+              "818 MAD",
+              0.9485472440719604
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.8893545269966125,
+          "texts": [
+            [
+              "728",
+              0.8893545269966125
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.9485472440719604,
+          "texts": [
+            [
+              "818 MAD",
+              0.9485472440719604
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.987228274345398,
+          "texts": [
+            [
+              "1st & 1O",
+              0.987228274345398
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:15.993019"
+    },
+    {
+      "combo_num": 31,
+      "params": {
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.575302209854126,
+      "detections": 1,
+      "avg_confidence": 0.8004317283630371,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8004317283630371,
+          "texts": [
+            [
+              "tot  1O",
+              0.8004317283630371
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:16.525112"
+    },
+    {
+      "combo_num": 32,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6565885981917381,
+      "detections": 4,
+      "avg_confidence": 0.8522694259881973,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.7581121921539307,
+          "texts": [
+            [
+              "88 MAD",
+              0.7581121921539307
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.968076765537262,
+          "texts": [
+            [
+              "v28",
+              0.968076765537262
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.7581121921539307,
+          "texts": [
+            [
+              "88 MAD",
+              0.7581121921539307
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.924776554107666,
+          "texts": [
+            [
+              "ist & 1O",
+              0.924776554107666
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:17.378229"
+    },
+    {
+      "combo_num": 33,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.5608803915977478,
+      "detections": 2,
+      "avg_confidence": 0.758400559425354,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.7211588025093079,
+          "texts": [
+            [
+              "128",
+              0.7211588025093079
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7956423163414001,
+          "texts": [
+            [
+              "1st& 10",
+              0.7956423163414001
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:18.126353"
+    },
+    {
+      "combo_num": 34,
+      "params": {
+        "gamma": "off",
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6402722748120626,
+      "detections": 3,
+      "avg_confidence": 0.8503889640172323,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 2,
+          "avg_confidence": 0.840038001537323,
+          "texts": [
+            [
+              "::",
+              0.7821254730224609
+            ],
+            [
+              "28",
+              0.8979505300521851
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8710908889770508,
+          "texts": [
+            [
+              "1st&1O",
+              0.8710908889770508
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:18.777962"
+    },
+    {
+      "combo_num": 35,
+      "params": {
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.6060780963301657,
+      "detections": 4,
+      "avg_confidence": 0.7801115661859512,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.7276127934455872,
+          "texts": [
+            [
+              "RIRMAD",
+              0.7276127934455872
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9126355051994324,
+          "texts": [
+            [
+              "728",
+              0.9126355051994324
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.7276127934455872,
+          "texts": [
+            [
+              "RIRMAD",
+              0.7276127934455872
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7525851726531982,
+          "texts": [
+            [
+              "dat&O",
+              0.7525851726531982
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:19.305541"
+    },
+    {
+      "combo_num": 36,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 2.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.5613506561517716,
+      "detections": 4,
+      "avg_confidence": 0.7162152230739594,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.5705544948577881,
+          "texts": [
+            [
+              "SAMD",
+              0.5705544948577881
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.8864738345146179,
+          "texts": [
+            [
+              "728",
+              0.8864738345146179
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.5705544948577881,
+          "texts": [
+            [
+              "SAMD",
+              0.5705544948577881
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8372780680656433,
+          "texts": [
+            [
+              "1st & 1o",
+              0.8372780680656433
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:20.001875"
+    },
+    {
+      "combo_num": 37,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 3.0,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6815731799602509,
+      "detections": 4,
+      "avg_confidence": 0.8879616856575012,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.7980378866195679,
+          "texts": [
+            [
+              "818 M4D",
+              0.7980378866195679
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9995067119598389,
+          "texts": [
+            [
+              "28",
+              0.9995067119598389
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.7980378866195679,
+          "texts": [
+            [
+              "818 M4D",
+              0.7980378866195679
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9562642574310303,
+          "texts": [
+            [
+              "1st & 1O",
+              0.9562642574310303
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:20.730364"
+    },
+    {
+      "combo_num": 38,
+      "params": {
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.0,
+      "detections": 0,
+      "avg_confidence": 0.0,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        }
+      },
+      "timestamp": "2025-06-14T20:52:21.334439"
+    },
+    {
+      "combo_num": 39,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 3.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.6618574208021164,
+      "detections": 4,
+      "avg_confidence": 0.8597963154315948,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.7970104217529297,
+          "texts": [
+            [
+              "818MAD",
+              0.7970104217529297
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9980557560920715,
+          "texts": [
+            [
+              "v28",
+              0.9980557560920715
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.7970104217529297,
+          "texts": [
+            [
+              "818MAD",
+              0.7970104217529297
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8471086621284485,
+          "texts": [
+            [
+              "1st&1o",
+              0.8471086621284485
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:21.518963"
+    },
+    {
+      "combo_num": 40,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.6356144553422927,
+      "detections": 4,
+      "avg_confidence": 0.822306364774704,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.7495610117912292,
+          "texts": [
+            [
+              "818MAD",
+              0.7495610117912292
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9902245402336121,
+          "texts": [
+            [
+              "28",
+              0.9902245402336121
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.7495610117912292,
+          "texts": [
+            [
+              "818MAD",
+              0.7495610117912292
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7998788952827454,
+          "texts": [
+            [
+              "1st&10",
+              0.7998788952827454
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:22.101027"
+    },
+    {
+      "combo_num": 41,
+      "params": {
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.6991991674900055,
+      "detections": 4,
+      "avg_confidence": 0.913141667842865,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.8329330682754517,
+          "texts": [
+            [
+              "818 MAD",
+              0.8329330682754517
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9981745481491089,
+          "texts": [
+            [
+              "28",
+              0.9981745481491089
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.8329330682754517,
+          "texts": [
+            [
+              "818 MAD",
+              0.8329330682754517
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9885259866714478,
+          "texts": [
+            [
+              "1st & 1O",
+              0.9885259866714478
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:22.984389"
+    },
+    {
+      "combo_num": 42,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.5878575706481933,
+      "detections": 1,
+      "avg_confidence": 0.8183679580688477,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8183679580688477,
+          "texts": [
+            [
+              "1st & 1O",
+              0.8183679580688477
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:23.542984"
+    },
+    {
+      "combo_num": 43,
+      "params": {
+        "gamma": 1.2,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.5527957701683044,
+      "detections": 1,
+      "avg_confidence": 0.7682796716690063,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.7682796716690063,
+          "texts": [
+            [
+              "28",
+              0.7682796716690063
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        }
+      },
+      "timestamp": "2025-06-14T20:52:23.641493"
+    },
+    {
+      "combo_num": 44,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6981146637598673,
+      "detections": 6,
+      "avg_confidence": 0.8687352339426676,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.7485588788986206,
+          "texts": [
+            [
+              "R18 MAD",
+              0.7485588788986206
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.8615009188652039,
+          "texts": [
+            [
+              "728",
+              0.8615009188652039
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.7485588788986206,
+          "texts": [
+            [
+              "R18 MAD",
+              0.7485588788986206
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 3,
+          "avg_confidence": 0.9512642423311869,
+          "texts": [
+            [
+              "1st",
+              0.9652078151702881
+            ],
+            [
+              "10",
+              0.9939664006233215
+            ],
+            [
+              ":",
+              0.8946185111999512
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:24.147062"
+    },
+    {
+      "combo_num": 45,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 4.0,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.7214081099629401,
+      "detections": 4,
+      "avg_confidence": 0.944868728518486,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.9031998515129089,
+          "texts": [
+            [
+              "818 M4D",
+              0.9031998515129089
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9998178482055664,
+          "texts": [
+            [
+              "28",
+              0.9998178482055664
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.9031998515129089,
+          "texts": [
+            [
+              "818 M4D",
+              0.9031998515129089
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9732573628425598,
+          "texts": [
+            [
+              "1st & 1O",
+              0.9732573628425598
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:24.929884"
+    },
+    {
+      "combo_num": 46,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6364361321926117,
+      "detections": 4,
+      "avg_confidence": 0.8234801888465881,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.7060530781745911,
+          "texts": [
+            [
+              "RIOMD",
+              0.7060530781745911
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9990974068641663,
+          "texts": [
+            [
+              "28",
+              0.9990974068641663
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.7060530781745911,
+          "texts": [
+            [
+              "RIOMD",
+              0.7060530781745911
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8827171921730042,
+          "texts": [
+            [
+              "1st&1O",
+              0.8827171921730042
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:26.043546"
+    },
+    {
+      "combo_num": 47,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.719278555214405,
+      "detections": 4,
+      "avg_confidence": 0.9418265074491501,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.886931300163269,
+          "texts": [
+            [
+              "R18 MAD",
+              0.886931300163269
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9995853900909424,
+          "texts": [
+            [
+              "28",
+              0.9995853900909424
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.886931300163269,
+          "texts": [
+            [
+              "R18 MAD",
+              0.886931300163269
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9938580393791199,
+          "texts": [
+            [
+              "1st & 1O",
+              0.9938580393791199
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:26.616123"
+    },
+    {
+      "combo_num": 48,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.0,
+      "detections": 0,
+      "avg_confidence": 0.0,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        }
+      },
+      "timestamp": "2025-06-14T20:52:27.170187"
+    },
+    {
+      "combo_num": 49,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 2.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.699531950354576,
+      "detections": 2,
+      "avg_confidence": 0.9564742147922516,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9993304014205933,
+          "texts": [
+            [
+              "28",
+              0.9993304014205933
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9136180281639099,
+          "texts": [
+            [
+              "1st&1O",
+              0.9136180281639099
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:27.854776"
+    },
+    {
+      "combo_num": 50,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 4.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.4236046874523163,
+      "detections": 1,
+      "avg_confidence": 0.5837209820747375,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.5837209820747375,
+          "texts": [
+            [
+              "1538.10",
+              0.5837209820747375
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:28.731941"
+    },
+    {
+      "combo_num": 51,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 5.0,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.6850704228878022,
+      "detections": 4,
+      "avg_confidence": 0.8929577469825745,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.90080726146698,
+          "texts": [
+            [
+              "818 MAD",
+              0.90080726146698
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.7856106758117676,
+          "texts": [
+            [
+              "728",
+              0.7856106758117676
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.90080726146698,
+          "texts": [
+            [
+              "818 MAD",
+              0.90080726146698
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9846057891845703,
+          "texts": [
+            [
+              "1st & 1O",
+              0.9846057891845703
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:29.389044"
+    },
+    {
+      "combo_num": 52,
+      "params": {
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6311422634124756,
+      "detections": 2,
+      "avg_confidence": 0.8587746620178223,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.8400854468345642,
+          "texts": [
+            [
+              "128",
+              0.8400854468345642
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8774638772010803,
+          "texts": [
+            [
+              "1st&1O",
+              0.8774638772010803
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:29.810087"
+    },
+    {
+      "combo_num": 53,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.0,
+      "detections": 0,
+      "avg_confidence": 0.0,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        }
+      },
+      "timestamp": "2025-06-14T20:52:29.912615"
+    },
+    {
+      "combo_num": 54,
+      "params": {
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.48186611771583554,
+      "detections": 1,
+      "avg_confidence": 0.666951596736908,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.666951596736908,
+          "texts": [
+            [
+              "15t810",
+              0.666951596736908
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:30.104637"
+    },
+    {
+      "combo_num": 55,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.5761845654249191,
+      "detections": 4,
+      "avg_confidence": 0.7374065220355988,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.6089500784873962,
+          "texts": [
+            [
+              "cY3/An",
+              0.6089500784873962
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.8584084510803223,
+          "texts": [
+            [
+              "v28",
+              0.8584084510803223
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.6089500784873962,
+          "texts": [
+            [
+              "cY3/An",
+              0.6089500784873962
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8733174800872803,
+          "texts": [
+            [
+              "ist & 1o",
+              0.8733174800872803
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:30.448707"
+    },
+    {
+      "combo_num": 56,
+      "params": {
+        "gamma": 1.2,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "otsu",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6433243262767792,
+      "detections": 2,
+      "avg_confidence": 0.8761776089668274,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9464743137359619,
+          "texts": [
+            [
+              "20",
+              0.9464743137359619
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8058809041976929,
+          "texts": [
+            [
+              "tst  tO",
+              0.8058809041976929
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:30.974286"
+    },
+    {
+      "combo_num": 57,
+      "params": {
+        "gamma": "off",
+        "sharpening": false,
+        "scale": 4.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.564517678618431,
+      "detections": 2,
+      "avg_confidence": 0.7635966837406158,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.8449689149856567,
+          "texts": [
+            [
+              "28",
+              0.8449689149856567
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.682224452495575,
+          "texts": [
+            [
+              "ist& d0",
+              0.682224452495575
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:31.303829"
+    },
+    {
+      "combo_num": 58,
+      "params": {
+        "gamma": "off",
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6354412725567817,
+      "detections": 4,
+      "avg_confidence": 0.8220589607954025,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.6609779000282288,
+          "texts": [
+            [
+              "R18MAD",
+              0.6609779000282288
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9993760585784912,
+          "texts": [
+            [
+              "28",
+              0.9993760585784912
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.6609779000282288,
+          "texts": [
+            [
+              "R18MAD",
+              0.6609779000282288
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9669039845466614,
+          "texts": [
+            [
+              "1st & 1O",
+              0.9669039845466614
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:31.719898"
+    },
+    {
+      "combo_num": 59,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.6025319850444792,
+      "detections": 4,
+      "avg_confidence": 0.7750456929206848,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.6022935509681702,
+          "texts": [
+            [
+              "QMAn",
+              0.6022935509681702
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9958101511001587,
+          "texts": [
+            [
+              "28",
+              0.9958101511001587
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.6022935509681702,
+          "texts": [
+            [
+              "QMAn",
+              0.6022935509681702
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8997855186462402,
+          "texts": [
+            [
+              "1st & 1o",
+              0.8997855186462402
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:31.909926"
+    },
+    {
+      "combo_num": 60,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 3.0,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.6769265449047088,
+      "detections": 4,
+      "avg_confidence": 0.8813236355781555,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.8078663945198059,
+          "texts": [
+            [
+              "818 M4D",
+              0.8078663945198059
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9996442198753357,
+          "texts": [
+            [
+              "28",
+              0.9996442198753357
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.8078663945198059,
+          "texts": [
+            [
+              "818 M4D",
+              0.8078663945198059
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9099175333976746,
+          "texts": [
+            [
+              "1st & 1O",
+              0.9099175333976746
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:32.432008"
+    },
+    {
+      "combo_num": 61,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.5872581249475479,
+      "detections": 4,
+      "avg_confidence": 0.7532258927822113,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.6218331456184387,
+          "texts": [
+            [
+              "R8MAD",
+              0.6218331456184387
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.8738827705383301,
+          "texts": [
+            [
+              "728",
+              0.8738827705383301
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.6218331456184387,
+          "texts": [
+            [
+              "R8MAD",
+              0.6218331456184387
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8953545093536377,
+          "texts": [
+            [
+              "1st & 1o",
+              0.8953545093536377
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:33.102083"
+    },
+    {
+      "combo_num": 62,
+      "params": {
+        "gamma": 1.2,
+        "sharpening": true,
+        "scale": 2.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.6475091058015823,
+      "detections": 2,
+      "avg_confidence": 0.8821558654308319,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9593112468719482,
+          "texts": [
+            [
+              "28",
+              0.9593112468719482
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8050004839897156,
+          "texts": [
+            [
+              "1st&10",
+              0.8050004839897156
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:33.258110"
+    },
+    {
+      "combo_num": 63,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.6975807955861091,
+      "detections": 4,
+      "avg_confidence": 0.910829707980156,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.8586257696151733,
+          "texts": [
+            [
+              "R18 M4D",
+              0.8586257696151733
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9998289346694946,
+          "texts": [
+            [
+              "28",
+              0.9998289346694946
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.8586257696151733,
+          "texts": [
+            [
+              "R18 M4D",
+              0.8586257696151733
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9262383580207825,
+          "texts": [
+            [
+              "1st & 1O",
+              0.9262383580207825
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:34.172494"
+    },
+    {
+      "combo_num": 64,
+      "params": {
+        "gamma": "off",
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6046457475423812,
+      "detections": 4,
+      "avg_confidence": 0.7780653536319733,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.6956120133399963,
+          "texts": [
+            [
+              "YV n",
+              0.6956120133399963
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.982728123664856,
+          "texts": [
+            [
+              "28",
+              0.982728123664856
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.6956120133399963,
+          "texts": [
+            [
+              "YV n",
+              0.6956120133399963
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7383092641830444,
+          "texts": [
+            [
+              "1st& 10",
+              0.7383092641830444
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:34.661067"
+    },
+    {
+      "combo_num": 65,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.52634894490242,
+      "detections": 1,
+      "avg_confidence": 0.7304984927177429,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7304984927177429,
+          "texts": [
+            [
+              "1st & tO",
+              0.7304984927177429
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:35.130630"
+    },
+    {
+      "combo_num": 66,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6517982560396194,
+      "detections": 2,
+      "avg_confidence": 0.8882832229137421,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9964393377304077,
+          "texts": [
+            [
+              "28",
+              0.9964393377304077
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7801271080970764,
+          "texts": [
+            [
+              "1st&10",
+              0.7801271080970764
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:35.374663"
+    },
+    {
+      "combo_num": 67,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": false,
+        "scale": 4.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.5840931659936905,
+      "detections": 4,
+      "avg_confidence": 0.7487045228481293,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.6992295980453491,
+          "texts": [
+            [
+              "1",
+              0.6992295980453491
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.8039913177490234,
+          "texts": [
+            [
+              "728",
+              0.8039913177490234
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.6992295980453491,
+          "texts": [
+            [
+              "1",
+              0.6992295980453491
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7923675775527954,
+          "texts": [
+            [
+              "ist & 10",
+              0.7923675775527954
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:36.062804"
+    },
+    {
+      "combo_num": 68,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6015129572153091,
+      "detections": 4,
+      "avg_confidence": 0.7735899388790131,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.6133317351341248,
+          "texts": [
+            [
+              "S18MAD",
+              0.6133317351341248
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9985599517822266,
+          "texts": [
+            [
+              "28",
+              0.9985599517822266
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.6133317351341248,
+          "texts": [
+            [
+              "S18MAD",
+              0.6133317351341248
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8691363334655762,
+          "texts": [
+            [
+              "tst&1O",
+              0.8691363334655762
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:36.334343"
+    },
+    {
+      "combo_num": 69,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6312196600437164,
+      "detections": 2,
+      "avg_confidence": 0.8588852286338806,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.8927437663078308,
+          "texts": [
+            [
+              "128",
+              0.8927437663078308
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8250266909599304,
+          "texts": [
+            [
+              "1st&1O",
+              0.8250266909599304
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:36.786395"
+    },
+    {
+      "combo_num": 70,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.4454277002811432,
+      "detections": 1,
+      "avg_confidence": 0.6148967146873474,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.6148967146873474,
+          "texts": [
+            [
+              "Ist8.10",
+              0.6148967146873474
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:37.689022"
+    },
+    {
+      "combo_num": 71,
+      "params": {
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 3.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.0,
+      "detections": 0,
+      "avg_confidence": 0.0,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        }
+      },
+      "timestamp": "2025-06-14T20:52:38.169672"
+    },
+    {
+      "combo_num": 72,
+      "params": {
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 5.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.45071566343307495,
+      "detections": 1,
+      "avg_confidence": 0.6224509477615356,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.6224509477615356,
+          "texts": [
+            [
+              "153810",
+              0.6224509477615356
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:38.385541"
+    },
+    {
+      "combo_num": 73,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6312196600437164,
+      "detections": 2,
+      "avg_confidence": 0.8588852286338806,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.8927437663078308,
+          "texts": [
+            [
+              "128",
+              0.8927437663078308
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8250266909599304,
+          "texts": [
+            [
+              "1st&1O",
+              0.8250266909599304
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:38.646095"
+    },
+    {
+      "combo_num": 74,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 3.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6499254035949706,
+      "detections": 2,
+      "avg_confidence": 0.8856077194213867,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9360594153404236,
+          "texts": [
+            [
+              "28.",
+              0.9360594153404236
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8351560235023499,
+          "texts": [
+            [
+              "1st&1O",
+              0.8351560235023499
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:38.810130"
+    },
+    {
+      "combo_num": 75,
+      "params": {
+        "gamma": 1.2,
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.6199827140569687,
+      "detections": 4,
+      "avg_confidence": 0.7999753057956696,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.6846932172775269,
+          "texts": [
+            [
+              "I8MAD",
+              0.6846932172775269
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.8437502980232239,
+          "texts": [
+            [
+              "'28",
+              0.8437502980232239
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.6846932172775269,
+          "texts": [
+            [
+              "I8MAD",
+              0.6846932172775269
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9867644906044006,
+          "texts": [
+            [
+              "1st & 1O",
+              0.9867644906044006
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:38.972162"
+    },
+    {
+      "combo_num": 76,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.707954572737217,
+      "detections": 4,
+      "avg_confidence": 0.9256493896245956,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.8547635674476624,
+          "texts": [
+            [
+              "918",
+              0.8547635674476624
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9986781477928162,
+          "texts": [
+            [
+              "28",
+              0.9986781477928162
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.8547635674476624,
+          "texts": [
+            [
+              "918",
+              0.8547635674476624
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9943922758102417,
+          "texts": [
+            [
+              "1st & 1O",
+              0.9943922758102417
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:39.679766"
+    },
+    {
+      "combo_num": 77,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 4.0,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.73635557949543,
+      "detections": 4,
+      "avg_confidence": 0.9662222564220428,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.9385842084884644,
+          "texts": [
+            [
+              "818 M4D",
+              0.9385842084884644
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9998065233230591,
+          "texts": [
+            [
+              "28",
+              0.9998065233230591
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.9385842084884644,
+          "texts": [
+            [
+              "818 M4D",
+              0.9385842084884644
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9879140853881836,
+          "texts": [
+            [
+              "1st & 1O",
+              0.9879140853881836
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:40.169329"
+    },
+    {
+      "combo_num": 78,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.0,
+      "detections": 0,
+      "avg_confidence": 0.0,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        }
+      },
+      "timestamp": "2025-06-14T20:52:40.321848"
+    },
+    {
+      "combo_num": 79,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.5734531188011169,
+      "detections": 1,
+      "avg_confidence": 0.7977901697158813,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7977901697158813,
+          "texts": [
+            [
+              "1st & 10",
+              0.7977901697158813
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:40.424360"
+    },
+    {
+      "combo_num": 80,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 7.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.0,
+      "detections": 0,
+      "avg_confidence": 0.0,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        }
+      },
+      "timestamp": "2025-06-14T20:52:40.973426"
+    },
+    {
+      "combo_num": 81,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 7.0,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.6710467529296874,
+      "detections": 5,
+      "avg_confidence": 0.851495361328125,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.6427031755447388,
+          "texts": [
+            [
+              "R48 MAD",
+              0.6427031755447388
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.999606192111969,
+          "texts": [
+            [
+              "28",
+              0.999606192111969
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.6427031755447388,
+          "texts": [
+            [
+              "R48 MAD",
+              0.6427031755447388
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 2,
+          "avg_confidence": 0.9862321317195892,
+          "texts": [
+            [
+              "1st",
+              0.9833148121833801
+            ],
+            [
+              "10",
+              0.9891494512557983
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:41.368514"
+    },
+    {
+      "combo_num": 82,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 7.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.3866755628585815,
+      "detections": 1,
+      "avg_confidence": 0.5309650897979736,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.5309650897979736,
+          "texts": [
+            [
+              "He!",
+              0.5309650897979736
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:41.556637"
+    },
+    {
+      "combo_num": 83,
+      "params": {
+        "gamma": 1.2,
+        "sharpening": true,
+        "scale": 5.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.42430722355842587,
+      "detections": 1,
+      "avg_confidence": 0.5847246050834656,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.5847246050834656,
+          "texts": [
+            [
+              "1st810",
+              0.5847246050834656
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:41.831179"
+    },
+    {
+      "combo_num": 84,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": false,
+        "scale": 5.0,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.7091239085793495,
+      "detections": 4,
+      "avg_confidence": 0.9273198693990707,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.9518188238143921,
+          "texts": [
+            [
+              "818 M4D",
+              0.9518188238143921
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.8197255730628967,
+          "texts": [
+            [
+              "'28",
+              0.8197255730628967
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.9518188238143921,
+          "texts": [
+            [
+              "818 M4D",
+              0.9518188238143921
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.985916256904602,
+          "texts": [
+            [
+              "1st & 1O",
+              0.985916256904602
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:42.015702"
+    },
+    {
+      "combo_num": 85,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.5668051263689995,
+      "detections": 4,
+      "avg_confidence": 0.724007323384285,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.5326406359672546,
+          "texts": [
+            [
+              "FYWA3 p",
+              0.5326406359672546
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9978753328323364,
+          "texts": [
+            [
+              "28",
+              0.9978753328323364
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.5326406359672546,
+          "texts": [
+            [
+              "FYWA3 p",
+              0.5326406359672546
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8328726887702942,
+          "texts": [
+            [
+              "1st& 1o",
+              0.8328726887702942
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:42.436273"
+    },
+    {
+      "combo_num": 86,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 3.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.5762544518709183,
+      "detections": 4,
+      "avg_confidence": 0.7375063598155975,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.5469915270805359,
+          "texts": [
+            [
+              "ROM/AD",
+              0.5469915270805359
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9721508026123047,
+          "texts": [
+            [
+              "v28",
+              0.9721508026123047
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.5469915270805359,
+          "texts": [
+            [
+              "ROM/AD",
+              0.5469915270805359
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8838915824890137,
+          "texts": [
+            [
+              "1st & 1o",
+              0.8838915824890137
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:42.906326"
+    },
+    {
+      "combo_num": 87,
+      "params": {
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.5655491816997528,
+      "detections": 2,
+      "avg_confidence": 0.7650702595710754,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.8857700228691101,
+          "texts": [
+            [
+              "728.",
+              0.8857700228691101
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.6443704962730408,
+          "texts": [
+            [
+              "1s3&iO",
+              0.6443704962730408
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:43.014853"
+    },
+    {
+      "combo_num": 88,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 3.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6551404762268066,
+      "detections": 2,
+      "avg_confidence": 0.8930578231811523,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9905253648757935,
+          "texts": [
+            [
+              "28",
+              0.9905253648757935
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7955902814865112,
+          "texts": [
+            [
+              "1st & 1o",
+              0.7955902814865112
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:43.215884"
+    },
+    {
+      "combo_num": 89,
+      "params": {
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.6522717645764351,
+      "detections": 4,
+      "avg_confidence": 0.8461025208234787,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.8098109364509583,
+          "texts": [
+            [
+              "RIRMAD",
+              0.8098109364509583
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9640440940856934,
+          "texts": [
+            [
+              "128",
+              0.9640440940856934
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.8098109364509583,
+          "texts": [
+            [
+              "RIRMAD",
+              0.8098109364509583
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8007441163063049,
+          "texts": [
+            [
+              "1at&10",
+              0.8007441163063049
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:43.873288"
+    },
+    {
+      "combo_num": 90,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 3.0,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.6482629737257957,
+      "detections": 4,
+      "avg_confidence": 0.8403756767511368,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.7074593901634216,
+          "texts": [
+            [
+              "R48MAD",
+              0.7074593901634216
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9697017073631287,
+          "texts": [
+            [
+              "728",
+              0.9697017073631287
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.7074593901634216,
+          "texts": [
+            [
+              "R48MAD",
+              0.7074593901634216
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9768822193145752,
+          "texts": [
+            [
+              "1st & 1O",
+              0.9768822193145752
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:44.197358"
+    },
+    {
+      "combo_num": 91,
+      "params": {
+        "gamma": "off",
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6046457475423812,
+      "detections": 4,
+      "avg_confidence": 0.7780653536319733,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.6956120133399963,
+          "texts": [
+            [
+              "YV n",
+              0.6956120133399963
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.982728123664856,
+          "texts": [
+            [
+              "28",
+              0.982728123664856
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.6956120133399963,
+          "texts": [
+            [
+              "YV n",
+              0.6956120133399963
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7383092641830444,
+          "texts": [
+            [
+              "1st& 10",
+              0.7383092641830444
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:44.445906"
+    },
+    {
+      "combo_num": 92,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.5826574271917342,
+      "detections": 4,
+      "avg_confidence": 0.7466534674167633,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.5658053159713745,
+          "texts": [
+            [
+              " n",
+              0.5658053159713745
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9994674324989319,
+          "texts": [
+            [
+              "28",
+              0.9994674324989319
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.5658053159713745,
+          "texts": [
+            [
+              " n",
+              0.5658053159713745
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.8555358052253723,
+          "texts": [
+            [
+              "1st& 1O",
+              0.8555358052253723
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:45.134506"
+    },
+    {
+      "combo_num": 93,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.6146144318580627,
+      "detections": 2,
+      "avg_confidence": 0.8351634740829468,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.990203857421875,
+          "texts": [
+            [
+              "28",
+              0.990203857421875
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.6801230907440186,
+          "texts": [
+            [
+              "totQ10",
+              0.6801230907440186
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:45.612555"
+    },
+    {
+      "combo_num": 94,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.5977759829163551,
+      "detections": 4,
+      "avg_confidence": 0.7682514041662216,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.7615324258804321,
+          "texts": [
+            [
+              "MVAD",
+              0.7615324258804321
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.7634773850440979,
+          "texts": [
+            [
+              "v28",
+              0.7634773850440979
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.7615324258804321,
+          "texts": [
+            [
+              "MVAD",
+              0.7615324258804321
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7864633798599243,
+          "texts": [
+            [
+              "1st& iO",
+              0.7864633798599243
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:46.097122"
+    },
+    {
+      "combo_num": 95,
+      "params": {
+        "gamma": 0.8,
+        "sharpening": false,
+        "scale": 7.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.41461090683937074,
+      "detections": 1,
+      "avg_confidence": 0.5708727240562439,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.5708727240562439,
+          "texts": [
+            [
+              "15t 8 d0",
+              0.5708727240562439
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:46.543690"
+    },
+    {
+      "combo_num": 96,
+      "params": {
+        "gamma": "off",
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.540036039352417,
+      "detections": 2,
+      "avg_confidence": 0.7286229133605957,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.86835116147995,
+          "texts": [
+            [
+              "728",
+              0.86835116147995
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.5888946652412415,
+          "texts": [
+            [
+              "tat&10",
+              0.5888946652412415
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:46.633210"
+    },
+    {
+      "combo_num": 97,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 7.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "score": 0.0,
+      "detections": 0,
+      "avg_confidence": 0.0,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        }
+      },
+      "timestamp": "2025-06-14T20:52:46.864239"
+    },
+    {
+      "combo_num": 98,
+      "params": {
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 4.0,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "score": 0.7557745924592019,
+      "detections": 4,
+      "avg_confidence": 0.9939637035131454,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.9997536540031433,
+          "texts": [
+            [
+              "818",
+              0.9997536540031433
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9996716380119324,
+          "texts": [
+            [
+              "28",
+              0.9996716380119324
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.9997536540031433,
+          "texts": [
+            [
+              "818",
+              0.9997536540031433
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.9766758680343628,
+          "texts": [
+            [
+              "1st & 1O",
+              0.9766758680343628
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:47.287298"
+    },
+    {
+      "combo_num": 99,
+      "params": {
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 3.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "score": 0.6066788363456725,
+      "detections": 2,
+      "avg_confidence": 0.8238269090652466,
+      "region_results": {
+        "down_distance": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9414206743240356,
+          "texts": [
+            [
+              "28",
+              0.9414206743240356
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 0,
+          "avg_confidence": 0.0,
+          "texts": []
+        },
+        "debug_down_distance_region": {
+          "detections": 1,
+          "avg_confidence": 0.7062331438064575,
+          "texts": [
+            [
+              "ist& do",
+              0.7062331438064575
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:47.725359"
+    },
+    {
+      "combo_num": 100,
+      "params": {
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 7.0,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "score": 0.6731846773624419,
+      "detections": 5,
+      "avg_confidence": 0.8545495390892028,
+      "region_results": {
+        "down_distance": {
+          "detections": 1,
+          "avg_confidence": 0.6577717661857605,
+          "texts": [
+            [
+              "R48 MAD",
+              0.6577717661857605
+            ]
+          ]
+        },
+        "territory": {
+          "detections": 1,
+          "avg_confidence": 0.9992602467536926,
+          "texts": [
+            [
+              "28",
+              0.9992602467536926
+            ]
+          ]
+        },
+        "debug_down_region_original": {
+          "detections": 1,
+          "avg_confidence": 0.6577717661857605,
+          "texts": [
+            [
+              "R48 MAD",
+              0.6577717661857605
+            ]
+          ]
+        },
+        "debug_down_distance_region": {
+          "detections": 2,
+          "avg_confidence": 0.9789719581604004,
+          "texts": [
+            [
+              "1st",
+              0.9688782691955566
+            ],
+            [
+              "10",
+              0.9890656471252441
+            ]
+          ]
+        }
+      },
+      "timestamp": "2025-06-14T20:52:48.213931"
+    }
+  ],
+  "elapsed_time": 44.60537314414978
+}

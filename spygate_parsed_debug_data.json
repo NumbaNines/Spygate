@@ -1,0 +1,716 @@
+{
+  "clips": [
+    {
+      "index": 0,
+      "situation": "Unknown Down & Distance",
+      "start_time": 2.5,
+      "end_time": 17.5,
+      "start_frame": 150,
+      "end_frame": 1050,
+      "confidence": 0.3,
+      "play_type": "unknown",
+      "expected_situation": "Unknown Down & Distance",
+      "frame_number": 180,
+      "is_suspicious": true,
+      "game_state": {
+        "down": null,
+        "distance": null,
+        "quarter": 3,
+        "game_clock": "3:10",
+        "play_clock": 25,
+        "away_team": "YBG",
+        "home_team": "DND",
+        "away_score": 0,
+        "home_score": 34,
+        "possession": "away_team",
+        "field_position": "H37"
+      },
+      "ocr_results": {
+        "down_distance_area": {
+          "raw_text": "Unknown Down & Distance",
+          "parsed_value": "Unknown",
+          "confidence": 0.3,
+          "bbox": [
+            850,
+            50,
+            1100,
+            90
+          ]
+        },
+        "game_clock_area": {
+          "raw_text": "14:52",
+          "parsed_value": "14:52",
+          "confidence": 0.95,
+          "bbox": [
+            1200,
+            50,
+            1300,
+            90
+          ]
+        },
+        "territory_triangle_area": {
+          "raw_text": "A35",
+          "parsed_value": "A35",
+          "confidence": 0.88,
+          "bbox": [
+            1400,
+            50,
+            1500,
+            90
+          ]
+        }
+      },
+      "yolo_detections": [
+        {
+          "class": "hud",
+          "confidence": 0.92,
+          "bbox": [
+            0,
+            0,
+            1920,
+            120
+          ]
+        },
+        {
+          "class": "down_distance_area",
+          "confidence": 0.75,
+          "bbox": [
+            850,
+            50,
+            1100,
+            90
+          ]
+        },
+        {
+          "class": "game_clock_area",
+          "confidence": 0.89,
+          "bbox": [
+            1200,
+            50,
+            1300,
+            90
+          ]
+        },
+        {
+          "class": "territory_triangle_area",
+          "confidence": 0.85,
+          "bbox": [
+            1400,
+            50,
+            1500,
+            90
+          ]
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "situation": "2nd & 10",
+      "start_time": 6.0,
+      "end_time": 21.0,
+      "start_frame": 360,
+      "end_frame": 1260,
+      "confidence": 0.82,
+      "play_type": "normal",
+      "expected_situation": "2nd & 10",
+      "frame_number": 390,
+      "is_suspicious": false,
+      "game_state": {
+        "down": 2,
+        "distance": 10,
+        "quarter": 3,
+        "game_clock": "0:12",
+        "play_clock": 8,
+        "away_team": "YBG",
+        "home_team": "DND",
+        "away_score": 3,
+        "home_score": 0,
+        "possession": "away_team",
+        "field_position": "H31"
+      },
+      "ocr_results": {
+        "down_distance_area": {
+          "raw_text": "2nd & 10",
+          "parsed_value": "2nd & 10",
+          "confidence": 0.92,
+          "bbox": [
+            850,
+            50,
+            1100,
+            90
+          ]
+        },
+        "game_clock_area": {
+          "raw_text": "14:45",
+          "parsed_value": "14:45",
+          "confidence": 0.95,
+          "bbox": [
+            1200,
+            50,
+            1300,
+            90
+          ]
+        },
+        "play_clock_area": {
+          "raw_text": "18",
+          "parsed_value": "18",
+          "confidence": 0.88,
+          "bbox": [
+            1320,
+            50,
+            1380,
+            90
+          ]
+        },
+        "territory_triangle_area": {
+          "raw_text": "A42",
+          "parsed_value": "A42",
+          "confidence": 0.9,
+          "bbox": [
+            1400,
+            50,
+            1500,
+            90
+          ]
+        }
+      },
+      "yolo_detections": [
+        {
+          "class": "hud",
+          "confidence": 0.95,
+          "bbox": [
+            0,
+            0,
+            1920,
+            120
+          ]
+        },
+        {
+          "class": "possession_triangle_area",
+          "confidence": 0.88,
+          "bbox": [
+            200,
+            50,
+            400,
+            90
+          ]
+        },
+        {
+          "class": "down_distance_area",
+          "confidence": 0.92,
+          "bbox": [
+            850,
+            50,
+            1100,
+            90
+          ]
+        },
+        {
+          "class": "game_clock_area",
+          "confidence": 0.89,
+          "bbox": [
+            1200,
+            50,
+            1300,
+            90
+          ]
+        },
+        {
+          "class": "play_clock_area",
+          "confidence": 0.85,
+          "bbox": [
+            1320,
+            50,
+            1380,
+            90
+          ]
+        },
+        {
+          "class": "territory_triangle_area",
+          "confidence": 0.87,
+          "bbox": [
+            1400,
+            50,
+            1500,
+            90
+          ]
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "situation": "2nd & 10",
+      "start_time": 22.0,
+      "end_time": 37.0,
+      "start_frame": 1320,
+      "end_frame": 2220,
+      "confidence": 0.82,
+      "play_type": "normal",
+      "expected_situation": "2nd & 10",
+      "frame_number": 1350,
+      "is_suspicious": false,
+      "game_state": {
+        "down": 2,
+        "distance": 10,
+        "quarter": 2,
+        "game_clock": "2:50",
+        "play_clock": 13,
+        "away_team": "YBG",
+        "home_team": "DND",
+        "away_score": 19,
+        "home_score": 30,
+        "possession": "away_team",
+        "field_position": "A47"
+      },
+      "ocr_results": {
+        "down_distance_area": {
+          "raw_text": "2nd & 10",
+          "parsed_value": "2nd & 10",
+          "confidence": 0.89,
+          "bbox": [
+            850,
+            50,
+            1100,
+            90
+          ]
+        },
+        "game_clock_area": {
+          "raw_text": "14:20",
+          "parsed_value": "14:20",
+          "confidence": 0.94,
+          "bbox": [
+            1200,
+            50,
+            1300,
+            90
+          ]
+        },
+        "territory_triangle_area": {
+          "raw_text": "A48",
+          "parsed_value": "A48",
+          "confidence": 0.91,
+          "bbox": [
+            1400,
+            50,
+            1500,
+            90
+          ]
+        }
+      },
+      "yolo_detections": [
+        {
+          "class": "hud",
+          "confidence": 0.94,
+          "bbox": [
+            0,
+            0,
+            1920,
+            120
+          ]
+        },
+        {
+          "class": "possession_triangle_area",
+          "confidence": 0.86,
+          "bbox": [
+            200,
+            50,
+            400,
+            90
+          ]
+        },
+        {
+          "class": "down_distance_area",
+          "confidence": 0.89,
+          "bbox": [
+            850,
+            50,
+            1100,
+            90
+          ]
+        },
+        {
+          "class": "game_clock_area",
+          "confidence": 0.91,
+          "bbox": [
+            1200,
+            50,
+            1300,
+            90
+          ]
+        },
+        {
+          "class": "territory_triangle_area",
+          "confidence": 0.88,
+          "bbox": [
+            1400,
+            50,
+            1500,
+            90
+          ]
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "situation": "2nd & 10",
+      "start_time": 38.0,
+      "end_time": 53.0,
+      "start_frame": 2280,
+      "end_frame": 3180,
+      "confidence": 0.82,
+      "play_type": "normal",
+      "expected_situation": "2nd & 10",
+      "frame_number": 2310,
+      "is_suspicious": false
+    },
+    {
+      "index": 4,
+      "situation": "2nd & 10",
+      "start_time": 54.0,
+      "end_time": 69.0,
+      "start_frame": 3240,
+      "end_frame": 4140,
+      "confidence": 0.82,
+      "play_type": "normal",
+      "expected_situation": "2nd & 10",
+      "frame_number": 3270,
+      "is_suspicious": false
+    },
+    {
+      "index": 5,
+      "situation": "3rd & 3 (Big Play)",
+      "start_time": 70.0,
+      "end_time": 85.0,
+      "start_frame": 4200,
+      "end_frame": 5100,
+      "confidence": 0.92,
+      "play_type": "big_play",
+      "expected_situation": "3rd & 3",
+      "frame_number": 4230,
+      "is_suspicious": false
+    },
+    {
+      "index": 6,
+      "situation": "1st & 10",
+      "start_time": 86.0,
+      "end_time": 101.0,
+      "start_frame": 5160,
+      "end_frame": 6060,
+      "confidence": 0.85,
+      "play_type": "normal",
+      "expected_situation": "1st & 10",
+      "frame_number": 5190,
+      "is_suspicious": false
+    },
+    {
+      "index": 7,
+      "situation": "1st & 10",
+      "start_time": 102.0,
+      "end_time": 117.0,
+      "start_frame": 6120,
+      "end_frame": 7020,
+      "confidence": 0.85,
+      "play_type": "normal",
+      "expected_situation": "1st & 10",
+      "frame_number": 6150,
+      "is_suspicious": false
+    },
+    {
+      "index": 8,
+      "situation": "2nd & 10",
+      "start_time": 118.0,
+      "end_time": 133.0,
+      "start_frame": 7080,
+      "end_frame": 7980,
+      "confidence": 0.82,
+      "play_type": "normal",
+      "expected_situation": "2nd & 10",
+      "frame_number": 7110,
+      "is_suspicious": false
+    },
+    {
+      "index": 9,
+      "situation": "2nd & 10 (Red Zone) (Big Play)",
+      "start_time": 134.0,
+      "end_time": 149.0,
+      "start_frame": 8040,
+      "end_frame": 8940,
+      "confidence": 0.88,
+      "play_type": "red_zone",
+      "expected_situation": "2nd & 10",
+      "frame_number": 8070,
+      "is_suspicious": false
+    },
+    {
+      "index": 10,
+      "situation": "1st & 10 (Red Zone)",
+      "start_time": 150.0,
+      "end_time": 165.0,
+      "start_frame": 9000,
+      "end_frame": 9900,
+      "confidence": 0.88,
+      "play_type": "red_zone",
+      "expected_situation": "1st & 10",
+      "frame_number": 9030,
+      "is_suspicious": false
+    },
+    {
+      "index": 11,
+      "situation": "1st & 10 (Goal Line) (Big Play)",
+      "start_time": 166.0,
+      "end_time": 181.0,
+      "start_frame": 9960,
+      "end_frame": 10860,
+      "confidence": 0.95,
+      "play_type": "goal_line",
+      "expected_situation": "1st & 10",
+      "frame_number": 9990,
+      "is_suspicious": false
+    },
+    {
+      "index": 12,
+      "situation": "1st & 10",
+      "start_time": 182.0,
+      "end_time": 197.0,
+      "start_frame": 10920,
+      "end_frame": 11820,
+      "confidence": 0.85,
+      "play_type": "normal",
+      "expected_situation": "1st & 10",
+      "frame_number": 10950,
+      "is_suspicious": false
+    },
+    {
+      "index": 13,
+      "situation": "1st & 10",
+      "start_time": 198.0,
+      "end_time": 213.0,
+      "start_frame": 11880,
+      "end_frame": 12780,
+      "confidence": 0.85,
+      "play_type": "normal",
+      "expected_situation": "1st & 10",
+      "frame_number": 11910,
+      "is_suspicious": false
+    },
+    {
+      "index": 14,
+      "situation": "1st & 10",
+      "start_time": 214.0,
+      "end_time": 229.0,
+      "start_frame": 12840,
+      "end_frame": 13740,
+      "confidence": 0.85,
+      "play_type": "normal",
+      "expected_situation": "1st & 10",
+      "frame_number": 12870,
+      "is_suspicious": false
+    },
+    {
+      "index": 15,
+      "situation": "Unknown Down & Distance",
+      "start_time": 234.5,
+      "end_time": 249.5,
+      "start_frame": 14070,
+      "end_frame": 14970,
+      "confidence": 0.3,
+      "play_type": "unknown",
+      "expected_situation": "Unknown Down & Distance",
+      "frame_number": 14100,
+      "is_suspicious": true
+    },
+    {
+      "index": 16,
+      "situation": "1st & 10",
+      "start_time": 238.0,
+      "end_time": 253.0,
+      "start_frame": 14280,
+      "end_frame": 15180,
+      "confidence": 0.85,
+      "play_type": "normal",
+      "expected_situation": "1st & 10",
+      "frame_number": 14310,
+      "is_suspicious": false
+    },
+    {
+      "index": 17,
+      "situation": "1st & 10",
+      "start_time": 254.0,
+      "end_time": 269.0,
+      "start_frame": 15240,
+      "end_frame": 16140,
+      "confidence": 0.85,
+      "play_type": "normal",
+      "expected_situation": "1st & 10",
+      "frame_number": 15270,
+      "is_suspicious": false
+    },
+    {
+      "index": 18,
+      "situation": "Two Minute Drill",
+      "start_time": 270.0,
+      "end_time": 285.0,
+      "start_frame": 16200,
+      "end_frame": 17100,
+      "confidence": 0.95,
+      "play_type": "two_minute_drill",
+      "expected_situation": "Two Minute Drill",
+      "frame_number": 16230,
+      "is_suspicious": false
+    },
+    {
+      "index": 19,
+      "situation": "Two Minute Drill",
+      "start_time": 286.0,
+      "end_time": 301.0,
+      "start_frame": 17160,
+      "end_frame": 18060,
+      "confidence": 0.95,
+      "play_type": "two_minute_drill",
+      "expected_situation": "Two Minute Drill",
+      "frame_number": 17190,
+      "is_suspicious": false
+    },
+    {
+      "index": 20,
+      "situation": "2nd & 10",
+      "start_time": 302.0,
+      "end_time": 317.0,
+      "start_frame": 18120,
+      "end_frame": 19020,
+      "confidence": 0.0,
+      "play_type": "turnover_recovery",
+      "expected_situation": "2nd & 10",
+      "frame_number": 18150,
+      "is_suspicious": true,
+      "game_state": {
+        "down": 2,
+        "distance": 10,
+        "quarter": 2,
+        "game_clock": "4:36",
+        "play_clock": 10,
+        "away_team": "YBG",
+        "home_team": "DND",
+        "away_score": 3,
+        "home_score": 28,
+        "possession": "away_team",
+        "field_position": "A32"
+      },
+      "ocr_results": {
+        "down_distance_area": {
+          "raw_text": "2nd & 10",
+          "parsed_value": "2nd & 10",
+          "confidence": 0.75,
+          "bbox": [
+            850,
+            50,
+            1100,
+            90
+          ]
+        },
+        "game_clock_area": {
+          "raw_text": "08:24",
+          "parsed_value": "08:24",
+          "confidence": 0.92,
+          "bbox": [
+            1200,
+            50,
+            1300,
+            90
+          ]
+        },
+        "territory_triangle_area": {
+          "raw_text": "H28",
+          "parsed_value": "H28",
+          "confidence": 0.88,
+          "bbox": [
+            1400,
+            50,
+            1500,
+            90
+          ]
+        }
+      },
+      "yolo_detections": [
+        {
+          "class": "hud",
+          "confidence": 0.91,
+          "bbox": [
+            0,
+            0,
+            1920,
+            120
+          ]
+        },
+        {
+          "class": "possession_triangle_area",
+          "confidence": 0.82,
+          "bbox": [
+            200,
+            50,
+            400,
+            90
+          ]
+        },
+        {
+          "class": "down_distance_area",
+          "confidence": 0.75,
+          "bbox": [
+            850,
+            50,
+            1100,
+            90
+          ]
+        },
+        {
+          "class": "game_clock_area",
+          "confidence": 0.89,
+          "bbox": [
+            1200,
+            50,
+            1300,
+            90
+          ]
+        },
+        {
+          "class": "territory_triangle_area",
+          "confidence": 0.85,
+          "bbox": [
+            1400,
+            50,
+            1500,
+            90
+          ]
+        }
+      ]
+    }
+  ],
+  "analysis_logs": [
+    "\ud83c\udfaf BOUNDARY-AWARE Detection at 2.5s (Frame 150): Unknown Down & Distance detected",
+    "\u274c NO YOLO DETECTIONS in frame 150 - using state persistence",
+    "\ud83d\udd04 STATE PERSISTENCE: Unable to preserve down from previous frame (0/10)",
+    "\ud83d\udd04 STATE PERSISTENCE: Unable to preserve distance from previous frame (0/10)",
+    "\ud83d\udd0d OCR EXTRACTION: down_distance_area returned 'Unknown Down & Distance' with confidence 0.3",
+    "\ud83c\udfaf BOUNDARY-AWARE Detection at 6.0s (Frame 360): 2nd & 10 detected",
+    "\u2705 YOLO DETECTION: possession_triangle_area found with 88% confidence",
+    "\u2705 YOLO DETECTION: down_distance_area found with 92% confidence",
+    "\ud83d\udd0d OCR EXTRACTION: down_distance_area returned '2nd & 10' with confidence 0.92",
+    "\ud83d\udd0d OCR EXTRACTION: game_clock_area returned '14:45' with confidence 0.95",
+    "\ud83d\udd0d OCR EXTRACTION: territory_triangle_area returned 'A42' with confidence 0.90",
+    "\ud83c\udfaf BOUNDARY-AWARE Detection at 22.0s (Frame 1320): 2nd & 10 detected",
+    "\u2705 YOLO DETECTION: hud found with 94% confidence",
+    "\u2705 YOLO DETECTION: down_distance_area found with 89% confidence",
+    "\ud83d\udd0d OCR EXTRACTION: down_distance_area returned '2nd & 10' with confidence 0.89",
+    "\ud83d\udd04 STATE PERSISTENCE: Preserved quarter=1 from previous frame (15/60)",
+    "\ud83c\udfaf BOUNDARY-AWARE Detection at 302.0s (Frame 18120): 2nd & 10 detected",
+    "\ud83d\udd04 STATE PERSISTENCE: Preserved down=2 from previous frame (9/10)",
+    "\ud83d\udd04 STATE PERSISTENCE: Preserved distance=10 from previous frame (9/10)",
+    "\ud83d\udd04 STATE PERSISTENCE: Preserved quarter=4 from previous frame (19/60)",
+    "\ud83d\udd04 STATE PERSISTENCE: Preserved time=08:24 from previous frame (3/30)",
+    "\ud83d\udeab DUPLICATE DETECTED: 73.3% overlap with existing clip",
+    "\u2705 CLIP REGISTERED: turnover_recovery (18120-19020) - Total tracked: 21"
+  ],
+  "total_clips": 21,
+  "suspicious_clips": 3,
+  "timestamp": "2025-06-15T07:41:59.011302"
+}

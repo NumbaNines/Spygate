@@ -1,0 +1,1106 @@
+{
+  "timestamp": "2025-06-14T20:31:59.476307",
+  "total_tested": 50,
+  "best_score": 0.0,
+  "ranked_results": [
+    {
+      "combo_id": 1,
+      "params": {
+        "id": 1,
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.7550451755523682
+    },
+    {
+      "combo_id": 2,
+      "params": {
+        "id": 2,
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "otsu",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.149657964706421
+    },
+    {
+      "combo_id": 3,
+      "params": {
+        "id": 3,
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "otsu",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.6925601959228516
+    },
+    {
+      "combo_id": 4,
+      "params": {
+        "id": 4,
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.7676148414611816
+    },
+    {
+      "combo_id": 5,
+      "params": {
+        "id": 5,
+        "gamma": "off",
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.046271800994873
+    },
+    {
+      "combo_id": 6,
+      "params": {
+        "id": 6,
+        "gamma": 1.2,
+        "sharpening": true,
+        "scale": 2.0,
+        "threshold": "otsu",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.893949031829834
+    },
+    {
+      "combo_id": 7,
+      "params": {
+        "id": 7,
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "otsu",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.1360459327697754
+    },
+    {
+      "combo_id": 8,
+      "params": {
+        "id": 8,
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.8116285800933838
+    },
+    {
+      "combo_id": 9,
+      "params": {
+        "id": 9,
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.8777532577514648
+    },
+    {
+      "combo_id": 10,
+      "params": {
+        "id": 10,
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.6392388343811035
+    },
+    {
+      "combo_id": 11,
+      "params": {
+        "id": 11,
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.1927573680877686
+    },
+    {
+      "combo_id": 12,
+      "params": {
+        "id": 12,
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.8308193683624268
+    },
+    {
+      "combo_id": 13,
+      "params": {
+        "id": 13,
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.6890947818756104
+    },
+    {
+      "combo_id": 14,
+      "params": {
+        "id": 14,
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.3610811233520508
+    },
+    {
+      "combo_id": 15,
+      "params": {
+        "id": 15,
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.526592493057251
+    },
+    {
+      "combo_id": 16,
+      "params": {
+        "id": 16,
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.4343338012695312
+    },
+    {
+      "combo_id": 17,
+      "params": {
+        "id": 17,
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.3673803806304932
+    },
+    {
+      "combo_id": 18,
+      "params": {
+        "id": 18,
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.2524950504302979
+    },
+    {
+      "combo_id": 19,
+      "params": {
+        "id": 19,
+        "gamma": "off",
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.2750179767608643
+    },
+    {
+      "combo_id": 20,
+      "params": {
+        "id": 20,
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.9077553749084473
+    },
+    {
+      "combo_id": 21,
+      "params": {
+        "id": 21,
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.2623322010040283
+    },
+    {
+      "combo_id": 22,
+      "params": {
+        "id": 22,
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.5365564823150635
+    },
+    {
+      "combo_id": 23,
+      "params": {
+        "id": 23,
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 2.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.9731647968292236
+    },
+    {
+      "combo_id": 24,
+      "params": {
+        "id": 24,
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.8658239841461182
+    },
+    {
+      "combo_id": 25,
+      "params": {
+        "id": 25,
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.2194476127624512
+    },
+    {
+      "combo_id": 26,
+      "params": {
+        "id": 26,
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.8430898189544678
+    },
+    {
+      "combo_id": 27,
+      "params": {
+        "id": 27,
+        "gamma": 0.8,
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.4442548751831055
+    },
+    {
+      "combo_id": 28,
+      "params": {
+        "id": 28,
+        "gamma": 1.2,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.7561314105987549
+    },
+    {
+      "combo_id": 29,
+      "params": {
+        "id": 29,
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.1419181823730469
+    },
+    {
+      "combo_id": 30,
+      "params": {
+        "id": 30,
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.7741811275482178
+    },
+    {
+      "combo_id": 31,
+      "params": {
+        "id": 31,
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.197403907775879
+    },
+    {
+      "combo_id": 32,
+      "params": {
+        "id": 32,
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.7878987789154053
+    },
+    {
+      "combo_id": 33,
+      "params": {
+        "id": 33,
+        "gamma": "off",
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.9380955696105957
+    },
+    {
+      "combo_id": 34,
+      "params": {
+        "id": 34,
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.8091256618499756
+    },
+    {
+      "combo_id": 35,
+      "params": {
+        "id": 35,
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.8558783531188965
+    },
+    {
+      "combo_id": 36,
+      "params": {
+        "id": 36,
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.8511776924133301
+    },
+    {
+      "combo_id": 37,
+      "params": {
+        "id": 37,
+        "gamma": "off",
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.4253287315368652
+    },
+    {
+      "combo_id": 38,
+      "params": {
+        "id": 38,
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.8940908908843994
+    },
+    {
+      "combo_id": 39,
+      "params": {
+        "id": 39,
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.7830133438110352
+    },
+    {
+      "combo_id": 40,
+      "params": {
+        "id": 40,
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.7328507900238037
+    },
+    {
+      "combo_id": 41,
+      "params": {
+        "id": 41,
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.2805960178375244
+    },
+    {
+      "combo_id": 42,
+      "params": {
+        "id": 42,
+        "gamma": 1.2,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.8988261222839355
+    },
+    {
+      "combo_id": 43,
+      "params": {
+        "id": 43,
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.1461493968963623
+    },
+    {
+      "combo_id": 44,
+      "params": {
+        "id": 44,
+        "gamma": 0.5,
+        "sharpening": true,
+        "scale": 2.5,
+        "threshold": "otsu",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.208742618560791
+    },
+    {
+      "combo_id": 45,
+      "params": {
+        "id": 45,
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.7824015617370605
+    },
+    {
+      "combo_id": 46,
+      "params": {
+        "id": 46,
+        "gamma": 0.8,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.9139053821563721
+    },
+    {
+      "combo_id": 47,
+      "params": {
+        "id": 47,
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.8611898422241211
+    },
+    {
+      "combo_id": 48,
+      "params": {
+        "id": 48,
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 1.5,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 0.7809708118438721
+    },
+    {
+      "combo_id": 49,
+      "params": {
+        "id": 49,
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.401623249053955
+    },
+    {
+      "combo_id": 50,
+      "params": {
+        "id": 50,
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 2.5,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "processing_time": 1.0969600677490234
+    }
+  ]
+}

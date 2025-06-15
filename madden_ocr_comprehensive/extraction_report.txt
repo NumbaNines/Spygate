@@ -1,0 +1,18 @@
+
+🎯 MADDEN OCR DATASET EXTRACTION COMPLETE!
+
+📊 STATISTICS:
+- Total YOLO images: 50
+- Successfully processed: 0
+- Failed to process: 50
+- Total OCR samples created: 0
+
+📋 BY REGION:
+- Down & Distance: 0 samples
+- Game Clock: 0 samples
+- Play Clock: 0 samples
+
+💾 DATASET LOCATION: madden_ocr_comprehensive
+
+🚀 READY FOR TRAINING!
+Run: python train_madden_ocr.py

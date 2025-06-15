@@ -20,6 +20,6 @@ names:
 # Class descriptions:
 # 0: hud - Main HUD bar containing all game information
 # 1: possession_triangle_area - Left triangle area showing ball possession
-# 2: territory_triangle_area - Right triangle area showing field territory  
+# 2: territory_triangle_area - Right triangle area showing field territory
 # 3: preplay_indicator - Bottom left indicator (pre-play state)
 # 4: play_call_screen - Play call screen (post-play state)

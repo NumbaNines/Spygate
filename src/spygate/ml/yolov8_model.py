@@ -14,12 +14,17 @@ torch.backends.cuda.matmul.allow_tf32 = True
 
 # Disable torch.compile globally to prevent Triton warnings
 import os
+
 os.environ["TORCH_COMPILE_DISABLE"] = "1"
 
 import gc
+import json
 import logging
+import os
+import threading
 import time
-from dataclasses import dataclass
+from collections import deque
+from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -27,15 +32,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import cv2
 import numpy as np
 from ultralytics import YOLO
-
-import json
-import threading
-from collections import deque
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
-
-import os
 
 try:
     import torch.nn as nn
@@ -69,52 +65,55 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-# UI Classes for HUD detection - Essential elements for game situation analysis
+# UI Classes for HUD detection - Enhanced 8-class model for comprehensive game analysis
 UI_CLASSES = [
-    "hud",  # Main HUD bar (dark/black bar at bottom containing all game info)
-    "possession_triangle_area",  # Left triangle area between team abbreviations (shows ball possession)
-    "territory_triangle_area",  # Right triangle area next to yard line (▲ = opponent territory, ▼ = own territory)
-    "preplay_indicator",  # Bottom left indicator shown only pre-play (indicates play about to start)
-    "play_call_screen",  # Play call screen overlay (indicates play has ended)
+    "hud",  # 0 - Main HUD bar (dark/black bar at bottom containing all game info)
+    "possession_triangle_area",  # 1 - Left triangle area between team abbreviations (shows ball possession)
+    "territory_triangle_area",  # 2 - Right triangle area next to yard line (▲ = opponent territory, ▼ = own territory)
+    "preplay_indicator",  # 3 - Bottom left indicator shown only pre-play (indicates play about to start)
+    "play_call_screen",  # 4 - Play call screen overlay (indicates play has ended)
+    "down_distance_area",  # 5 - Down & distance text region (NEW - enhanced precision)
+    "game_clock_area",  # 6 - Game clock display region (NEW - enhanced precision)
+    "play_clock_area",  # 7 - Play clock display region (NEW - enhanced precision)
 ]
 
 # Enhanced hardware-tier specific model configurations with optimization features
 MODEL_CONFIGS = (
     {
         HardwareTier.ULTRA_LOW: {  # Integrated GPUs or CPU only
-            "model_size": "n",      # YOLOv8n - nano for minimum requirements
-            "img_size": 320,        # Smaller input size for speed
-            "batch_size": 1,        # Single image processing
-            "half": False,          # No FP16 for compatibility
-            "device": "cpu",        # Force CPU for integrated graphics
+            "model_size": "n",  # YOLOv8n - nano for minimum requirements
+            "img_size": 320,  # Smaller input size for speed
+            "batch_size": 1,  # Single image processing
+            "half": False,  # No FP16 for compatibility
+            "device": "cpu",  # Force CPU for integrated graphics
             "max_det": 10,
-            "conf": 0.4,            # Higher confidence for fewer detections
+            "conf": 0.4,  # Higher confidence for fewer detections
             "iou": 0.7,
             "optimize": True,
-            "quantize": False,      # Disable for stability
+            "quantize": False,  # Disable for stability
             "compile": False,
             "warmup_epochs": 1,
             "patience": 5,
-            "workers": 1
+            "workers": 1,
         },
-        HardwareTier.LOW: {         # Entry GPUs (GTX 1650, RTX 3050)
-            "model_size": "n",      # Still using nano model
-            "img_size": 416,        # Slightly larger for better accuracy
+        HardwareTier.LOW: {  # Entry GPUs (GTX 1650, RTX 3050)
+            "model_size": "n",  # Still using nano model
+            "img_size": 416,  # Slightly larger for better accuracy
             "batch_size": 2,
-            "half": True,           # Enable FP16 for modern GPUs
+            "half": True,  # Enable FP16 for modern GPUs
             "device": "auto",
             "max_det": 20,
             "conf": 0.3,
             "iou": 0.6,
             "optimize": True,
-            "quantize": True,       # Enable basic optimizations
-            "compile": False,       # Skip compilation for stability
+            "quantize": True,  # Enable basic optimizations
+            "compile": False,  # Skip compilation for stability
             "warmup_epochs": 2,
             "patience": 10,
-            "workers": 2
+            "workers": 2,
         },
-        HardwareTier.MEDIUM: {      # Mid-range GPUs (RTX 2060-3060)
-            "model_size": "s",      # Small model for balance
+        HardwareTier.MEDIUM: {  # Mid-range GPUs (RTX 2060-3060)
+            "model_size": "s",  # Small model for balance
             "img_size": 640,
             "batch_size": 4,
             "half": True,
@@ -127,12 +126,12 @@ MODEL_CONFIGS = (
             "compile": False,  # Disabled to avoid Triton warnings
             "warmup_epochs": 3,
             "patience": 15,
-            "workers": 4
+            "workers": 4,
         },
-        HardwareTier.HIGH: {        # High-end GPUs (RTX 3070-4060)
-            "model_size": "m",      # Medium model
+        HardwareTier.HIGH: {  # High-end GPUs (RTX 3070-4060)
+            "model_size": "m",  # Medium model
             "img_size": 832,
-            "batch_size": 6,        # Reduced from 12 for wider compatibility
+            "batch_size": 6,  # Reduced from 12 for wider compatibility
             "half": True,
             "device": "cuda",
             "max_det": 100,
@@ -143,24 +142,24 @@ MODEL_CONFIGS = (
             "compile": False,  # Disabled to avoid Triton warnings
             "warmup_epochs": 3,
             "patience": 15,
-            "workers": 6
+            "workers": 6,
         },
-        HardwareTier.ULTRA: {       # Enthusiast GPUs (RTX 4070+)
-            "model_size": "l",      # Large model
-            "img_size": 1024,       # Reduced from 1280 for better performance
-            "batch_size": 8,        # Reduced from 16 for stability
+        HardwareTier.ULTRA: {  # Enthusiast GPUs (RTX 4070+)
+            "model_size": "l",  # Large model
+            "img_size": 1024,  # Reduced from 1280 for better performance
+            "batch_size": 8,  # Reduced from 16 for stability
             "half": True,
             "device": "cuda",
-            "max_det": 200,         # Reduced from 300
+            "max_det": 200,  # Reduced from 300
             "conf": 0.15,
             "iou": 0.4,
             "optimize": True,
             "quantize": True,
             "compile": True,
-            "warmup_epochs": 5,     # Reduced from 10
-            "patience": 20,         # Reduced from 30
-            "workers": 8
-        }
+            "warmup_epochs": 5,  # Reduced from 10
+            "patience": 20,  # Reduced from 30
+            "workers": 8,
+        },
     }
     if TORCH_AVAILABLE and HardwareTier
     else {}
@@ -242,15 +241,17 @@ class DetectionResult:
 
 class EnhancedYOLOv8:
     """Enhanced YOLOv8 model with hardware-adaptive features."""
-    
-    def __init__(self, 
-                 model_path: str = "models/yolov8n.pt",
-                 hardware_tier: Optional[HardwareTier] = None,
-                 confidence: float = 0.25,
-                 device: Optional[str] = None,
-                 optimization_config: Optional[OptimizationConfig] = None):
+
+    def __init__(
+        self,
+        model_path: str = "models/yolov8n.pt",
+        hardware_tier: Optional[HardwareTier] = None,
+        confidence: float = 0.25,
+        device: Optional[str] = None,
+        optimization_config: Optional[OptimizationConfig] = None,
+    ):
         """Initialize the enhanced YOLOv8 model.
-        
+
         Args:
             model_path: Path to YOLOv8 model weights
             hardware_tier: Hardware tier for adaptive settings
@@ -261,7 +262,7 @@ class EnhancedYOLOv8:
         self.hardware = hardware_tier or HardwareDetector().detect_tier()
         self.model = YOLO(model_path)
         self.optimization_config = optimization_config or OptimizationConfig()
-        
+
         # Configure model based on hardware tier
         if self.hardware == HardwareTier.ULTRA_LOW:
             self.model.conf = 0.4
@@ -278,39 +279,41 @@ class EnhancedYOLOv8:
         else:  # ULTRA
             self.model.conf = confidence
             self.model.imgsz = 1280
-            
+
         # Set device
         if device:
             self.model.to(device)
         elif torch.cuda.is_available():
-            self.model.to('cuda')
-            
+            self.model.to("cuda")
+
         # Enable model optimizations for higher tiers (disabled to avoid Triton warnings)
         # if self.hardware in [HardwareTier.HIGH, HardwareTier.ULTRA]:
         #     if hasattr(torch, 'compile'):
         #         self.model = torch.compile(self.model)
-                
+
         # Initialize performance metrics
         self.performance_metrics = PerformanceMetrics()
         self.inference_counter = 0
-        
+
         # Initialize memory manager if available
         self.memory_manager = get_memory_manager() if MEMORY_MANAGER_AVAILABLE else None
-        
+
         # Set optimal batch size based on hardware tier
-        self.optimal_batch_size = MODEL_CONFIGS[self.hardware]["batch_size"] if self.hardware in MODEL_CONFIGS else 1
-        
-    def detect(self, frame) -> List[Dict]:
+        self.optimal_batch_size = (
+            MODEL_CONFIGS[self.hardware]["batch_size"] if self.hardware in MODEL_CONFIGS else 1
+        )
+
+    def detect(self, frame) -> list[dict]:
         """Run detection on a frame.
-        
+
         Args:
             frame: Input image frame
-            
+
         Returns:
             List of detections with bounding boxes and classes
         """
         results = self.model(frame, verbose=False)
-        
+
         detections = []
         for r in results:
             boxes = r.boxes
@@ -318,14 +321,18 @@ class EnhancedYOLOv8:
                 x1, y1, x2, y2 = box.xyxy[0].tolist()
                 conf = float(box.conf)
                 cls = int(box.cls)
-                class_name = UI_CLASSES[cls]
-                
-                detections.append({
-                    'bbox': [x1, y1, x2, y2],
-                    'confidence': conf,
-                    'class': class_name
-                })
-                
+
+                # Safety check for class index
+                if cls < len(UI_CLASSES):
+                    class_name = UI_CLASSES[cls]
+                else:
+                    class_name = f"unknown_class_{cls}"
+                    logger.warning(f"Unknown class index {cls}, expected 0-{len(UI_CLASSES)-1}")
+
+                detections.append(
+                    {"bbox": [x1, y1, x2, y2], "confidence": conf, "class_name": class_name}
+                )
+
         return detections
 
     def predict_with_optimization(
@@ -507,8 +514,7 @@ class EnhancedYOLOv8:
 
                 # Get class names
                 class_names = [
-                    UI_CLASSES[i] if i < len(UI_CLASSES) else f"class_{i}"
-                    for i in classes
+                    UI_CLASSES[i] if i < len(UI_CLASSES) else f"class_{i}" for i in classes
                 ]
 
                 detection_result = DetectionResult(
@@ -598,7 +604,7 @@ class EnhancedYOLOv8:
 
         report = {
             "model_info": {
-                "model_size": self.model.model.model.state_dict()['model.model.0.weight'].shape[1],
+                "model_size": self.model.model.model.state_dict()["model.model.0.weight"].shape[1],
                 "hardware_tier": self.hardware.name,
                 "device": self.model.device,
             },
@@ -693,15 +699,19 @@ class EnhancedYOLOv8:
         logger.info(f"- Hardware Tier: {self.hardware.name}")
         try:
             state_dict = self.model.model.model.state_dict()
-            if 'model.model.0.weight' in state_dict:
+            if "model.model.0.weight" in state_dict:
                 logger.info(f"- Model Size: YOLOv8{state_dict['model.model.0.weight'].shape[1]}")
-                logger.info(f"- Optimizations: {state_dict['model.model.0.weight'].shape[1] - state_dict['model.model.0.weight'].shape[0]}")
+                logger.info(
+                    f"- Optimizations: {state_dict['model.model.0.weight'].shape[1] - state_dict['model.model.0.weight'].shape[0]}"
+                )
             else:
-                logger.warning("Model key 'model.model.0.weight' not found in state_dict. Skipping model size/optimizations log.")
+                logger.warning(
+                    "Model key 'model.model.0.weight' not found in state_dict. Skipping model size/optimizations log."
+                )
         except Exception as e:
             logger.warning(f"Could not log model size/optimizations: {e}")
         logger.info(f"- Input Size: {self.model.imgsz}px")
-        batch_size = getattr(self.model, 'max_det', None)
+        batch_size = getattr(self.model, "max_det", None)
         if batch_size is not None:
             logger.info(f"- Batch Size: {batch_size}")
         else:
@@ -722,12 +732,15 @@ class EnhancedYOLOv8:
         stats = {
             "hardware_tier": self.hardware.name,
             "optimal_batch_size": self.model.max_det,
-            "model_size": self.model.model.model.state_dict()['model.model.0.weight'].shape[1],
+            "model_size": self.model.model.model.state_dict()["model.model.0.weight"].shape[1],
             "input_size": self.model.imgsz,
             "device": self.model.device,
             "half_precision": self.model.half,
             "available_variants": [],
-            "optimizations_applied": self.model.model.model.state_dict()['model.model.0.weight'].shape[1] - self.model.model.model.state_dict()['model.model.0.weight'].shape[0],
+            "optimizations_applied": self.model.model.model.state_dict()[
+                "model.model.0.weight"
+            ].shape[1]
+            - self.model.model.model.state_dict()["model.model.0.weight"].shape[0],
         }
 
         if hasattr(self.model.model.model, "parameters"):
@@ -744,10 +757,10 @@ class EnhancedYOLOv8:
         if not torch.cuda.is_available():
             print("⚠️ Running on CPU - no GPU memory optimizations needed")
             return
-            
+
         # Get GPU memory
         gpu_memory = torch.cuda.get_device_properties(0).total_memory / (1024**3)  # GB
-        
+
         # Set memory fraction based on GPU memory
         memory_fraction = 0.8  # Default
         if gpu_memory >= 16:  # High-end GPUs (16GB+)
@@ -758,25 +771,27 @@ class EnhancedYOLOv8:
             memory_fraction = 0.75
         else:  # Low memory GPUs
             memory_fraction = 0.70
-        
+
         # Set memory fraction
         torch.cuda.set_per_process_memory_fraction(memory_fraction)
-        
+
         # Enable memory efficient attention if available
-        if hasattr(torch.nn.functional, 'scaled_dot_product_attention'):
+        if hasattr(torch.nn.functional, "scaled_dot_product_attention"):
             torch.backends.cuda.enable_mem_efficient_sdp(True)
-        
+
         # Enable flash attention only for 8GB+ GPUs
-        if hasattr(torch.nn.functional, 'flash_attention') and gpu_memory >= 8:
+        if hasattr(torch.nn.functional, "flash_attention") and gpu_memory >= 8:
             torch.backends.cuda.enable_flash_sdp(True)
-        
+
         # Enable TF32 for Ampere+ GPUs (RTX 30 series and newer)
         device_name = torch.cuda.get_device_name().lower()
-        if any(x in device_name for x in ['rtx 30', 'rtx 40', 'rtx 20']):
+        if any(x in device_name for x in ["rtx 30", "rtx 40", "rtx 20"]):
             torch.backends.cuda.matmul.allow_tf32 = True
             torch.backends.cudnn.allow_tf32 = True
-        
-        print(f"✅ GPU memory optimizations enabled ({memory_fraction*100:.0f}% of {gpu_memory:.1f}GB)")
+
+        print(
+            f"✅ GPU memory optimizations enabled ({memory_fraction*100:.0f}% of {gpu_memory:.1f}GB)"
+        )
         print(f"🎮 Using GPU: {torch.cuda.get_device_name()}")
 
 

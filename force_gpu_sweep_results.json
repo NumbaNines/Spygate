@@ -1,0 +1,308 @@
+{
+  "timestamp": "2025-06-14T20:42:52.647813",
+  "total_tested": 10,
+  "best_score": 0.0,
+  "best_params": {
+    "id": 1,
+    "gamma": 1.4,
+    "sharpening": false,
+    "scale": 1.5,
+    "threshold": "otsu",
+    "clahe_clip": 1.0,
+    "clahe_grid": [
+      4,
+      4
+    ],
+    "blur": "off"
+  },
+  "parameter_ranges": {
+    "gamma": [
+      "off",
+      0.5,
+      0.8,
+      1.2,
+      1.4
+    ],
+    "sharpening": [
+      true,
+      false
+    ],
+    "scale": [
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      4.0,
+      5.0,
+      7.0
+    ],
+    "threshold": [
+      "otsu",
+      "adaptive_mean",
+      "adaptive_gaussian"
+    ],
+    "clahe_clip": [
+      1.0,
+      2.0,
+      3.0
+    ],
+    "clahe_grid": [
+      [
+        4,
+        4
+      ],
+      [
+        8,
+        8
+      ]
+    ],
+    "blur": [
+      "off",
+      [
+        3,
+        3
+      ],
+      [
+        5,
+        5
+      ]
+    ]
+  },
+  "ranked_results": [
+    {
+      "combo_id": 1,
+      "params": {
+        "id": 1,
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "processing_time": 0.9234960079193115,
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "total_detections": 0,
+      "sample_texts": []
+    },
+    {
+      "combo_id": 2,
+      "params": {
+        "id": 2,
+        "gamma": 1.4,
+        "sharpening": true,
+        "scale": 4.0,
+        "threshold": "otsu",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "processing_time": 2.8162670135498047,
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "total_detections": 0,
+      "sample_texts": []
+    },
+    {
+      "combo_id": 3,
+      "params": {
+        "id": 3,
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 7.0,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "processing_time": 6.631635665893555,
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "total_detections": 0,
+      "sample_texts": []
+    },
+    {
+      "combo_id": 4,
+      "params": {
+        "id": 4,
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 2.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "processing_time": 1.2959120273590088,
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "total_detections": 0,
+      "sample_texts": []
+    },
+    {
+      "combo_id": 5,
+      "params": {
+        "id": 5,
+        "gamma": "off",
+        "sharpening": false,
+        "scale": 7.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": "off"
+      },
+      "processing_time": 6.811954498291016,
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "total_detections": 0,
+      "sample_texts": []
+    },
+    {
+      "combo_id": 6,
+      "params": {
+        "id": 6,
+        "gamma": 1.2,
+        "sharpening": true,
+        "scale": 3.0,
+        "threshold": "otsu",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "processing_time": 1.785071611404419,
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "total_detections": 0,
+      "sample_texts": []
+    },
+    {
+      "combo_id": 7,
+      "params": {
+        "id": 7,
+        "gamma": 1.4,
+        "sharpening": false,
+        "scale": 4.0,
+        "threshold": "otsu",
+        "clahe_clip": 3.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "processing_time": 2.403879165649414,
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "total_detections": 0,
+      "sample_texts": []
+    },
+    {
+      "combo_id": 8,
+      "params": {
+        "id": 8,
+        "gamma": 0.5,
+        "sharpening": false,
+        "scale": 1.5,
+        "threshold": "otsu",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          8,
+          8
+        ],
+        "blur": [
+          3,
+          3
+        ]
+      },
+      "processing_time": 0.8921899795532227,
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "total_detections": 0,
+      "sample_texts": []
+    },
+    {
+      "combo_id": 9,
+      "params": {
+        "id": 9,
+        "gamma": 1.2,
+        "sharpening": false,
+        "scale": 2.0,
+        "threshold": "adaptive_mean",
+        "clahe_clip": 2.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": [
+          5,
+          5
+        ]
+      },
+      "processing_time": 1.1351368427276611,
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "total_detections": 0,
+      "sample_texts": []
+    },
+    {
+      "combo_id": 10,
+      "params": {
+        "id": 10,
+        "gamma": 0.8,
+        "sharpening": true,
+        "scale": 4.0,
+        "threshold": "adaptive_gaussian",
+        "clahe_clip": 1.0,
+        "clahe_grid": [
+          4,
+          4
+        ],
+        "blur": "off"
+      },
+      "processing_time": 3.55009388923645,
+      "avg_detections": 0.0,
+      "avg_confidence": 0.0,
+      "composite_score": 0.0,
+      "total_detections": 0,
+      "sample_texts": []
+    }
+  ]
+}

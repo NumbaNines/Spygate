@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """Check dimensions of real Madden screenshots."""
 
-import cv2
 from pathlib import Path
+
+import cv2
+
 
 def check_image_dimensions():
     """Check dimensions of real screenshots."""
     test_files = [
         "templates/raw_gameplay/1st_10.png",
-        "templates/raw_gameplay/2nd_7.png", 
-        "templates/raw_gameplay/3rd_goal.png"
+        "templates/raw_gameplay/2nd_7.png",
+        "templates/raw_gameplay/3rd_goal.png",
     ]
-    
+
     for file_path in test_files:
         if Path(file_path).exists():
             img = cv2.imread(file_path)
@@ -23,5 +25,6 @@ def check_image_dimensions():
         else:
             print(f"{file_path}: File not found")
 
+
 if __name__ == "__main__":
-    check_image_dimensions() 
+    check_image_dimensions()

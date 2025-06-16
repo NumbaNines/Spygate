@@ -3,15 +3,16 @@
 
 import cv2
 
+
 def show_the_problem():
     """Show exactly what's wrong."""
     print("🔍 THE PROBLEM:")
     print("=" * 50)
-    
+
     # Load real screenshot
-    real = cv2.imread('debug_real_original.png')
-    template = cv2.imread('debug_template_1ST.png')
-    
+    real = cv2.imread("debug_real_original.png")
+    template = cv2.imread("debug_template_1ST.png")
+
     if real is not None and template is not None:
         print(f"📱 Real Madden screenshot: {real.shape[1]}x{real.shape[0]} pixels")
         print(f"🎯 Our template:           {template.shape[1]}x{template.shape[0]} pixels")
@@ -29,5 +30,6 @@ def show_the_problem():
     else:
         print("❌ Debug images not found")
 
+
 if __name__ == "__main__":
-    show_the_problem() 
+    show_the_problem()

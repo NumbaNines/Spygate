@@ -984,28 +984,40 @@ class EnhancedGameAnalyzer:
                 return None
 
             # Use production-ready triangle detector (97.6% accuracy, empirically calibrated)
-            if hasattr(self, 'triangle_detector') and self.triangle_detector:
+            if hasattr(self, "triangle_detector") and self.triangle_detector:
                 try:
                     # Use the production triangle detector with empirically-calibrated confidence (0.45)
-                    triangle_matches = self.triangle_detector.detect_triangles_in_roi(region_roi, triangle_type)
-                    
+                    triangle_matches = self.triangle_detector.detect_triangles_in_roi(
+                        region_roi, triangle_type
+                    )
+
                     if triangle_matches:
                         # Get best triangle result using production detector's selection logic
-                        best_triangle = self.triangle_detector.select_best_single_triangles(triangle_matches, triangle_type)
-                        
+                        best_triangle = self.triangle_detector.select_best_single_triangles(
+                            triangle_matches, triangle_type
+                        )
+
                         if best_triangle:
-                            direction = best_triangle.get('direction')
-                            confidence = best_triangle.get('confidence', 0.0)
-                            
-                            logger.debug(f"🔺 PRODUCTION TRIANGLE: {triangle_type} -> {direction} (conf: {confidence:.3f})")
+                            direction = best_triangle.get("direction")
+                            confidence = best_triangle.get("confidence", 0.0)
+
+                            logger.debug(
+                                f"🔺 PRODUCTION TRIANGLE: {triangle_type} -> {direction} (conf: {confidence:.3f})"
+                            )
                             return direction
                         else:
-                            logger.debug(f"🔺 PRODUCTION TRIANGLE: No confident match for {triangle_type}")
+                            logger.debug(
+                                f"🔺 PRODUCTION TRIANGLE: No confident match for {triangle_type}"
+                            )
                     else:
-                        logger.debug(f"🔺 PRODUCTION TRIANGLE: No matches found for {triangle_type}")
-                        
+                        logger.debug(
+                            f"🔺 PRODUCTION TRIANGLE: No matches found for {triangle_type}"
+                        )
+
                 except Exception as e:
-                    logger.debug(f"🔺 PRODUCTION TRIANGLE ERROR: {e}, falling back to basic analysis")
+                    logger.debug(
+                        f"🔺 PRODUCTION TRIANGLE ERROR: {e}, falling back to basic analysis"
+                    )
 
             # Fallback to basic analysis if production detector fails or unavailable
             return self._basic_triangle_analysis(region_roi, triangle_type)

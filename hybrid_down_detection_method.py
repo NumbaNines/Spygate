@@ -3,7 +3,7 @@ def _extract_down_distance_from_region_hybrid(
 ) -> Optional[dict[str, Any]]:
     """
     HYBRID DOWN DETECTION: Template matching for down number + PaddleOCR for distance.
-    
+
     This combines our 100% accurate template detection for down numbers (1ST, 2ND, 3RD, 4TH)
     with PaddleOCR for distance extraction ("& 10", "& 7", "& GOAL").
     """
@@ -69,23 +69,27 @@ def _extract_down_distance_from_region_hybrid(
         try:
             # Create detection context for template matching
             detection_context = DownDetectionContext(
-                frame_number=getattr(self, '_debug_frame_counter', 0),
+                frame_number=getattr(self, "_debug_frame_counter", 0),
                 yolo_confidence=yolo_confidence,
-                region_size=roi.shape[:2]
+                region_size=roi.shape[:2],
             )
-            
+
             # Use our 100% working template detection system
             template_result = self.down_template_detector.detect_down_in_yolo_region(
                 roi, bbox, detection_context
             )
-            
+
             if template_result and template_result.get("down"):
-                logger.debug(f"🎯 TEMPLATE SUCCESS: Detected {template_result['down']} (conf: {template_result.get('confidence', 0.0):.3f})")
+                logger.debug(
+                    f"🎯 TEMPLATE SUCCESS: Detected {template_result['down']} (conf: {template_result.get('confidence', 0.0):.3f})"
+                )
                 if current_time is None:  # Burst sampling mode
-                    print(f"🎯 TEMPLATE: Detected {template_result['down']} with {template_result.get('confidence', 0.0):.3f} confidence")
+                    print(
+                        f"🎯 TEMPLATE: Detected {template_result['down']} with {template_result.get('confidence', 0.0):.3f} confidence"
+                    )
             else:
                 logger.debug("❌ TEMPLATE: No down number detected")
-                
+
         except Exception as e:
             logger.debug(f"❌ TEMPLATE ERROR: {e}")
             template_result = None
@@ -100,14 +104,14 @@ def _extract_down_distance_from_region_hybrid(
 
             # Use PaddleOCR for distance extraction (same as other HUD elements)
             full_text = self.ocr.extract_down_distance(processed_roi)
-            
+
             if full_text:
                 logger.debug(f"🔍 OCR TEXT: '{full_text}'")
                 if current_time is None:  # Burst sampling mode
                     print(f"🔍 OCR: Extracted text '{full_text}'")
-                
+
                 # Parse distance from OCR text (look for "& X" patterns)
-                distance_match = re.search(r'&\s*(\d+|goal|GOAL)', full_text, re.IGNORECASE)
+                distance_match = re.search(r"&\s*(\d+|goal|GOAL)", full_text, re.IGNORECASE)
                 if distance_match:
                     distance_text = distance_match.group(1).upper()
                     if distance_text == "GOAL":
@@ -121,12 +125,12 @@ def _extract_down_distance_from_region_hybrid(
                                 ocr_distance = None
                         except ValueError:
                             ocr_distance = None
-                
+
                 if ocr_distance is not None:
                     logger.debug(f"🎯 OCR DISTANCE: {ocr_distance} (conf: {ocr_confidence:.3f})")
                 else:
                     logger.debug("❌ OCR: No valid distance found")
-                    
+
         except Exception as e:
             logger.debug(f"❌ OCR ERROR: {e}")
             ocr_distance = None
@@ -134,13 +138,17 @@ def _extract_down_distance_from_region_hybrid(
 
         # ===== STEP 3: COMBINE TEMPLATE + OCR RESULTS =====
         final_result = None
-        
+
         if template_result and template_result.get("down"):
             # Template detection successful - use it as primary
             final_result = {
                 "down": template_result["down"],
-                "distance": ocr_distance if ocr_distance is not None else template_result.get("distance"),
-                "confidence": min(0.95, template_result.get("confidence", 0.0) + (ocr_confidence * 0.2)),  # Boost confidence if OCR also worked
+                "distance": (
+                    ocr_distance if ocr_distance is not None else template_result.get("distance")
+                ),
+                "confidence": min(
+                    0.95, template_result.get("confidence", 0.0) + (ocr_confidence * 0.2)
+                ),  # Boost confidence if OCR also worked
                 "method": "hybrid_template_ocr",
                 "template_confidence": template_result.get("confidence", 0.0),
                 "ocr_confidence": ocr_confidence,
@@ -148,15 +156,17 @@ def _extract_down_distance_from_region_hybrid(
                 "region_confidence": yolo_confidence,
                 "region_bbox": bbox,
                 "raw_template": template_result.get("template_name", ""),
-                "raw_ocr": full_text
+                "raw_ocr": full_text,
             }
-            
-            logger.debug(f"✅ HYBRID SUCCESS: {final_result['down']} & {final_result['distance']} (conf: {final_result['confidence']:.3f})")
-            
+
+            logger.debug(
+                f"✅ HYBRID SUCCESS: {final_result['down']} & {final_result['distance']} (conf: {final_result['confidence']:.3f})"
+            )
+
         elif ocr_distance is not None:
             # Template failed but OCR got distance - try to infer down from context or use fallback
             logger.debug("⚠️ HYBRID PARTIAL: Template failed, using OCR-only fallback")
-            
+
             # Fallback to full OCR parsing
             parsed_ocr = self._parse_down_distance_text(full_text)
             if parsed_ocr:
@@ -193,61 +203,65 @@ def _extract_down_distance_from_region_hybrid(
                     raw_text=final_result.get("raw_ocr", ""),
                     method=final_result["method"],
                 )
-                self.temporal_manager.add_extraction_result(
-                    "down_distance", extraction_result
-                )
+                self.temporal_manager.add_extraction_result("down_distance", extraction_result)
                 logger.debug(f"⏰ TEMPORAL: Added hybrid result to temporal manager")
             else:
                 # Burst mode: Results will be handled by burst consensus system in analyze_frame()
-                logger.debug(
-                    f"🎯 BURST: Hybrid result will be handled by burst consensus"
-                )
+                logger.debug(f"🎯 BURST: Hybrid result will be handled by burst consensus")
 
             return final_result
 
         # ===== STEP 4: FULL OCR FALLBACK (if both template and distance OCR failed) =====
         logger.debug("⚠️ FALLBACK: Using full PaddleOCR as last resort")
-        
+
         # Apply OCR corrections and try full parsing
         try:
             processed_roi = self._preprocess_region_for_ocr(roi)
-            
+
             # Try PaddleOCR first (primary OCR engine)
             if not full_text:  # Only if we haven't already tried
                 full_text = self.ocr.extract_down_distance(processed_roi)
-            
+
             if full_text:
                 corrected_text = self._apply_down_distance_corrections(full_text)
                 fallback_result = self._parse_down_distance_text(corrected_text)
-                
+
                 if fallback_result:
                     fallback_result["method"] = "paddle_ocr_fallback"
-                    fallback_result["confidence"] = yolo_confidence * 0.7  # Medium confidence for PaddleOCR fallback
+                    fallback_result["confidence"] = (
+                        yolo_confidence * 0.7
+                    )  # Medium confidence for PaddleOCR fallback
                     fallback_result["source"] = "8class_down_distance_area"
                     fallback_result["region_confidence"] = yolo_confidence
                     fallback_result["region_bbox"] = bbox
-                    
-                    logger.debug(f"🔄 PADDLE FALLBACK SUCCESS: {fallback_result.get('down')} & {fallback_result.get('distance')}")
+
+                    logger.debug(
+                        f"🔄 PADDLE FALLBACK SUCCESS: {fallback_result.get('down')} & {fallback_result.get('distance')}"
+                    )
                     return fallback_result
-            
+
             # Final fallback to Tesseract if PaddleOCR completely failed
             config = r"--oem 3 --psm 8 -c tessedit_char_whitelist=0123456789&stndrdthgoalTHNDRDSTRD"
             tesseract_text = pytesseract.image_to_string(processed_roi, config=config).strip()
-            
+
             if tesseract_text:
                 corrected_text = self._apply_down_distance_corrections(tesseract_text)
                 fallback_result = self._parse_down_distance_text(corrected_text)
-                
+
                 if fallback_result:
                     fallback_result["method"] = "tesseract_fallback"
-                    fallback_result["confidence"] = yolo_confidence * 0.6  # Lower confidence for Tesseract fallback
+                    fallback_result["confidence"] = (
+                        yolo_confidence * 0.6
+                    )  # Lower confidence for Tesseract fallback
                     fallback_result["source"] = "8class_down_distance_area"
                     fallback_result["region_confidence"] = yolo_confidence
                     fallback_result["region_bbox"] = bbox
-                    
-                    logger.debug(f"🔄 TESSERACT FALLBACK SUCCESS: {fallback_result.get('down')} & {fallback_result.get('distance')}")
+
+                    logger.debug(
+                        f"🔄 TESSERACT FALLBACK SUCCESS: {fallback_result.get('down')} & {fallback_result.get('distance')}"
+                    )
                     return fallback_result
-                    
+
         except Exception as e:
             logger.debug(f"❌ FALLBACK ERROR: {e}")
 
@@ -258,5 +272,6 @@ def _extract_down_distance_from_region_hybrid(
         logger.error(f"🚨 EXCEPTION in hybrid down/distance extraction: {e}")
         logger.error(f"🚨 Exception type: {type(e)}")
         import traceback
+
         logger.error(f"🚨 Traceback: {traceback.format_exc()}")
-        return None 
+        return None

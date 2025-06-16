@@ -107,25 +107,25 @@ class DownTemplateDetector:
 
         # Template matching parameters (expert-optimized for performance + live capture)
         self.SCALE_FACTORS = [
-            0.6,   # Very small text (high DPI displays)
+            0.6,  # Very small text (high DPI displays)
             0.7,
             0.85,
             1.0,
             1.2,
-            1.4,   # Larger text (low DPI or zoomed displays)
+            1.4,  # Larger text (low DPI or zoomed displays)
         ]  # Expanded from 4 to 6 scales for live capture DPI variations
         self.EARLY_TERMINATION_THRESHOLD = 0.85  # Stop searching if we find a very confident match
 
         # Expert-calibrated confidence thresholds based on empirical testing
         # Real-world data: Correct detections = 0.48+ conf, False positives max = 0.20 conf
         self.CONFIDENCE_THRESHOLDS = {
-            "high": 0.35,      # Clean gameplay footage - strict threshold for zero false positives
-            "medium": 0.30,    # Slightly compressed - safe threshold above false positive range
-            "low": 0.25,       # Heavily compressed - minimum safe threshold with 0.05 buffer above FP max
+            "high": 0.35,  # Clean gameplay footage - strict threshold for zero false positives
+            "medium": 0.30,  # Slightly compressed - safe threshold above false positive range
+            "low": 0.25,  # Heavily compressed - minimum safe threshold with 0.05 buffer above FP max
             "streamer": 0.22,  # Streamer overlays - minimal buffer above false positive max
-            "emergency": 0.18, # Emergency fallback - matches empirical false positive boundary
-            "auto": 0.30,      # Auto-detection default - balanced safety threshold
-            "live": 0.30,      # Live capture - optimized for real-time with empirical safety
+            "emergency": 0.18,  # Emergency fallback - matches empirical false positive boundary
+            "auto": 0.30,  # Auto-detection default - balanced safety threshold
+            "live": 0.30,  # Live capture - optimized for real-time with empirical safety
         }
 
         # Set initial threshold based on quality mode (empirically calibrated)
@@ -269,9 +269,13 @@ class DownTemplateDetector:
             if not template_matches:
                 # Try with emergency threshold based on empirical data (just above false positive max)
                 if self.MIN_MATCH_CONFIDENCE > 0.18:
-                    logger.debug(f"No matches found, trying emergency threshold: 0.18 (empirical FP boundary)")
+                    logger.debug(
+                        f"No matches found, trying emergency threshold: 0.18 (empirical FP boundary)"
+                    )
                     original_threshold = self.MIN_MATCH_CONFIDENCE
-                    self.MIN_MATCH_CONFIDENCE = 0.18  # Emergency threshold at false positive boundary
+                    self.MIN_MATCH_CONFIDENCE = (
+                        0.18  # Emergency threshold at false positive boundary
+                    )
                     template_matches = self._match_all_templates(preprocessed_roi, (x1, y1))
                     self.MIN_MATCH_CONFIDENCE = original_threshold  # Restore original
 
@@ -570,7 +574,7 @@ class DownTemplateDetector:
         if template_name in self.template_metadata:
             metadata = self.template_metadata[template_name]
             base_bonus = metadata.get("quality_bonus", 0.0)
-        
+
         # Conservative live capture compensation bonuses (empirically validated)
         live_capture_bonus = 0.0
         if self.quality_mode in ["live", "streamer", "emergency"]:
@@ -578,12 +582,12 @@ class DownTemplateDetector:
             if "1ST" in template_name:
                 live_capture_bonus = 0.08  # 1ST is most common, moderate boost
             elif "3RD" in template_name:
-                live_capture_bonus = 0.06  # 3RD is critical, conservative boost  
+                live_capture_bonus = 0.06  # 3RD is critical, conservative boost
             elif "4TH" in template_name:
                 live_capture_bonus = 0.05  # 4TH is rare but important, minimal boost
             else:
                 live_capture_bonus = 0.04  # 2ND gets small boost
-        
+
         return base_bonus + live_capture_bonus
 
     def _calculate_scale_bonus(self, scale_factor: float) -> float:
@@ -593,7 +597,7 @@ class DownTemplateDetector:
         elif 0.7 <= scale_factor <= 1.5:
             return 0.02  # Acceptable scale range - minimal bonus
         else:
-            return 0.0   # Poor scale range - no bonus
+            return 0.0  # Poor scale range - no bonus
 
     def _ocr_fallback(
         self, roi: np.ndarray, offset: tuple[int, int], context: Optional[DownDetectionContext]

@@ -22,7 +22,18 @@ import cv2
 import numpy as np
 import torch
 from PIL import Image
-from PyQt6.QtCore import QObject, QPoint, QPointF, QRectF, QSize, Qt, QThread, QTimer, QUrl, pyqtSignal
+from PyQt6.QtCore import (
+    QObject,
+    QPoint,
+    QPointF,
+    QRectF,
+    QSize,
+    Qt,
+    QThread,
+    QTimer,
+    QUrl,
+    pyqtSignal,
+)
 from PyQt6.QtGui import (
     QBrush,
     QColor,
@@ -469,7 +480,7 @@ class AnalysisWorker(QThread):
 
     def _should_create_clip(self, game_state, situation_context) -> list[str]:
         """Determine which clips should be created based on selected clip preferences and state changes.
-        
+
         Returns:
             list[str]: List of matching clip tags that should be created
         """
@@ -1268,14 +1279,14 @@ class AnalysisWorker(QThread):
                 "yolov8n.pt",  # Smaller fallback model
                 "yolov8m.pt",  # Medium fallback model
             ]
-            
+
             model_path = None
             for path in model_paths:
                 if Path(path).exists():
                     model_path = Path(path)
                     print(f"✅ Found model at: {path}")
                     break
-            
+
             if model_path is None:
                 raise Exception(f"No YOLO model found. Tried paths: {model_paths}")
 
@@ -1302,7 +1313,9 @@ class AnalysisWorker(QThread):
             print("   ✅ Color Analysis: HSV color detection for penalty regions")
             print("   ✅ Drive Intelligence: Possession consistency and field position trends")
 
-            print(f"✅ Enhanced game analyzer with hybrid OCR system initialized successfully using {model_path}")
+            print(
+                f"✅ Enhanced game analyzer with hybrid OCR system initialized successfully using {model_path}"
+            )
             return True
 
         except Exception as e:
@@ -1458,7 +1471,9 @@ class AnalysisWorker(QThread):
                         # SMART CLIP FILTERING: Check which situations match selected clips
                         matching_clip_tags = self._should_create_clip(game_state, situation_context)
                         if matching_clip_tags:
-                            print(f"✅ CLIPS SHOULD BE CREATED at frame {frame_number}: {matching_clip_tags}")
+                            print(
+                                f"✅ CLIPS SHOULD BE CREATED at frame {frame_number}: {matching_clip_tags}"
+                            )
 
                             # INTELLIGENT CLIP CREATION: Use game state changes to determine boundaries
                             # First try intelligent clip boundary detection
@@ -1527,8 +1542,10 @@ class AnalysisWorker(QThread):
                                 for clip_tag in matching_clip_tags:
                                     # Create a customized situation context for this specific tag
                                     tag_situation_context = situation_context
-                                    tag_name = self.clip_tags.get(clip_tag, {}).get("name", clip_tag)
-                                    
+                                    tag_name = self.clip_tags.get(clip_tag, {}).get(
+                                        "name", clip_tag
+                                    )
+
                                     # Create the clip with tag-specific description
                                     clip = self._create_enhanced_clip_with_boundaries(
                                         clip_start_frame,
@@ -2060,7 +2077,14 @@ class AnalysisWorker(QThread):
         )
 
     def _create_enhanced_clip_with_boundaries(
-        self, start_frame, end_frame, fps, game_state, situation_context, boundary_info, clip_tag=None
+        self,
+        start_frame,
+        end_frame,
+        fps,
+        game_state,
+        situation_context,
+        boundary_info,
+        clip_tag=None,
     ):
         """Create an enhanced clip object with intelligent boundary detection."""
         # Ensure minimum and maximum clip durations
@@ -2119,7 +2143,7 @@ class AnalysisWorker(QThread):
     ):
         """Format game state with boundary detection context."""
         # If we have a specific clip tag, use it for the description
-        if clip_tag and hasattr(self, 'clip_tags') and clip_tag in self.clip_tags:
+        if clip_tag and hasattr(self, "clip_tags") and clip_tag in self.clip_tags:
             tag_info = self.clip_tags[clip_tag]
             base_situation = f"{tag_info.get('name', clip_tag)}: {self._format_enhanced_situation(game_state, situation_context)}"
         else:

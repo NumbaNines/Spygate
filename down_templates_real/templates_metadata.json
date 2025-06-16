@@ -1,0 +1,130 @@
+{
+  "1ST": {
+    "source_image": "down templates\\1.png",
+    "crop_coords": [
+      1323,
+      1034,
+      1378,
+      1062
+    ],
+    "template_path": "down_templates_real\\1ST.png",
+    "size": [
+      98,
+      192
+    ],
+    "preprocessing_applied": true,
+    "processing_info": "Enhanced with SpygateAI OCR preprocessing (Scale=3.5x, CLAHE, Gamma=0.8)"
+  },
+  "2ND": {
+    "source_image": "down templates\\2.png",
+    "crop_coords": [
+      1322,
+      1033,
+      1393,
+      1064
+    ],
+    "template_path": "down_templates_real\\2ND.png",
+    "size": [
+      108,
+      248
+    ],
+    "preprocessing_applied": true,
+    "processing_info": "Enhanced with SpygateAI OCR preprocessing (Scale=3.5x, CLAHE, Gamma=0.8)"
+  },
+  "3RD": {
+    "source_image": "down templates\\3rd.png",
+    "crop_coords": [
+      1318,
+      1035,
+      1384,
+      1063
+    ],
+    "template_path": "down_templates_real\\3RD.png",
+    "size": [
+      98,
+      231
+    ],
+    "preprocessing_applied": true,
+    "processing_info": "Enhanced with SpygateAI OCR preprocessing (Scale=3.5x, CLAHE, Gamma=0.8)"
+  },
+  "4TH": {
+    "source_image": "down templates\\4th.png",
+    "crop_coords": [
+      1318,
+      1035,
+      1381,
+      1061
+    ],
+    "template_path": "down_templates_real\\4TH.png",
+    "size": [
+      91,
+      220
+    ],
+    "preprocessing_applied": true,
+    "processing_info": "Enhanced with SpygateAI OCR preprocessing (Scale=3.5x, CLAHE, Gamma=0.8)"
+  },
+  "1ST_GOAL": {
+    "source_image": "down templates\\1st goal.png",
+    "crop_coords": [
+      1305,
+      1035,
+      1358,
+      1063
+    ],
+    "template_path": "down_templates_real\\1ST_GOAL.png",
+    "size": [
+      98,
+      185
+    ],
+    "preprocessing_applied": true,
+    "processing_info": "Enhanced with SpygateAI OCR preprocessing (Scale=3.5x, CLAHE, Gamma=0.8)"
+  },
+  "2ND_GOAL": {
+    "source_image": "down templates\\real 2ndgoal.png",
+    "crop_coords": [
+      1296,
+      1034,
+      1366,
+      1061
+    ],
+    "template_path": "down_templates_real\\2ND_GOAL.png",
+    "size": [
+      94,
+      245
+    ],
+    "preprocessing_applied": true,
+    "processing_info": "Enhanced with SpygateAI OCR preprocessing (Scale=3.5x, CLAHE, Gamma=0.8)"
+  },
+  "3RD_GOAL": {
+    "source_image": "down templates\\3rd goal.png",
+    "crop_coords": [
+      1300,
+      1035,
+      1363,
+      1062
+    ],
+    "template_path": "down_templates_real\\3RD_GOAL.png",
+    "size": [
+      94,
+      220
+    ],
+    "preprocessing_applied": true,
+    "processing_info": "Enhanced with SpygateAI OCR preprocessing (Scale=3.5x, CLAHE, Gamma=0.8)"
+  },
+  "4TH_GOAL": {
+    "source_image": "down templates\\4th goal.png",
+    "crop_coords": [
+      1298,
+      1034,
+      1363,
+      1061
+    ],
+    "template_path": "down_templates_real\\4TH_GOAL.png",
+    "size": [
+      94,
+      227
+    ],
+    "preprocessing_applied": true,
+    "processing_info": "Enhanced with SpygateAI OCR preprocessing (Scale=3.5x, CLAHE, Gamma=0.8)"
+  }
+}

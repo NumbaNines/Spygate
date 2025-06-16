@@ -576,15 +576,15 @@ class EnhancedGameAnalyzer:
         # Initialize field zones for field position analytics
         self.field_zones = {
             "own": {
-                "red_zone": (0, 20),      # Own 0-20 yard line (defending red zone)
+                "red_zone": (0, 20),  # Own 0-20 yard line (defending red zone)
                 "short_field": (21, 35),  # Own 21-35 yard line
-                "midfield": (36, 50),     # Own 36-50 yard line
+                "midfield": (36, 50),  # Own 36-50 yard line
             },
             "opponent": {
-                "midfield": (0, 15),      # Opponent 50-35 yard line
-                "short_field": (16, 30),  # Opponent 34-20 yard line  
-                "red_zone": (31, 50),     # Opponent 19-0 yard line (attacking red zone)
-            }
+                "midfield": (0, 15),  # Opponent 50-35 yard line
+                "short_field": (16, 30),  # Opponent 34-20 yard line
+                "red_zone": (31, 50),  # Opponent 19-0 yard line (attacking red zone)
+            },
         }
 
     def enable_debug_mode(self, enabled=True):
@@ -741,33 +741,41 @@ class EnhancedGameAnalyzer:
                 class_name = detection["class_name"]
                 bbox = detection["bbox"]
                 confidence = detection["confidence"]
-                
+
                 # Extract region from frame
                 region_roi = self._extract_region(frame, bbox)
                 if region_roi is None:
                     continue
-                    
+
                 region_data = {"roi": region_roi, "bbox": bbox, "confidence": confidence}
 
                 # Extract down and distance from precise down_distance_area
                 if class_name == "down_distance_area":
-                    down_result = self._extract_down_distance_from_region(region_data, current_time=None)
+                    down_result = self._extract_down_distance_from_region(
+                        region_data, current_time=None
+                    )
                     if down_result:
                         fresh_data["down"] = down_result.get("down")
                         fresh_data["distance"] = down_result.get("distance")
                         fresh_data["down_distance_text"] = down_result.get("raw_text", "")
                         fresh_data["down_distance_confidence"] = down_result.get("confidence", 0.0)
-                        print(f"🔍 FRESH DOWN/DISTANCE: '{down_result.get('raw_text')}' -> Down {fresh_data['down']} & {fresh_data['distance']}")
+                        print(
+                            f"🔍 FRESH DOWN/DISTANCE: '{down_result.get('raw_text')}' -> Down {fresh_data['down']} & {fresh_data['distance']}"
+                        )
 
                 # Extract game clock from precise game_clock_area
                 elif class_name == "game_clock_area":
-                    clock_result = self._extract_game_clock_from_region(region_data, current_time=None)
+                    clock_result = self._extract_game_clock_from_region(
+                        region_data, current_time=None
+                    )
                     if clock_result:
                         fresh_data["quarter"] = clock_result.get("quarter")
                         fresh_data["game_clock"] = clock_result.get("time")
                         fresh_data["clock_text"] = clock_result.get("raw_text", "")
                         fresh_data["clock_confidence"] = clock_result.get("confidence", 0.0)
-                        print(f"🔍 FRESH GAME CLOCK: '{clock_result.get('raw_text')}' -> Q{fresh_data['quarter']} {fresh_data['game_clock']}")
+                        print(
+                            f"🔍 FRESH GAME CLOCK: '{clock_result.get('raw_text')}' -> Q{fresh_data['quarter']} {fresh_data['game_clock']}"
+                        )
 
                 # Extract yard line from territory_triangle_area (where yard line is displayed)
                 elif class_name == "territory_triangle_area":
@@ -777,7 +785,9 @@ class EnhancedGameAnalyzer:
                         fresh_data["territory"] = yard_line_result.get("territory")
                         fresh_data["yard_line_text"] = yard_line_result.get("raw_text", "")
                         fresh_data["yard_line_confidence"] = yard_line_result.get("confidence", 0.0)
-                        print(f"🔍 FRESH YARD LINE: '{yard_line_result.get('raw_text')}' -> {fresh_data['territory']} {fresh_data['yard_line']}")
+                        print(
+                            f"🔍 FRESH YARD LINE: '{yard_line_result.get('raw_text')}' -> {fresh_data['territory']} {fresh_data['yard_line']}"
+                        )
 
             # Add timestamp for tracking
             fresh_data["extracted_at_frame"] = frame_number
@@ -829,11 +839,11 @@ class EnhancedGameAnalyzer:
     def _extract_region(self, frame, bbox):
         """
         Extract a region from the frame using bounding box coordinates.
-        
+
         Args:
             frame: Input frame (numpy array)
             bbox: Bounding box [x1, y1, x2, y2]
-            
+
         Returns:
             Extracted region as numpy array
         """
@@ -842,17 +852,17 @@ class EnhancedGameAnalyzer:
             # Ensure coordinates are integers and within frame bounds
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
             h, w = frame.shape[:2]
-            
+
             # Clamp coordinates to frame bounds
             x1 = max(0, min(x1, w))
             y1 = max(0, min(y1, h))
             x2 = max(0, min(x2, w))
             y2 = max(0, min(y2, h))
-            
+
             # Extract region
             region = frame[y1:y2, x1:x2]
             return region
-            
+
         except Exception as e:
             logger.error(f"Error extracting region: {e}")
             return None
@@ -865,12 +875,12 @@ class EnhancedGameAnalyzer:
         try:
             if hud_region is None or hud_region.size == 0:
                 return None
-            
+
             # For now, use the left portion of the HUD where down/distance typically appears
             h, w = hud_region.shape[:2]
             # Down/distance is typically in the left 40% of the HUD
-            return hud_region[:, :int(w * 0.4)]
-            
+            return hud_region[:, : int(w * 0.4)]
+
         except Exception as e:
             logger.error(f"Error locating down/distance region: {e}")
             return None
@@ -882,12 +892,12 @@ class EnhancedGameAnalyzer:
         try:
             if hud_region is None or hud_region.size == 0:
                 return None
-            
+
             # Yard line is typically in the right portion of the HUD
             h, w = hud_region.shape[:2]
             # Yard line is typically in the right 30% of the HUD
-            return hud_region[:, int(w * 0.7):]
-            
+            return hud_region[:, int(w * 0.7) :]
+
         except Exception as e:
             logger.error(f"Error locating yard line region: {e}")
             return None
@@ -899,12 +909,12 @@ class EnhancedGameAnalyzer:
         try:
             if hud_region is None or hud_region.size == 0:
                 return None
-            
+
             # Game clock is typically in the center-right portion of the HUD
             h, w = hud_region.shape[:2]
             # Game clock is typically in the center portion of the HUD
-            return hud_region[:, int(w * 0.4):int(w * 0.7)]
-            
+            return hud_region[:, int(w * 0.4) : int(w * 0.7)]
+
         except Exception as e:
             logger.error(f"Error locating game clock region: {e}")
             return None
@@ -946,85 +956,85 @@ class EnhancedGameAnalyzer:
     def _analyze_triangle_direction(self, region_roi, triangle_type):
         """
         Analyze triangle direction within a detected region.
-        
+
         Args:
             region_roi: The extracted region containing the triangle
             triangle_type: "possession" or "territory"
-            
+
         Returns:
             Direction string: "left", "right", "up", "down", or None
         """
         try:
             if region_roi is None or region_roi.size == 0:
                 return None
-                
+
             # Convert to grayscale for analysis
             if len(region_roi.shape) == 3:
                 gray = cv2.cvtColor(region_roi, cv2.COLOR_BGR2GRAY)
             else:
                 gray = region_roi
-                
+
             # Apply threshold to get binary image
             _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-            
+
             # Find contours
             contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            
+
             if not contours:
                 return self._template_match_triangles(region_roi, triangle_type)
-                
+
             # Find the largest contour (likely the triangle)
             largest_contour = max(contours, key=cv2.contourArea)
             area = cv2.contourArea(largest_contour)
-            
+
             if area < 10:  # Too small to be a triangle
                 return self._template_match_triangles(region_roi, triangle_type)
-                
+
             # Approximate contour to polygon
             epsilon = 0.02 * cv2.arcLength(largest_contour, True)
             approx = cv2.approxPolyDP(largest_contour, epsilon, True)
-            
+
             if len(approx) >= 3:
                 # Calculate moments for centroid
                 M = cv2.moments(largest_contour)
                 if M["m00"] != 0:
                     cx = int(M["m10"] / M["m00"])
                     cy = int(M["m01"] / M["m00"])
-                    
+
                     # Get bounding rectangle for aspect ratio
                     rect = cv2.boundingRect(largest_contour)
                     aspect_ratio = rect[2] / rect[3] if rect[3] > 0 else 0
-                    
+
                     # Get triangle vertices
                     vertices = approx.reshape(-1, 2)
-                    
+
                     if triangle_type == "possession":
                         # Horizontal pointing triangles (◀ ▶)
                         if aspect_ratio > 1.2:  # Wide triangle
                             leftmost_idx = np.argmin(vertices[:, 0])
                             rightmost_idx = np.argmax(vertices[:, 0])
-                            
+
                             # Check if leftmost point is actually pointing left
                             if vertices[leftmost_idx, 0] < cx:
-                                return 'left'  # ◀ User team has ball
+                                return "left"  # ◀ User team has ball
                             else:
-                                return 'right'  # ▶ Opponent team has ball
-                                
+                                return "right"  # ▶ Opponent team has ball
+
                     elif triangle_type == "territory":
                         # Vertical pointing triangles (▲ ▼)
                         if aspect_ratio < 0.8:  # Tall triangle
                             topmost_idx = np.argmin(vertices[:, 1])
                             bottommost_idx = np.argmax(vertices[:, 1])
-                            
+
                             # Check if topmost point is actually pointing up
                             if vertices[topmost_idx, 1] < cy:
-                                return 'up'  # ▲ Own territory
+                                return "up"  # ▲ Own territory
                             else:
-                                return 'down'  # ▼ Opponent territory
-            
+                                return "down"  # ▼ Opponent territory
+
             # Fallback to template matching if contour analysis fails
             return self._template_match_triangles(region_roi, triangle_type)
-            
+
         except Exception as e:
             logger.error(f"Error analyzing triangle direction: {e}")
             return None
@@ -1036,67 +1046,83 @@ class EnhancedGameAnalyzer:
         try:
             if roi is None or roi.size == 0:
                 return None
-                
+
             # Convert to grayscale
             if len(roi.shape) == 3:
                 gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
             else:
                 gray = roi
-                
+
             # Create triangle templates
             template_size = min(roi.shape[0], roi.shape[1], 20)
             if template_size < 8:
                 return None
-                
+
             templates = {}
-            
+
             # Left pointing triangle ◀
             left_template = np.zeros((template_size, template_size), dtype=np.uint8)
-            points = np.array([[template_size-2, 2], [2, template_size//2], [template_size-2, template_size-2]])
+            points = np.array(
+                [
+                    [template_size - 2, 2],
+                    [2, template_size // 2],
+                    [template_size - 2, template_size - 2],
+                ]
+            )
             cv2.fillPoly(left_template, [points], 255)
-            templates['left'] = left_template
-            
+            templates["left"] = left_template
+
             # Right pointing triangle ▶
             right_template = np.zeros((template_size, template_size), dtype=np.uint8)
-            points = np.array([[2, 2], [template_size-2, template_size//2], [2, template_size-2]])
+            points = np.array(
+                [[2, 2], [template_size - 2, template_size // 2], [2, template_size - 2]]
+            )
             cv2.fillPoly(right_template, [points], 255)
-            templates['right'] = right_template
-            
+            templates["right"] = right_template
+
             # Up pointing triangle ▲
             up_template = np.zeros((template_size, template_size), dtype=np.uint8)
-            points = np.array([[template_size//2, 2], [2, template_size-2], [template_size-2, template_size-2]])
+            points = np.array(
+                [
+                    [template_size // 2, 2],
+                    [2, template_size - 2],
+                    [template_size - 2, template_size - 2],
+                ]
+            )
             cv2.fillPoly(up_template, [points], 255)
-            templates['up'] = up_template
-            
+            templates["up"] = up_template
+
             # Down pointing triangle ▼
             down_template = np.zeros((template_size, template_size), dtype=np.uint8)
-            points = np.array([[2, 2], [template_size-2, 2], [template_size//2, template_size-2]])
+            points = np.array(
+                [[2, 2], [template_size - 2, 2], [template_size // 2, template_size - 2]]
+            )
             cv2.fillPoly(down_template, [points], 255)
-            templates['down'] = down_template
-            
+            templates["down"] = down_template
+
             # Match templates based on triangle type
             best_match = None
             best_score = 0.3  # Minimum threshold
-            
+
             for direction, template in templates.items():
                 # Skip irrelevant directions based on triangle type
-                if triangle_type == "possession" and direction in ['up', 'down']:
+                if triangle_type == "possession" and direction in ["up", "down"]:
                     continue
-                if triangle_type == "territory" and direction in ['left', 'right']:
+                if triangle_type == "territory" and direction in ["left", "right"]:
                     continue
-                    
+
                 try:
                     result = cv2.matchTemplate(gray, template, cv2.TM_CCOEFF_NORMED)
                     _, max_val, _, _ = cv2.minMaxLoc(result)
-                    
+
                     if max_val > best_score:
                         best_score = max_val
                         best_match = direction
                 except:
                     continue
-                    
+
             return best_match
-            
+
         except Exception as e:
             logger.error(f"Error in template matching: {e}")
             return None
@@ -1104,11 +1130,11 @@ class EnhancedGameAnalyzer:
     def _analyze_possession_triangles(self, detections, frame):
         """
         Analyze possession triangles to determine which team has the ball.
-        
+
         Args:
             detections: List of YOLO detections
             frame: Current frame for region extraction
-            
+
         Returns:
             String: "user", "opponent", or None
         """
@@ -1118,11 +1144,11 @@ class EnhancedGameAnalyzer:
                     # Extract the region containing the possession triangle
                     bbox = detection["bbox"]
                     region_roi = self._extract_region(frame, bbox)
-                    
+
                     if region_roi is not None:
                         # Analyze triangle direction
                         direction = self._analyze_triangle_direction(region_roi, "possession")
-                        
+
                         if direction == "left":
                             return "user"  # User team has the ball
                         elif direction == "right":
@@ -1130,9 +1156,9 @@ class EnhancedGameAnalyzer:
                         else:
                             print(f"⚠️ Unknown possession triangle direction: {direction}")
                             return None
-                            
+
             return None  # No possession triangle detected
-            
+
         except Exception as e:
             logger.error(f"Error analyzing possession triangles: {e}")
             return None
@@ -1140,11 +1166,11 @@ class EnhancedGameAnalyzer:
     def _analyze_territory_triangles(self, detections, frame):
         """
         Analyze territory triangles to determine field position context.
-        
+
         Args:
             detections: List of YOLO detections
             frame: Current frame for region extraction
-            
+
         Returns:
             String: "own", "opponent", or None
         """
@@ -1154,11 +1180,11 @@ class EnhancedGameAnalyzer:
                     # Extract the region containing the territory triangle
                     bbox = detection["bbox"]
                     region_roi = self._extract_region(frame, bbox)
-                    
+
                     if region_roi is not None:
                         # Analyze triangle direction
                         direction = self._analyze_triangle_direction(region_roi, "territory")
-                        
+
                         if direction == "up":
                             return "opponent"  # In opponent's territory
                         elif direction == "down":
@@ -1166,9 +1192,9 @@ class EnhancedGameAnalyzer:
                         else:
                             print(f"⚠️ Unknown territory triangle direction: {direction}")
                             return None
-                            
+
             return None  # No territory triangle detected
-            
+
         except Exception as e:
             logger.error(f"Error analyzing territory triangles: {e}")
             return None
@@ -1554,7 +1580,7 @@ class EnhancedGameAnalyzer:
                     color,
                     2,
                 )
-                
+
                 # Update state indicators for play state tracking
                 if class_name == "preplay_indicator":
                     game_state.state_indicators["preplay_indicator"] = True
@@ -1565,7 +1591,7 @@ class EnhancedGameAnalyzer:
 
         # Update overall confidence
         game_state.confidence = total_confidence / num_detections if num_detections > 0 else 0.0
-        
+
         # Set additional state indicators for play state tracking
         game_state.state_indicators["hud_visible"] = any(
             detection["class_name"] == "hud" for detection in detections
@@ -1576,14 +1602,18 @@ class EnhancedGameAnalyzer:
         game_state.state_indicators["territory_triangle"] = any(
             detection["class_name"] == "territory_triangle_area" for detection in detections
         )
-        
+
         # Update play state indicators for play tracking
         current_state_dict = {
             "preplay_detected": game_state.state_indicators.get("preplay_indicator", False),
             "play_call_screen": game_state.state_indicators.get("play_call_screen", False),
             "hud_visible": game_state.state_indicators.get("hud_visible", False),
-            "possession_triangle_detected": game_state.state_indicators.get("possession_triangle", False),
-            "territory_triangle_detected": game_state.state_indicators.get("territory_triangle", False),
+            "possession_triangle_detected": game_state.state_indicators.get(
+                "possession_triangle", False
+            ),
+            "territory_triangle_detected": game_state.state_indicators.get(
+                "territory_triangle", False
+            ),
         }
         self._update_state_indicators(current_state_dict)
 
@@ -5696,6 +5726,7 @@ class EnhancedGameAnalyzer:
 
         # Pattern-based confidence
         import re
+
         if re.match(r"^[AH]\d+$", text):  # A35, H22 format
             confidence += 0.4
         elif re.match(r"^\d+$", text):  # 50 format
@@ -5719,6 +5750,7 @@ class EnhancedGameAnalyzer:
 
         # Score for valid format patterns
         import re
+
         if re.match(r"^[AH]\d+$", text):  # A35, H22 format
             score += 0.4
         elif re.match(r"^\d+$", text):  # 50 format (midfield)

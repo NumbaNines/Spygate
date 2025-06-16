@@ -54,7 +54,7 @@ class SimplePaddleOCRWrapper:
                         logger.warning(f"⚠️ EasyOCR GPU failed: {gpu_error}")
                         self.paddle = easyocr.Reader(["en"], gpu=False)
                         logger.info("✅ EasyOCR initialized with CPU")
-                    
+
                     self.ocr_engine = "easyocr"
                     logger.warning("⚠️ PaddleOCR not available, using EasyOCR fallback")
                 except ImportError:

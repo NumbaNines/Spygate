@@ -1,8 +1,9 @@
 import copy
 import time
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass
 from collections import deque
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
+
 
 @dataclass
 class PlayState:
@@ -10,7 +11,8 @@ class PlayState:
     down: Optional[int]
     distance: Optional[int]
     timestamp: float
-    raw_game_state: Dict[str, Any]
+    raw_game_state: dict[str, Any]
+
 
 @dataclass
 class ClipInfo:
@@ -19,30 +21,31 @@ class ClipInfo:
     end_frame: Optional[int]
     play_down: int
     play_distance: int
-    preserved_state: Dict[str, Any]
+    preserved_state: dict[str, Any]
     created_at: float
     status: str = "pending"
+
 
 class SimpleClipDetector:
     def __init__(self, fps: int = 30):
         self.fps = fps
         self.play_history: deque = deque(maxlen=300)
-        self.active_clips: List[ClipInfo] = []
+        self.active_clips: list[ClipInfo] = []
         self.last_down: Optional[int] = None
         self.pre_snap_buffer_seconds = 3.5
         self.max_play_duration_seconds = 12.0
 
-    def process_frame(self, frame_number: int, game_state: Dict[str, Any]) -> Optional[ClipInfo]:
+    def process_frame(self, frame_number: int, game_state: dict[str, Any]) -> Optional[ClipInfo]:
         current_time = time.time()
-        down = game_state.get('down')
-        distance = game_state.get('distance')
+        down = game_state.get("down")
+        distance = game_state.get("distance")
 
         play_state = PlayState(
             frame=frame_number,
             down=down,
             distance=distance,
             timestamp=current_time,
-            raw_game_state=copy.deepcopy(game_state)
+            raw_game_state=copy.deepcopy(game_state),
         )
         self.play_history.append(play_state)
 
@@ -66,7 +69,9 @@ class SimpleClipDetector:
 
         # Down change detection
         if self.last_down != current_down:
-            print(f"🏈 NEW PLAY DETECTED: {self.last_down} → {current_down} at frame {current_state.frame}")
+            print(
+                f"🏈 NEW PLAY DETECTED: {self.last_down} → {current_down} at frame {current_state.frame}"
+            )
             self.last_down = current_down
             return self._create_clip_info(current_state)
 
@@ -88,7 +93,7 @@ class SimpleClipDetector:
             play_distance=play_state.distance,
             preserved_state=copy.deepcopy(play_state.raw_game_state),
             created_at=play_state.timestamp,
-            status="pending"
+            status="pending",
         )
 
         self.active_clips.append(clip_info)
@@ -102,5 +107,5 @@ class SimpleClipDetector:
                 clip.status = "finalized"
                 print(f"🏁 CLIP FINALIZED: {clip.play_down} & {clip.play_distance}")
 
-    def get_finalized_clips(self) -> List[ClipInfo]:
-        return [clip for clip in self.active_clips if clip.status == "finalized"] 
+    def get_finalized_clips(self) -> list[ClipInfo]:
+        return [clip for clip in self.active_clips if clip.status == "finalized"]

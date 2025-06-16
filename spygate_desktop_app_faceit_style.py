@@ -22,11 +22,13 @@ import cv2
 import numpy as np
 import torch
 from PIL import Image
-from PyQt6.QtCore import QObject, QPoint, QRectF, Qt, QThread, QTimer, QUrl, pyqtSignal
+from PyQt6.QtCore import QObject, QPoint, QPointF, QRectF, QSize, Qt, QThread, QTimer, QUrl, pyqtSignal
 from PyQt6.QtGui import (
     QBrush,
     QColor,
+    QCursor,
     QFont,
+    QIcon,
     QImage,
     QKeySequence,
     QPainter,
@@ -46,14 +48,17 @@ from PyQt6.QtWidgets import (
     QDialog,
     QFileDialog,
     QFrame,
+    QGraphicsScene,
     QGraphicsView,
     QGridLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QMainWindow,
+    QMenu,
     QMessageBox,
     QProgressBar,
+    QProgressDialog,
     QPushButton,
     QScrollArea,
     QSizePolicy,
@@ -63,6 +68,7 @@ from PyQt6.QtWidgets import (
     QTabWidget,
     QVBoxLayout,
     QWidget,
+    QWidgetAction,
 )
 
 # Add project paths
@@ -115,6 +121,20 @@ try:
 except ImportError:
     User = None
     UserDatabase = None
+
+
+@dataclass
+class DetectedClip:
+    """Represents a detected clip with metadata."""
+
+    start_frame: int
+    end_frame: int
+    start_time: float
+    end_time: float
+    confidence: float
+    situation: str
+    thumbnail_path: Optional[str] = None
+    approved: Optional[bool] = None
 
 
 class AnalysisWorker(QThread):
@@ -447,10 +467,14 @@ class AnalysisWorker(QThread):
 
         return mapping.get(situation_type, [])
 
-    def _should_create_clip(self, game_state, situation_context) -> bool:
-        """Determine if we should create a clip based on selected clip preferences and state changes."""
+    def _should_create_clip(self, game_state, situation_context) -> list[str]:
+        """Determine which clips should be created based on selected clip preferences and state changes.
+        
+        Returns:
+            list[str]: List of matching clip tags that should be created
+        """
         if not game_state:
-            return False
+            return []
 
         # Extract situation details
         down = game_state.down
@@ -669,9 +693,8 @@ class AnalysisWorker(QThread):
         # === STRICT PREFERENCE MATCHING ===
         # ONLY create clips that exactly match user's selected preferences
 
-        # Update last clip frame for matched clips
-        for clip_type in clip_matches:
-            self.last_clip_frame[clip_type] = current_frame
+        # Update last clip frame for matched clips (moved to after actual clip creation)
+        # This will be handled in the main analysis loop after clips are created
 
         # CRITICAL FIX: Update previous game state AFTER all analysis is complete
         self.previous_game_state = game_state
@@ -685,7 +708,7 @@ class AnalysisWorker(QThread):
             print(
                 f"   📋 User wants: {list(k for k, v in self.situation_preferences.items() if v)}"
             )
-            return True
+            return clip_matches
         elif current_frame % 300 == 0:
             print(f"❌ NO CLIP MATCHES at frame {current_frame}")
             print(f"   🎯 Detected: Down={analysis_down}, Distance={analysis_distance}")
@@ -693,7 +716,7 @@ class AnalysisWorker(QThread):
                 f"   📋 User wants: {list(k for k, v in self.situation_preferences.items() if v)}"
             )
 
-        return False
+        return []
 
     def _is_duplicate_clip(self, start_frame: int, end_frame: int, current_frame: int) -> bool:
         """
@@ -1237,12 +1260,29 @@ class AnalysisWorker(QThread):
                 f"📊 Cache Status: {cache_health['overall_status']} - Hit Rate: {cache_stats['hit_rate']:.1%}"
             )
 
+            # Try multiple model paths in order of preference
+            model_paths = [
+                "hud_region_training/hud_region_training_8class/runs/hud_8class_fp_reduced_speed/weights/best.pt",  # Original path
+                "hud_region_training_8class/runs/hud_8class_fp_reduced_speed/weights/best.pt",  # Alternative path
+                "yolov8s.pt",  # Available fallback model
+                "yolov8n.pt",  # Smaller fallback model
+                "yolov8m.pt",  # Medium fallback model
+            ]
+            
+            model_path = None
+            for path in model_paths:
+                if Path(path).exists():
+                    model_path = Path(path)
+                    print(f"✅ Found model at: {path}")
+                    break
+            
+            if model_path is None:
+                raise Exception(f"No YOLO model found. Tried paths: {model_paths}")
+
             # Initialize analyzer with hardware detection, caching, and hybrid OCR
             self.analyzer = EnhancedGameAnalyzer(
                 hardware=self.hardware,
-                model_path=Path(
-                    "hud_region_training/hud_region_training_8class/runs/hud_8class_fp_reduced_speed/weights/best.pt"
-                ),
+                model_path=model_path,
                 debug_output_dir=Path(
                     "debug_triangle_detection"
                 ),  # Enable 97.6% accuracy triangle detection
@@ -1262,7 +1302,7 @@ class AnalysisWorker(QThread):
             print("   ✅ Color Analysis: HSV color detection for penalty regions")
             print("   ✅ Drive Intelligence: Possession consistency and field position trends")
 
-            print("✅ Enhanced game analyzer with hybrid OCR system initialized successfully")
+            print(f"✅ Enhanced game analyzer with hybrid OCR system initialized successfully using {model_path}")
             return True
 
         except Exception as e:
@@ -1288,6 +1328,25 @@ class AnalysisWorker(QThread):
     def stop(self):
         """Stop the analysis process."""
         self.should_stop = True
+
+    def _analyze_enhanced_situation(self, game_state, frame_number):
+        """Analyze enhanced situation context using hybrid OCR features."""
+        try:
+            # Use the analyzer's advanced situational intelligence
+            situation_context = self.analyzer.analyze_advanced_situation(game_state)
+
+            # Add frame-specific context
+            situation_context.frame_number = frame_number
+            situation_context.timestamp = frame_number / 30.0  # Assume 30 FPS
+
+            return situation_context
+
+        except Exception as e:
+            print(f"⚠️ Enhanced situation analysis error: {e}")
+            # Return basic context as fallback
+            from spygate.ml.enhanced_game_analyzer import SituationContext
+
+            return SituationContext()
 
     def run(self):
         """Run video analysis with enhanced 5-class detection."""
@@ -1396,9 +1455,10 @@ class AnalysisWorker(QThread):
                                 f"🎯 Boundary Info: New Play={boundary_info['play_started']}, Type={boundary_info['play_type']}"
                             )
 
-                        # SMART CLIP FILTERING: Check if this situation matches selected clips
-                        if self._should_create_clip(game_state, situation_context):
-                            print(f"✅ CLIP SHOULD BE CREATED at frame {frame_number}")
+                        # SMART CLIP FILTERING: Check which situations match selected clips
+                        matching_clip_tags = self._should_create_clip(game_state, situation_context)
+                        if matching_clip_tags:
+                            print(f"✅ CLIPS SHOULD BE CREATED at frame {frame_number}: {matching_clip_tags}")
 
                             # INTELLIGENT CLIP CREATION: Use game state changes to determine boundaries
                             # First try intelligent clip boundary detection
@@ -1442,7 +1502,7 @@ class AnalysisWorker(QThread):
                                 clip_start_frame, clip_end_frame, frame_number
                             ):
                                 print(
-                                    f"🎬 CREATING IMMEDIATE CLIP: Frame {clip_start_frame} → {clip_end_frame}"
+                                    f"🎬 CREATING CLIPS: Frame {clip_start_frame} → {clip_end_frame}"
                                 )
 
                                 # 🚨 CRITICAL DEBUG: Log game state BEFORE clip creation
@@ -1463,30 +1523,35 @@ class AnalysisWorker(QThread):
                                     f"   Territory: {getattr(game_state, 'territory', 'MISSING')}"
                                 )
 
-                                # Create the clip immediately
-                                clip = self._create_enhanced_clip_with_boundaries(
-                                    clip_start_frame,
-                                    clip_end_frame,
-                                    fps,
-                                    game_state,
-                                    situation_context,
-                                    boundary_info,
-                                )
-                                detected_clips.append(clip)
+                                # CREATE SEPARATE CLIPS FOR EACH MATCHING TAG
+                                for clip_tag in matching_clip_tags:
+                                    # Create a customized situation context for this specific tag
+                                    tag_situation_context = situation_context
+                                    tag_name = self.clip_tags.get(clip_tag, {}).get("name", clip_tag)
+                                    
+                                    # Create the clip with tag-specific description
+                                    clip = self._create_enhanced_clip_with_boundaries(
+                                        clip_start_frame,
+                                        clip_end_frame,
+                                        fps,
+                                        game_state,
+                                        tag_situation_context,
+                                        boundary_info,
+                                        clip_tag=clip_tag,  # Pass the specific tag
+                                    )
+                                    detected_clips.append(clip)
 
-                                # Register this clip to prevent future duplicates
-                                situation_type = getattr(
-                                    situation_context,
-                                    "situation_type",
-                                    boundary_info.get("play_type", "unknown"),
-                                )
-                                self._register_created_clip(
-                                    clip_start_frame, clip_end_frame, situation_type
-                                )
+                                    # Register this clip to prevent future duplicates
+                                    self._register_created_clip(
+                                        clip_start_frame, clip_end_frame, clip_tag
+                                    )
 
-                                # Emit clip detected signal
-                                print(f"📡 EMITTING CLIP SIGNAL for {situation_type}")
-                                self.clip_detected.emit(clip)
+                                    # Update last clip frame for this specific tag
+                                    self.last_clip_frame[clip_tag] = frame_number
+
+                                    # Emit clip detected signal for each clip
+                                    print(f"📡 EMITTING CLIP SIGNAL for {clip_tag} ({tag_name})")
+                                    self.clip_detected.emit(clip)
 
                                 # Log enhanced detection with boundary info
                                 self._log_enhanced_detection_with_boundaries(
@@ -1555,25 +1620,6 @@ class AnalysisWorker(QThread):
             self.error_occurred.emit(error_msg)
             self.cleanup_memory(cap)
 
-    def _analyze_enhanced_situation(self, game_state, frame_number):
-        """Analyze enhanced situation context using hybrid OCR features."""
-        try:
-            # Use the analyzer's advanced situational intelligence
-            situation_context = self.analyzer.analyze_advanced_situation(game_state)
-
-            # Add frame-specific context
-            situation_context.frame_number = frame_number
-            situation_context.timestamp = frame_number / 30.0  # Assume 30 FPS
-
-            return situation_context
-
-        except Exception as e:
-            print(f"⚠️ Enhanced situation analysis error: {e}")
-            # Return basic context as fallback
-            from spygate.ml.enhanced_game_analyzer import SituationContext
-
-            return SituationContext()
-
     def _check_enhanced_situation_match(self, game_state, situation_context):
         """Check if current game state matches user preferences with enhanced context."""
         if not game_state:
@@ -1627,12 +1673,6 @@ class AnalysisWorker(QThread):
             return True
 
         return False
-
-    def _check_situation_match(self, game_state):
-        """Legacy method - redirects to enhanced version."""
-        from spygate.ml.enhanced_game_analyzer import SituationContext
-
-        return self._check_enhanced_situation_match(game_state, SituationContext())
 
     def _create_enhanced_clip(self, frame_number, fps, game_state, situation_context):
         """Create an enhanced clip object with intelligent game-state-based boundaries."""
@@ -1832,12 +1872,6 @@ class AnalysisWorker(QThread):
         )
         return start_frame, end_frame, base_confidence
 
-    def _create_clip(self, frame_number, fps, game_state):
-        """Legacy method - redirects to enhanced version."""
-        from spygate.ml.enhanced_game_analyzer import SituationContext
-
-        return self._create_enhanced_clip(frame_number, fps, game_state, SituationContext())
-
     def _format_enhanced_situation(self, game_state, situation_context):
         """Format game state with enhanced hybrid OCR context for all clip types."""
 
@@ -2011,8 +2045,22 @@ class AnalysisWorker(QThread):
         if hasattr(situation_context, "play_count") and situation_context.play_count >= 8:
             print(f"   🚂 Sustained Drive: {situation_context.play_count} plays")
 
+        # === FIELD POSITION ===
+        if hasattr(game_state, "yard_line") and game_state.yard_line:
+            print(f"   📍 Field Position: {game_state.yard_line} yard line")
+
+        # === DOWN/DISTANCE DETAILS ===
+        if hasattr(game_state, "down") and hasattr(game_state, "distance"):
+            print(f"   🏈 Down & Distance: {game_state.down} & {game_state.distance}")
+
+        # === SELECTED CLIPS DEBUG ===
+        selected_tags = [tag for tag, enabled in self.selected_clips.items() if enabled]
+        print(
+            f"   🎯 Active Clip Tags: {', '.join(selected_tags[:5])}{'...' if len(selected_tags) > 5 else ''}"
+        )
+
     def _create_enhanced_clip_with_boundaries(
-        self, start_frame, end_frame, fps, game_state, situation_context, boundary_info
+        self, start_frame, end_frame, fps, game_state, situation_context, boundary_info, clip_tag=None
     ):
         """Create an enhanced clip object with intelligent boundary detection."""
         # Ensure minimum and maximum clip durations
@@ -2047,9 +2095,9 @@ class AnalysisWorker(QThread):
         print(f"      Type: {getattr(situation_context, 'situation_type', 'MISSING')}")
         print(f"      Pressure: {getattr(situation_context, 'pressure_level', 'MISSING')}")
 
-        # Create enhanced situation description with boundary info
+        # Create enhanced situation description with boundary info and clip tag
         situation_desc = self._format_enhanced_situation_with_boundaries(
-            game_state, situation_context, boundary_info
+            game_state, situation_context, boundary_info, clip_tag
         )
 
         # FINAL DEBUG: Log the final description that will be used
@@ -2067,11 +2115,16 @@ class AnalysisWorker(QThread):
         )
 
     def _format_enhanced_situation_with_boundaries(
-        self, game_state, situation_context, boundary_info
+        self, game_state, situation_context, boundary_info, clip_tag=None
     ):
         """Format game state with boundary detection context."""
-        # Start with the standard enhanced situation
-        base_situation = self._format_enhanced_situation(game_state, situation_context)
+        # If we have a specific clip tag, use it for the description
+        if clip_tag and hasattr(self, 'clip_tags') and clip_tag in self.clip_tags:
+            tag_info = self.clip_tags[clip_tag]
+            base_situation = f"{tag_info.get('name', clip_tag)}: {self._format_enhanced_situation(game_state, situation_context)}"
+        else:
+            # Start with the standard enhanced situation
+            base_situation = self._format_enhanced_situation(game_state, situation_context)
 
         # Add boundary detection context
         play_type = boundary_info.get("play_type", "unknown")
@@ -2143,12 +2196,6 @@ class AnalysisWorker(QThread):
         print(
             f"   🎯 Active Clip Tags: {', '.join(selected_tags[:5])}{'...' if len(selected_tags) > 5 else ''}"
         )
-
-    def _format_situation(self, game_state):
-        """Legacy method - redirects to enhanced version."""
-        from spygate.ml.enhanced_game_analyzer import SituationContext
-
-        return self._format_enhanced_situation(game_state, SituationContext())
 
     def detect_team_scores_and_possession(self, frame, hud_box, frame_number=0):
         """Detect team scores and possession from the HUD box."""
@@ -2265,36 +2312,6 @@ class AnalysisWorker(QThread):
         except Exception as e:
             print(f"⚠️ Score/possession detection error: {e}")
             return {"home_score": None, "away_score": None, "possession": None}
-
-
-try:
-    import cv2
-    import numpy as np
-    from PIL import Image
-    from PyQt6.QtCore import *
-    from PyQt6.QtGui import *
-    from PyQt6.QtSvg import QSvgRenderer
-    from PyQt6.QtSvgWidgets import QSvgWidget
-    from PyQt6.QtWidgets import *
-
-    print("✅ Core imports successful")
-except ImportError as e:
-    print(f"❌ Import error: {e}")
-    sys.exit(1)
-
-
-@dataclass
-class DetectedClip:
-    """Represents a detected clip with metadata."""
-
-    start_frame: int
-    end_frame: int
-    start_time: float
-    end_time: float
-    confidence: float
-    situation: str
-    thumbnail_path: Optional[str] = None
-    approved: Optional[bool] = None
 
 
 class YouTubeStyleClipCard(QWidget):
@@ -3612,9 +3629,6 @@ class SpygateDesktop(QMainWindow):
         # Main Content Area
         self.create_main_content(content_layout)
 
-        # Right Sidebar
-        self.create_right_sidebar(content_layout)
-
         # Add content layout to main layout
         content_widget = QWidget()
         content_widget.setLayout(content_layout)
@@ -4791,7 +4805,6 @@ class SpygateDesktop(QMainWindow):
         # Update main content based on selection
         self.current_content = content_type
         self.update_main_content()
-        self.update_right_sidebar()  # Update right sidebar based on current tab
 
     def create_main_content(self, parent_layout):
         # Main content area
@@ -6802,7 +6815,6 @@ class SpygateDesktop(QMainWindow):
         # Update content
         self.current_content = tab_name
         self.update_main_content()
-        self.update_right_sidebar()
 
     def create_gameplan_content(self):
         """Create gameplan tab content with embedded interactive field"""
@@ -7112,708 +7124,7 @@ class SpygateDesktop(QMainWindow):
         controls_layout.addWidget(instructions)
 
         controls_layout.addStretch()
-
-        # Now add the players after coordinates display is created
-        self.add_draggable_players()
-
         return controls_container
-
-    def create_football_field(self):
-        """Create the football field graphics"""
-        # Field background (green)
-        field = QGraphicsRectItem(0, 0, 600, 400)
-        field.setBrush(QBrush(QColor("#228B22")))
-        field.setPen(QPen(QColor("#ffffff"), 2))
-        self.field_scene.addItem(field)
-
-        # End zones
-        end_zone_1 = QGraphicsRectItem(0, 0, 600, 40)
-        end_zone_1.setBrush(QBrush(QColor("#1e7e1e")))
-        end_zone_1.setPen(QPen(QColor("#ffffff"), 2))
-        self.field_scene.addItem(end_zone_1)
-
-        end_zone_2 = QGraphicsRectItem(0, 360, 600, 40)
-        end_zone_2.setBrush(QBrush(QColor("#1e7e1e")))
-        end_zone_2.setPen(QPen(QColor("#ffffff"), 2))
-        self.field_scene.addItem(end_zone_2)
-
-        # Yard lines every 40 pixels (10 yards)
-        for yard in range(1, 10):
-            y_pos = 40 + (yard * 32)  # Scale down for widget
-            line = QGraphicsLineItem(0, y_pos, 600, y_pos)
-            line.setPen(QPen(QColor("#ffffff"), 1))
-            self.field_scene.addItem(line)
-
-        # 50-yard line (midfield)
-        midfield_line = QGraphicsLineItem(0, 200, 600, 200)
-        midfield_line.setPen(QPen(QColor("#ffffff"), 3))
-        self.field_scene.addItem(midfield_line)
-
-        # Line of scrimmage (highlight at 25-yard line)
-        los_line = QGraphicsLineItem(0, 120, 600, 120)
-        los_line.setPen(QPen(QColor("#ff6b35"), 4))
-        self.field_scene.addItem(los_line)
-
-        # Add field labels
-        los_label = QGraphicsTextItem("Line of Scrimmage")
-        los_label.setDefaultTextColor(QColor("#ff6b35"))
-        los_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        los_label.setPos(10, 95)
-        self.field_scene.addItem(los_label)
-
-    def add_draggable_players(self):
-        """Add draggable player icons to the field"""
-        from PyQt6.QtGui import QBrush, QPen
-        from PyQt6.QtWidgets import QGraphicsEllipseItem, QGraphicsTextItem
-
-        # Default Gun Bunch formation positions (scaled for widget)
-        default_positions = {
-            "QB": (300, 100, QColor("#0066cc")),  # Blue for QB
-            "RB": (300, 85, QColor("#cc6600")),  # Orange for RB
-            "WR1": (120, 120, QColor("#cc0066")),  # Pink for WRs
-            "WR2": (180, 120, QColor("#cc0066")),
-            "WR3": (420, 120, QColor("#cc0066")),
-            "TE": (450, 120, QColor("#9900cc")),  # Purple for TE
-            "LT": (250, 120, QColor("#666666")),  # Gray for O-line
-            "LG": (275, 120, QColor("#666666")),
-            "C": (300, 120, QColor("#666666")),
-            "RG": (325, 120, QColor("#666666")),
-            "RT": (350, 120, QColor("#666666")),
-        }
-
-        self.field_players = {}
-
-        for position, (x, y, color) in default_positions.items():
-            # Create player circle
-            player = QGraphicsEllipseItem(0, 0, 20, 20)
-            player.setPos(x - 10, y - 10)  # Center the circle
-            player.setBrush(QBrush(color))
-            player.setPen(QPen(QColor("#ffffff"), 1))
-
-            # Make draggable
-            player.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsMovable, True)
-            player.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsSelectable, True)
-            player.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemSendsGeometryChanges, True)
-
-            # Add text label
-            label = QGraphicsTextItem(position, player)
-            label.setDefaultTextColor(QColor("#ffffff"))
-            label.setFont(QFont("Arial", 7, QFont.Weight.Bold))
-            label.setPos(2, 2)  # Center text in circle
-
-            # Store reference
-            player.position = position
-            player.label = label
-            self.field_players[position] = player
-
-            self.field_scene.addItem(player)
-
-        self.update_field_coordinates()
-
-    def zoom_in_field(self):
-        """Zoom in the field view"""
-        self.field_view.zoom_in()
-        zoom_percent = int(self.field_view.current_zoom * 100)
-        self.zoom_label.setText(f"{zoom_percent}%")
-
-    def zoom_out_field(self):
-        """Zoom out the field view"""
-        self.field_view.zoom_out()
-        zoom_percent = int(self.field_view.current_zoom * 100)
-        self.zoom_label.setText(f"{zoom_percent}%")
-
-    def reset_field_zoom(self):
-        """Reset field zoom to 100%"""
-        self.field_view.reset_zoom()
-        self.zoom_label.setText("100%")
-
-    def load_field_formation(self, formation_name):
-        """Load a formation preset on the field"""
-        print(f"🏈 Loading formation preset: {formation_name}")
-
-        formations = {
-            "Gun Bunch": {
-                "QB": (300, 100),
-                "RB": (300, 85),
-                "WR1": (120, 120),
-                "WR2": (180, 120),
-                "WR3": (420, 120),
-                "TE": (450, 120),
-                "LT": (250, 120),
-                "LG": (275, 120),
-                "C": (300, 120),
-                "RG": (325, 120),
-                "RT": (350, 120),
-            },
-            "Gun Trips Te": {
-                "QB": (300, 100),
-                "RB": (300, 85),
-                "WR1": (420, 120),
-                "WR2": (450, 120),
-                "WR3": (480, 120),
-                "TE": (380, 120),
-                "LT": (250, 120),
-                "LG": (275, 120),
-                "C": (300, 120),
-                "RG": (325, 120),
-                "RT": (350, 120),
-            },
-            "I-Formation": {
-                "QB": (300, 100),
-                "RB": (300, 140),
-                "WR1": (100, 120),
-                "WR2": (500, 120),
-                "WR3": (450, 120),
-                "TE": (380, 120),
-                "LT": (250, 120),
-                "LG": (275, 120),
-                "C": (300, 120),
-                "RG": (325, 120),
-                "RT": (350, 120),
-            },
-        }
-
-        if formation_name in formations:
-            formation = formations[formation_name]
-            for position, (x, y) in formation.items():
-                if position in self.field_players:
-                    self.field_players[position].setPos(x - 10, y - 10)
-            self.update_field_coordinates()
-            print(f"✅ Loaded {formation_name}: {len(formation)} players positioned")
-        else:
-            print(f"❌ Formation preset '{formation_name}' not found")
-
-    def update_field_coordinates(self):
-        """Update the coordinates display"""
-        coords_text = ""
-        for position in ["QB", "RB", "WR1", "WR2", "WR3", "TE", "LT", "LG", "C", "RG", "RT"]:
-            if position in self.field_players:
-                player = self.field_players[position]
-                x = player.pos().x() + 10  # Add offset to get center
-                y = player.pos().y() + 10
-                coords_text += f"{position}: ({int(x)}, {int(y)})\n"
-
-        self.coordinates_display.setText(coords_text)
-
-    def save_current_formation(self):
-        """Save the current formation"""
-        from PyQt6.QtWidgets import QInputDialog, QMessageBox
-
-        formation_name, ok = QInputDialog.getText(self, "Save Formation", "Enter formation name:")
-
-        if ok and formation_name:
-            # Here you would save the formation
-            QMessageBox.information(
-                self, "Formation Saved", f"Formation '{formation_name}' has been saved!"
-            )
-            print(f"💾 Formation '{formation_name}' saved")
-
-    def reset_players_to_default(self):
-        """Reset players to default Gun Bunch positions"""
-        self.load_field_formation("Gun Bunch")
-
-    def create_learn_content(self):
-        """Create learn tab content placeholder"""
-        content = QWidget()
-        layout = QVBoxLayout(content)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(20)
-
-        header = QLabel("Learning Center")
-        header.setStyleSheet(
-            """
-            color: #ffffff;
-            font-size: 24px;
-            font-weight: bold;
-            font-family: 'Minork Sans', Arial, sans-serif;
-        """
-        )
-        layout.addWidget(header)
-
-        placeholder = QLabel("📚 Tutorials, guides, and learning resources will be available here")
-        placeholder.setStyleSheet(
-            """
-            color: #767676;
-            font-size: 16px;
-            font-family: 'Minork Sans', Arial, sans-serif;
-            text-align: center;
-            padding: 40px;
-        """
-        )
-        placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(placeholder)
-
-        layout.addStretch()
-        return content
-
-    def create_debug_content(self):
-        """Create debug tool content for analyzing clips and logs"""
-        content = QWidget()
-        layout = QVBoxLayout(content)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(20)
-
-        # Title
-        title = QLabel("🔍 Debug Clip Analyzer")
-        title.setStyleSheet(
-            """
-            QLabel {
-                color: #ffffff;
-                font-size: 32px;
-                font-weight: bold;
-                font-family: 'Minork Sans', Arial, sans-serif;
-            }
-        """
-        )
-
-        # Description
-        description = QLabel(
-            "Analyze clips with synchronized logs, OCR results, and game state data to understand why clips are labeled incorrectly."
-        )
-        description.setStyleSheet(
-            """
-            QLabel {
-                color: #767676;
-                font-size: 16px;
-                font-family: 'Minork Sans', Arial, sans-serif;
-                margin-bottom: 20px;
-            }
-        """
-        )
-        description.setWordWrap(True)
-
-        # Launch button
-        launch_button = QPushButton("🚀 Launch Debug Tool")
-        launch_button.setFixedHeight(50)
-        launch_button.setStyleSheet(
-            """
-            QPushButton {
-                background-color: #1ce783;
-                color: #0b0c0f;
-                font-size: 18px;
-                font-weight: bold;
-                font-family: 'Minork Sans', Arial, sans-serif;
-                border: none;
-                border-radius: 8px;
-                padding: 10px 20px;
-            }
-            QPushButton:hover {
-                background-color: #17d174;
-            }
-            QPushButton:pressed {
-                background-color: #14b863;
-            }
-        """
-        )
-        launch_button.clicked.connect(self.launch_debug_tool)
-
-        # Export debug data button
-        export_button = QPushButton("📤 Export Debug Data")
-        export_button.setFixedHeight(40)
-        export_button.setStyleSheet(
-            """
-            QPushButton {
-                background-color: #2a2a2a;
-                color: #ffffff;
-                font-size: 16px;
-                font-weight: bold;
-                font-family: 'Minork Sans', Arial, sans-serif;
-                border: 1px solid #444444;
-                border-radius: 6px;
-                padding: 8px 16px;
-            }
-            QPushButton:hover {
-                background-color: #333333;
-                border-color: #1ce783;
-            }
-        """
-        )
-        export_button.clicked.connect(self.export_debug_data)
-
-        # Status info
-        status_label = QLabel()
-        if (
-            hasattr(self, "analysis_worker")
-            and self.analysis_worker
-            and hasattr(self.analysis_worker, "analyzer")
-        ):
-            if (
-                hasattr(self.analysis_worker.analyzer, "debug_mode")
-                and self.analysis_worker.analyzer.debug_mode
-            ):
-                status_text = "✅ Debug mode is ENABLED - collecting detailed analysis data"
-                status_color = "#1ce783"
-            else:
-                status_text = "⚠️ Debug mode is DISABLED - limited debug data available"
-                status_color = "#ffa500"
-        else:
-            status_text = "ℹ️ No analysis session active - run video analysis first"
-            status_color = "#767676"
-
-        status_label.setText(status_text)
-        status_label.setStyleSheet(
-            f"""
-            QLabel {{
-                color: {status_color};
-                font-size: 14px;
-                font-family: 'Minork Sans', Arial, sans-serif;
-                padding: 10px;
-                background-color: #1a1a1a;
-                border-radius: 6px;
-                border-left: 4px solid {status_color};
-            }}
-        """
-        )
-
-        # Features list
-        features_label = QLabel("Debug Tool Features:")
-        features_label.setStyleSheet(
-            """
-            QLabel {
-                color: #ffffff;
-                font-size: 18px;
-                font-weight: bold;
-                font-family: 'Minork Sans', Arial, sans-serif;
-                margin-top: 20px;
-            }
-        """
-        )
-
-        features_list = QLabel(
-            """
-• 🎬 Watch clips with synchronized analysis logs
-• 🔍 View OCR results and YOLO detections frame-by-frame
-• 📊 Analyze game state data and confidence scores
-• ✏️ Annotate clips with corrections and explanations
-• 🐛 Identify exactly why clips are mislabeled
-• 📈 Track detection accuracy and performance metrics
-• 💾 Export debug reports for further analysis
-        """
-        )
-        features_list.setStyleSheet(
-            """
-            QLabel {
-                color: #e3e3e3;
-                font-size: 14px;
-                font-family: 'Minork Sans', Arial, sans-serif;
-                line-height: 1.6;
-                padding: 15px;
-                background-color: #1a1a1a;
-                border-radius: 6px;
-            }
-        """
-        )
-
-        # Layout
-        layout.addWidget(title)
-        layout.addWidget(description)
-        layout.addWidget(status_label)
-        layout.addWidget(launch_button)
-        layout.addWidget(export_button)
-        layout.addWidget(features_label)
-        layout.addWidget(features_list)
-        layout.addStretch()
-
-        return content
-
-    def launch_debug_tool(self):
-        """Launch the debug clip analyzer tool"""
-        try:
-            # Import and launch the debug tool
-            from debug_clip_analyzer import ClipDebugAnalyzer
-
-            # Get debug data from analyzer if available
-            debug_data = None
-            if (
-                hasattr(self, "analysis_worker")
-                and self.analysis_worker
-                and hasattr(self.analysis_worker, "analyzer")
-            ):
-                if hasattr(self.analysis_worker.analyzer, "debug_data"):
-                    debug_data = self.analysis_worker.analyzer.debug_data
-                    print(
-                        f"🔍 Loaded debug data: {len(debug_data.get('clips', []))} clips, {len(debug_data.get('logs', []))} log entries"
-                    )
-
-            # Launch debug tool
-            self.debug_tool = ClipDebugAnalyzer()
-            if debug_data:
-                self.debug_tool.load_debug_data(debug_data)
-            self.debug_tool.show()
-
-            print("🚀 Debug tool launched successfully")
-
-        except ImportError as e:
-            print(f"❌ Failed to import debug tool: {e}")
-            # Show error message to user
-            from PyQt6.QtWidgets import QMessageBox
-
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Icon.Warning)
-            msg.setWindowTitle("Debug Tool Error")
-            msg.setText("Debug tool is not available.")
-            msg.setInformativeText(
-                "The debug_clip_analyzer.py file is missing or has import errors."
-            )
-            msg.exec()
-
-        except Exception as e:
-            print(f"❌ Failed to launch debug tool: {e}")
-            from PyQt6.QtWidgets import QMessageBox
-
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Icon.Critical)
-            msg.setWindowTitle("Debug Tool Error")
-            msg.setText(f"Failed to launch debug tool: {str(e)}")
-            msg.exec()
-
-    def export_debug_data(self):
-        """Export debug data to file"""
-        try:
-            if (
-                hasattr(self, "analysis_worker")
-                and self.analysis_worker
-                and hasattr(self.analysis_worker, "analyzer")
-            ):
-                if hasattr(self.analysis_worker.analyzer, "export_debug_data"):
-                    output_dir = "debug_export"
-                    self.analysis_worker.analyzer.export_debug_data(output_dir)
-                    print(f"📤 Debug data exported to {output_dir}")
-
-                    # Show success message
-                    from PyQt6.QtWidgets import QMessageBox
-
-                    msg = QMessageBox()
-                    msg.setIcon(QMessageBox.Icon.Information)
-                    msg.setWindowTitle("Export Complete")
-                    msg.setText(f"Debug data exported successfully to '{output_dir}' folder.")
-                    msg.exec()
-                else:
-                    print("⚠️ Debug export not available - analyzer doesn't support export")
-            else:
-                print("⚠️ No analysis session active - nothing to export")
-                from PyQt6.QtWidgets import QMessageBox
-
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Icon.Warning)
-                msg.setWindowTitle("Export Error")
-                msg.setText(
-                    "No analysis session active. Run video analysis first to generate debug data."
-                )
-                msg.exec()
-
-        except Exception as e:
-            print(f"❌ Failed to export debug data: {e}")
-            from PyQt6.QtWidgets import QMessageBox
-
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Icon.Critical)
-            msg.setWindowTitle("Export Error")
-            msg.setText(f"Failed to export debug data: {str(e)}")
-            msg.exec()
-
-    def create_default_content(self):
-        """Create default content for unimplemented tabs"""
-        content = QWidget()
-        layout = QVBoxLayout(content)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(20)
-
-        placeholder = QLabel("🚧 This feature is coming soon!")
-        placeholder.setStyleSheet(
-            """
-            color: #767676;
-            font-size: 18px;
-            font-family: 'Minork Sans', Arial, sans-serif;
-            text-align: center;
-            padding: 40px;
-        """
-        )
-        placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(placeholder)
-
-        layout.addStretch()
-        return content
-
-    def create_right_sidebar(self, parent_layout):
-        """Create collapsible right sidebar"""
-        # Right sidebar frame
-        self.right_sidebar = QFrame()
-        self.right_sidebar.setFixedWidth(300)
-        self.right_sidebar.setStyleSheet(
-            """
-            QFrame {
-                background-color: #0b0c0f;
-            }
-        """
-        )
-
-        self.right_sidebar_layout = QVBoxLayout(self.right_sidebar)
-        self.right_sidebar_layout.setContentsMargins(0, 0, 0, 0)
-        self.right_sidebar_layout.setSpacing(0)
-
-        # Update right sidebar content
-        self.update_right_sidebar()
-
-        parent_layout.addWidget(self.right_sidebar)
-
-    def update_right_sidebar(self):
-        """Update right sidebar content based on current tab"""
-        # Clear existing content
-        for i in reversed(range(self.right_sidebar_layout.count())):
-            item = self.right_sidebar_layout.itemAt(i)
-            if item and item.widget():
-                item.widget().setParent(None)
-
-        # Add content based on current tab
-        if self.current_content == "dashboard":
-            self.create_dashboard_sidebar()
-        elif self.current_content == "analysis":
-            self.create_analysis_sidebar()
-        else:
-            self.create_default_sidebar()
-
-    def create_dashboard_sidebar(self):
-        """Create dashboard-specific sidebar content"""
-        header = QLabel("Quick Actions")
-        header.setStyleSheet(
-            """
-            color: #ffffff;
-            font-size: 16px;
-            font-weight: bold;
-            font-family: 'Minork Sans', Arial, sans-serif;
-            padding: 20px;
-        """
-        )
-        self.right_sidebar_layout.addWidget(header)
-
-        # Recent files or quick actions would go here
-        placeholder = QLabel("Dashboard sidebar content")
-        placeholder.setStyleSheet(
-            """
-                color: #767676;
-                font-size: 14px;
-                font-family: 'Minork Sans', Arial, sans-serif;
-            padding: 20px;
-        """
-        )
-        self.right_sidebar_layout.addWidget(placeholder)
-        self.right_sidebar_layout.addStretch()
-
-    def create_analysis_sidebar(self):
-        """Create analysis-specific sidebar content"""
-        header = QLabel("Analysis Tools")
-        header.setStyleSheet(
-            """
-            color: #ffffff;
-            font-size: 16px;
-            font-weight: bold;
-            font-family: 'Minork Sans', Arial, sans-serif;
-            padding: 20px;
-        """
-        )
-        self.right_sidebar_layout.addWidget(header)
-
-        # Cache Performance Section
-        cache_header = QLabel("🚀 Cache Performance")
-        cache_header.setStyleSheet(
-            """
-            color: #29d28c;
-            font-size: 14px;
-            font-weight: bold;
-            font-family: 'Minork Sans', Arial, sans-serif;
-            padding: 10px 20px 5px 20px;
-        """
-        )
-        self.right_sidebar_layout.addWidget(cache_header)
-
-        # Cache status label (will be updated by timer)
-        cache_data = self.get_cache_performance_data()
-        self.cache_status_label = QLabel(
-            f"Status: {cache_data['status'].title()}\nHit Rate: {cache_data['hit_rate']:.1%}\nOperations: {cache_data['total_operations']}"
-        )
-        self.cache_status_label.setStyleSheet(
-            """
-            color: #767676;
-            font-size: 12px;
-            font-family: 'Minork Sans', Arial, sans-serif;
-            padding: 5px 20px 15px 20px;
-            line-height: 1.4;
-        """
-        )
-        self.right_sidebar_layout.addWidget(self.cache_status_label)
-
-        # Hybrid OCR Performance Section
-        ocr_header = QLabel("🧠 Hybrid OCR System")
-        ocr_header.setStyleSheet(
-            """
-            color: #1ce783;
-            font-size: 14px;
-            font-weight: bold;
-            font-family: 'Minork Sans', Arial, sans-serif;
-            padding: 10px 20px 5px 20px;
-        """
-        )
-        self.right_sidebar_layout.addWidget(ocr_header)
-
-        # OCR features status
-        self.ocr_status_label = QLabel(
-            "✅ PAT Detection\n✅ Penalty Detection\n✅ Temporal Validation\n✅ Color Analysis\n✅ Drive Intelligence\n✅ Yard Line Extraction"
-        )
-        self.ocr_status_label.setStyleSheet(
-            """
-            color: #767676;
-            font-size: 12px;
-            font-family: 'Minork Sans', Arial, sans-serif;
-            padding: 5px 20px 15px 20px;
-            line-height: 1.4;
-        """
-        )
-        self.right_sidebar_layout.addWidget(self.ocr_status_label)
-
-        # 8-Class Model Section
-        model_header = QLabel("🎯 8-Class YOLOv8 Model")
-        model_header.setStyleSheet(
-            """
-            color: #17d474;
-            font-size: 14px;
-            font-weight: bold;
-            font-family: 'Minork Sans', Arial, sans-serif;
-            padding: 10px 20px 5px 20px;
-        """
-        )
-        self.right_sidebar_layout.addWidget(model_header)
-
-        # Model classes status
-        self.model_status_label = QLabel(
-            "🎮 HUD Detection\n📍 Possession Triangle\n🗺️ Territory Triangle\n⏸️ Pre-play Indicator\n📋 Play Call Screen\n🏈 Down/Distance Area\n⏰ Game Clock Area\n⏱️ Play Clock Area"
-        )
-        self.model_status_label.setStyleSheet(
-            """
-            color: #767676;
-            font-size: 12px;
-            font-family: 'Minork Sans', Arial, sans-serif;
-            padding: 5px 20px 15px 20px;
-            line-height: 1.4;
-        """
-        )
-        self.right_sidebar_layout.addWidget(self.model_status_label)
-
-        self.right_sidebar_layout.addStretch()
-
-    def create_default_sidebar(self):
-        """Create default sidebar content"""
-        placeholder = QLabel("Sidebar content")
-        placeholder.setStyleSheet(
-            """
-                color: #767676;
-                font-size: 14px;
-            font-family: 'Minork Sans', Arial, sans-serif;
-            padding: 20px;
-        """
-        )
-        self.right_sidebar_layout.addWidget(placeholder)
-        self.right_sidebar_layout.addStretch()
 
 
 class ZoomableGraphicsView(QGraphicsView):

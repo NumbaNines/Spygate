@@ -30,8 +30,10 @@ from ultralytics import YOLO
 
 from ..core.hardware import HardwareDetector, HardwareTier
 from ..core.optimizer import TierOptimizer
+
 # Import the simple PaddleOCR wrapper
 from .simple_paddle_ocr import SimplePaddleOCRWrapper
+
 # Removed SituationalPredictor - using pure OCR detection only
 from .template_triangle_detector import TemplateTriangleDetector
 from .temporal_extraction_manager import ExtractionResult, TemporalExtractionManager
@@ -493,53 +495,64 @@ class EnhancedGameAnalyzer:
             "ocr_results": {},
             "yolo_detections": {},
         }
-        
+
         # Initialize tracking attributes for extract_game_state
         self.last_zone = None
         self.last_formation = None
         self.tracking_metrics = {
             "zone_changes": [],
             "formation_sequences": [],
-            "zone_stats": defaultdict(lambda: defaultdict(lambda: {"plays": 0, "yards": 0, "scores": 0}))
+            "zone_stats": defaultdict(
+                lambda: defaultdict(lambda: {"plays": 0, "yards": 0, "scores": 0})
+            ),
         }
         self.formation_history = deque(maxlen=10)
-        
+
         # Initialize last game state for clip validation
         self.last_game_state = None
-        
+
         # Initialize state persistence attributes
-        self.detection_history = defaultdict(lambda: {
-            "last_seen": 0,
-            "state_frames": 0,
-            "confidence": 0.0,
-            "persisted_state": False
-        })
+        self.detection_history = defaultdict(
+            lambda: {"last_seen": 0, "state_frames": 0, "confidence": 0.0, "persisted_state": False}
+        )
         self.state_persistence = {
             "max_frames_without_hud": 9,  # 0.3 seconds at 30fps
             "min_frames_for_state": 3,
-            "detection_threshold": 0.5
+            "detection_threshold": 0.5,
         }
         self.hud_occlusion = {
             "regions": {
-                "left": {"elements": ["possession_triangle_area", "score_away"], "is_visible": True, "confidence": 1.0},
-                "center": {"elements": ["down_distance_area", "game_clock_area"], "is_visible": True, "confidence": 1.0},
-                "right": {"elements": ["territory_triangle_area", "play_clock_area"], "is_visible": True, "confidence": 1.0}
+                "left": {
+                    "elements": ["possession_triangle_area", "score_away"],
+                    "is_visible": True,
+                    "confidence": 1.0,
+                },
+                "center": {
+                    "elements": ["down_distance_area", "game_clock_area"],
+                    "is_visible": True,
+                    "confidence": 1.0,
+                },
+                "right": {
+                    "elements": ["territory_triangle_area", "play_clock_area"],
+                    "is_visible": True,
+                    "confidence": 1.0,
+                },
             },
             "occlusion_pattern": None,
             "last_known_values": {},
             "min_visible_regions": 2,
             "critical_pairs": [
                 ["down_distance_area", "game_clock_area"],
-                ["possession_triangle_area", "territory_triangle_area"]
-            ]
+                ["possession_triangle_area", "territory_triangle_area"],
+            ],
         }
-        
+
         # Initialize frame timestamps for clip creation
         self.frame_timestamps = deque(maxlen=450)  # ~15 seconds at 30fps
-        
+
         # Initialize game history for natural clip boundaries
         self.game_history = deque(maxlen=100)  # Keep last 100 game states
-        
+
         # Initialize play state tracking
         self.play_state = {
             "is_play_active": False,
@@ -547,7 +560,31 @@ class EnhancedGameAnalyzer:
             "play_count": 0,
             "current_play_duration": 0.0,
             "last_preplay_time": None,
-            "last_playcall_time": None
+            "last_playcall_time": None,
+        }
+
+        # Initialize state indicators for tracking UI elements
+        self.state_indicators = {
+            "preplay_indicator": False,
+            "play_call_screen": False,
+            "hud_visible": False,
+            "possession_triangle": False,
+            "territory_triangle": False,
+            "play_in_progress": False,
+        }
+
+        # Initialize field zones for field position analytics
+        self.field_zones = {
+            "own": {
+                "red_zone": (0, 20),      # Own 0-20 yard line (defending red zone)
+                "short_field": (21, 35),  # Own 21-35 yard line
+                "midfield": (36, 50),     # Own 36-50 yard line
+            },
+            "opponent": {
+                "midfield": (0, 15),      # Opponent 50-35 yard line
+                "short_field": (16, 30),  # Opponent 34-20 yard line  
+                "red_zone": (31, 50),     # Opponent 19-0 yard line (attacking red zone)
+            }
         }
 
     def enable_debug_mode(self, enabled=True):
@@ -597,15 +634,15 @@ class EnhancedGameAnalyzer:
     def analyze_frame(self, frame, current_time=None, frame_number=None):
         """
         Enhanced frame analysis with OCR data preservation for clip creation.
-        
+
         This method now implements a dual-mode system:
         1. Normal mode: Uses temporal smoothing and caching for performance
         2. Clip creation mode: Uses only fresh OCR data to prevent contamination
         """
         try:
             # Check if we're in clip creation mode (set by analysis worker)
-            creating_clip = getattr(self, '_creating_clip', False)
-            
+            creating_clip = getattr(self, "_creating_clip", False)
+
             if creating_clip:
                 print(f"🧊 CLIP CREATION MODE: Using fresh OCR only at frame {frame_number}")
                 # Force fresh OCR extraction without temporal smoothing
@@ -613,7 +650,7 @@ class EnhancedGameAnalyzer:
             else:
                 # Normal analysis with temporal smoothing and caching
                 return self._analyze_frame_normal(frame, current_time, frame_number)
-                
+
         except Exception as e:
             logger.error(f"Frame analysis error: {e}")
             return None
@@ -626,38 +663,30 @@ class EnhancedGameAnalyzer:
         try:
             # Step 1: YOLO detection (always fresh)
             detections = self.model.detect(frame)
-            
+
             if not detections or len(detections) == 0:
                 return None
-                
-            # Step 2: Extract HUD region
-            hud_region = None
-            for detection in detections:
-                if detection.class_name == 'hud':
-                    hud_region = self._extract_region(frame, detection.bbox)
-                    break
-                    
-            if hud_region is None:
-                return None
-                
-            # Step 3: Fresh OCR extraction (bypass all caching)
-            fresh_ocr_data = self._extract_fresh_ocr_data(hud_region, frame_number)
-            
+
+            # Step 2: Fresh OCR extraction using 8-class detections (bypass all caching)
+            fresh_ocr_data = self._extract_fresh_ocr_data(detections, frame, frame_number)
+
             if not fresh_ocr_data:
                 return None
-                
+
             # Step 4: Create game state from fresh data
             game_state = self._create_game_state_from_fresh_ocr(
-                fresh_ocr_data, detections, current_time, frame_number
+                fresh_ocr_data, detections, current_time, frame_number, frame
             )
-            
+
             # Step 5: Store this as the authoritative clip data
             if game_state:
                 self._store_clip_detection_data(game_state, frame_number)
-                print(f"✅ FRESH OCR PRESERVED: Down {game_state.down} & {game_state.distance} at frame {frame_number}")
-                
+                print(
+                    f"✅ FRESH OCR PRESERVED: Down {game_state.down} & {game_state.distance} at frame {frame_number}"
+                )
+
             return game_state
-            
+
         except Exception as e:
             logger.error(f"Fresh OCR analysis error: {e}")
             return None
@@ -669,130 +698,479 @@ class EnhancedGameAnalyzer:
         try:
             # Use existing analysis logic with temporal smoothing
             detections = self.model.detect(frame)
-            
+
             if not detections or len(detections) == 0:
                 return None
-                
+
             # Extract game state using existing method
             game_state_dict = self.extract_game_state(frame)
-            
+
             # Convert dict to GameState object if needed
             if isinstance(game_state_dict, dict):
                 game_state = GameState(
-                    down=game_state_dict.get('down'),
-                    distance=game_state_dict.get('distance'),
-                    yard_line=game_state_dict.get('yard_line'),
-                    territory=game_state_dict.get('territory'),
-                    quarter=game_state_dict.get('quarter'),
-                    time=game_state_dict.get('game_clock'),  # Fixed: use 'time' field
-                    possession_team=game_state_dict.get('possession_team'),
+                    down=game_state_dict.get("down"),
+                    distance=game_state_dict.get("distance"),
+                    yard_line=game_state_dict.get("yard_line"),
+                    territory=game_state_dict.get("territory"),
+                    quarter=game_state_dict.get("quarter"),
+                    time=game_state_dict.get("game_clock"),  # Fixed: use 'time' field
+                    possession_team=game_state_dict.get("possession_team"),
                     timestamp=current_time,
                     frame_number=frame_number,
-                    confidence=game_state_dict.get('confidence', 0.0)
+                    confidence=game_state_dict.get("confidence", 0.0),
                 )
             else:
                 game_state = game_state_dict
-            
+
             return game_state
-            
+
         except Exception as e:
             logger.error(f"Normal frame analysis error: {e}")
             return None
 
-    def _extract_fresh_ocr_data(self, hud_region, frame_number):
+    def _extract_fresh_ocr_data(self, detections, frame, frame_number):
         """
-        Extract OCR data without any temporal smoothing or caching.
+        Extract OCR data without any temporal smoothing or caching using 8-class YOLO detections.
         This is the authoritative OCR extraction for clip creation.
         """
         try:
             fresh_data = {}
-            
-            # Extract down and distance with fresh OCR
-            down_distance_region = self._locate_down_distance_region(hud_region)
-            if down_distance_region is not None:
-                # Use enhanced OCR directly without temporal manager
-                down_text = self.ocr.extract_text(down_distance_region)
-                down, distance = self._parse_down_distance_text(down_text)
+
+            # Process each detection to extract OCR data from precise regions
+            for detection in detections:
+                class_name = detection["class_name"]
+                bbox = detection["bbox"]
+                confidence = detection["confidence"]
                 
-                fresh_data['down'] = down
-                fresh_data['distance'] = distance
-                fresh_data['down_distance_text'] = down_text
-                fresh_data['down_distance_confidence'] = self._calculate_ocr_confidence(down_text)
-                
-                print(f"🔍 FRESH DOWN/DISTANCE: '{down_text}' -> Down {down} & {distance}")
-            
-            # Extract yard line with fresh OCR
-            yard_line_region = self._locate_yard_line_region(hud_region)
-            if yard_line_region is not None:
-                yard_line_text = self.ocr.extract_text(yard_line_region)
-                yard_line, territory = self._parse_yard_line_text(yard_line_text)
-                
-                fresh_data['yard_line'] = yard_line
-                fresh_data['territory'] = territory
-                fresh_data['yard_line_text'] = yard_line_text
-                fresh_data['yard_line_confidence'] = self._calculate_ocr_confidence(yard_line_text)
-                
-                print(f"🔍 FRESH YARD LINE: '{yard_line_text}' -> {territory} {yard_line}")
-            
-            # Extract game clock with fresh OCR
-            game_clock_region = self._locate_game_clock_region(hud_region)
-            if game_clock_region is not None:
-                clock_text = self.ocr.extract_text(game_clock_region)
-                quarter, time_remaining = self._parse_game_clock_text(clock_text)
-                
-                fresh_data['quarter'] = quarter
-                fresh_data['game_clock'] = time_remaining
-                fresh_data['clock_text'] = clock_text
-                fresh_data['clock_confidence'] = self._calculate_ocr_confidence(clock_text)
-                
-                print(f"🔍 FRESH GAME CLOCK: '{clock_text}' -> Q{quarter} {time_remaining}")
-            
+                # Extract region from frame
+                region_roi = self._extract_region(frame, bbox)
+                if region_roi is None:
+                    continue
+                    
+                region_data = {"roi": region_roi, "bbox": bbox, "confidence": confidence}
+
+                # Extract down and distance from precise down_distance_area
+                if class_name == "down_distance_area":
+                    down_result = self._extract_down_distance_from_region(region_data, current_time=None)
+                    if down_result:
+                        fresh_data["down"] = down_result.get("down")
+                        fresh_data["distance"] = down_result.get("distance")
+                        fresh_data["down_distance_text"] = down_result.get("raw_text", "")
+                        fresh_data["down_distance_confidence"] = down_result.get("confidence", 0.0)
+                        print(f"🔍 FRESH DOWN/DISTANCE: '{down_result.get('raw_text')}' -> Down {fresh_data['down']} & {fresh_data['distance']}")
+
+                # Extract game clock from precise game_clock_area
+                elif class_name == "game_clock_area":
+                    clock_result = self._extract_game_clock_from_region(region_data, current_time=None)
+                    if clock_result:
+                        fresh_data["quarter"] = clock_result.get("quarter")
+                        fresh_data["game_clock"] = clock_result.get("time")
+                        fresh_data["clock_text"] = clock_result.get("raw_text", "")
+                        fresh_data["clock_confidence"] = clock_result.get("confidence", 0.0)
+                        print(f"🔍 FRESH GAME CLOCK: '{clock_result.get('raw_text')}' -> Q{fresh_data['quarter']} {fresh_data['game_clock']}")
+
+                # Extract yard line from territory_triangle_area (where yard line is displayed)
+                elif class_name == "territory_triangle_area":
+                    yard_line_result = self._extract_yard_line_from_region(region_data)
+                    if yard_line_result:
+                        fresh_data["yard_line"] = yard_line_result.get("yard_line")
+                        fresh_data["territory"] = yard_line_result.get("territory")
+                        fresh_data["yard_line_text"] = yard_line_result.get("raw_text", "")
+                        fresh_data["yard_line_confidence"] = yard_line_result.get("confidence", 0.0)
+                        print(f"🔍 FRESH YARD LINE: '{yard_line_result.get('raw_text')}' -> {fresh_data['territory']} {fresh_data['yard_line']}")
+
             # Add timestamp for tracking
-            fresh_data['extracted_at_frame'] = frame_number
-            fresh_data['extraction_method'] = 'fresh_ocr'
-            
+            fresh_data["extracted_at_frame"] = frame_number
+            fresh_data["extraction_method"] = "fresh_ocr_8class"
+
             return fresh_data
-            
+
         except Exception as e:
             logger.error(f"Fresh OCR extraction error: {e}")
             return None
 
-    def _create_game_state_from_fresh_ocr(self, fresh_ocr_data, detections, current_time, frame_number):
+    def _create_game_state_from_fresh_ocr(
+        self, fresh_ocr_data, detections, current_time, frame_number, frame
+    ):
         """
         Create a GameState object from fresh OCR data without any temporal smoothing.
         """
         try:
             # Extract possession and territory from triangles (these are visual, not OCR)
-            possession_team = self._extract_possession_from_triangles(detections)
-            territory_info = self._extract_territory_from_triangles(detections)
-            
+            possession_team = self._analyze_possession_triangles(detections, frame)
+            territory_info = self._analyze_territory_triangles(detections, frame)
+
             # Create game state with fresh OCR data
             game_state = GameState(
                 # Fresh OCR data
-                down=fresh_ocr_data.get('down'),
-                distance=fresh_ocr_data.get('distance'),
-                yard_line=fresh_ocr_data.get('yard_line'),
-                territory=fresh_ocr_data.get('territory'),
-                quarter=fresh_ocr_data.get('quarter'),
-                time=fresh_ocr_data.get('game_clock'),  # Fixed: use 'time' field
-                
+                down=fresh_ocr_data.get("down"),
+                distance=fresh_ocr_data.get("distance"),
+                yard_line=fresh_ocr_data.get("yard_line"),
+                territory=fresh_ocr_data.get("territory"),
+                quarter=fresh_ocr_data.get("quarter"),
+                time=fresh_ocr_data.get("game_clock"),  # Fixed: use 'time' field
                 # Visual detection data
                 possession_team=possession_team,
-                
                 # Metadata
                 timestamp=current_time,
                 frame_number=frame_number,
                 confidence=self._calculate_overall_confidence(fresh_ocr_data),
-                
                 # Mark as fresh data
-                data_source='fresh_ocr',
-                ocr_confidence=fresh_ocr_data.get('down_distance_confidence', 0.0)
+                data_source="fresh_ocr",
+                ocr_confidence=fresh_ocr_data.get("down_distance_confidence", 0.0),
             )
-            
+
             return game_state
-            
+
         except Exception as e:
             logger.error(f"Game state creation from fresh OCR error: {e}")
+            return None
+
+    def _extract_region(self, frame, bbox):
+        """
+        Extract a region from the frame using bounding box coordinates.
+        
+        Args:
+            frame: Input frame (numpy array)
+            bbox: Bounding box [x1, y1, x2, y2]
+            
+        Returns:
+            Extracted region as numpy array
+        """
+        try:
+            x1, y1, x2, y2 = bbox
+            # Ensure coordinates are integers and within frame bounds
+            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+            h, w = frame.shape[:2]
+            
+            # Clamp coordinates to frame bounds
+            x1 = max(0, min(x1, w))
+            y1 = max(0, min(y1, h))
+            x2 = max(0, min(x2, w))
+            y2 = max(0, min(y2, h))
+            
+            # Extract region
+            region = frame[y1:y2, x1:x2]
+            return region
+            
+        except Exception as e:
+            logger.error(f"Error extracting region: {e}")
+            return None
+
+    def _locate_down_distance_region(self, hud_region):
+        """
+        Locate the down and distance region within the HUD.
+        This is a simplified implementation - in practice, you'd use more sophisticated region detection.
+        """
+        try:
+            if hud_region is None or hud_region.size == 0:
+                return None
+            
+            # For now, use the left portion of the HUD where down/distance typically appears
+            h, w = hud_region.shape[:2]
+            # Down/distance is typically in the left 40% of the HUD
+            return hud_region[:, :int(w * 0.4)]
+            
+        except Exception as e:
+            logger.error(f"Error locating down/distance region: {e}")
+            return None
+
+    def _locate_yard_line_region(self, hud_region):
+        """
+        Locate the yard line region within the HUD.
+        """
+        try:
+            if hud_region is None or hud_region.size == 0:
+                return None
+            
+            # Yard line is typically in the right portion of the HUD
+            h, w = hud_region.shape[:2]
+            # Yard line is typically in the right 30% of the HUD
+            return hud_region[:, int(w * 0.7):]
+            
+        except Exception as e:
+            logger.error(f"Error locating yard line region: {e}")
+            return None
+
+    def _locate_game_clock_region(self, hud_region):
+        """
+        Locate the game clock region within the HUD.
+        """
+        try:
+            if hud_region is None or hud_region.size == 0:
+                return None
+            
+            # Game clock is typically in the center-right portion of the HUD
+            h, w = hud_region.shape[:2]
+            # Game clock is typically in the center portion of the HUD
+            return hud_region[:, int(w * 0.4):int(w * 0.7)]
+            
+        except Exception as e:
+            logger.error(f"Error locating game clock region: {e}")
+            return None
+
+    def _extract_possession_from_triangles(self, detections):
+        """
+        Extract possession information from triangle detections.
+        """
+        try:
+            for detection in detections:
+                if detection["class_name"] == "possession_triangle_area":
+                    # Extract the region and analyze triangle direction
+                    bbox = detection["bbox"]
+                    # Note: We need the frame to extract the region, but it's not passed here
+                    # This will be handled in the calling code
+                    return "user"  # Placeholder - actual analysis happens in calling code
+            return None
+        except Exception as e:
+            logger.error(f"Error extracting possession from triangles: {e}")
+            return None
+
+    def _extract_territory_from_triangles(self, detections):
+        """
+        Extract territory information from triangle detections.
+        """
+        try:
+            for detection in detections:
+                if detection["class_name"] == "territory_triangle_area":
+                    # Extract the region and analyze triangle direction
+                    bbox = detection["bbox"]
+                    # Note: We need the frame to extract the region, but it's not passed here
+                    # This will be handled in the calling code
+                    return "opponent"  # Placeholder - actual analysis happens in calling code
+            return None
+        except Exception as e:
+            logger.error(f"Error extracting territory from triangles: {e}")
+            return None
+
+    def _analyze_triangle_direction(self, region_roi, triangle_type):
+        """
+        Analyze triangle direction within a detected region.
+        
+        Args:
+            region_roi: The extracted region containing the triangle
+            triangle_type: "possession" or "territory"
+            
+        Returns:
+            Direction string: "left", "right", "up", "down", or None
+        """
+        try:
+            if region_roi is None or region_roi.size == 0:
+                return None
+                
+            # Convert to grayscale for analysis
+            if len(region_roi.shape) == 3:
+                gray = cv2.cvtColor(region_roi, cv2.COLOR_BGR2GRAY)
+            else:
+                gray = region_roi
+                
+            # Apply threshold to get binary image
+            _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            
+            # Find contours
+            contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            
+            if not contours:
+                return self._template_match_triangles(region_roi, triangle_type)
+                
+            # Find the largest contour (likely the triangle)
+            largest_contour = max(contours, key=cv2.contourArea)
+            area = cv2.contourArea(largest_contour)
+            
+            if area < 10:  # Too small to be a triangle
+                return self._template_match_triangles(region_roi, triangle_type)
+                
+            # Approximate contour to polygon
+            epsilon = 0.02 * cv2.arcLength(largest_contour, True)
+            approx = cv2.approxPolyDP(largest_contour, epsilon, True)
+            
+            if len(approx) >= 3:
+                # Calculate moments for centroid
+                M = cv2.moments(largest_contour)
+                if M["m00"] != 0:
+                    cx = int(M["m10"] / M["m00"])
+                    cy = int(M["m01"] / M["m00"])
+                    
+                    # Get bounding rectangle for aspect ratio
+                    rect = cv2.boundingRect(largest_contour)
+                    aspect_ratio = rect[2] / rect[3] if rect[3] > 0 else 0
+                    
+                    # Get triangle vertices
+                    vertices = approx.reshape(-1, 2)
+                    
+                    if triangle_type == "possession":
+                        # Horizontal pointing triangles (◀ ▶)
+                        if aspect_ratio > 1.2:  # Wide triangle
+                            leftmost_idx = np.argmin(vertices[:, 0])
+                            rightmost_idx = np.argmax(vertices[:, 0])
+                            
+                            # Check if leftmost point is actually pointing left
+                            if vertices[leftmost_idx, 0] < cx:
+                                return 'left'  # ◀ User team has ball
+                            else:
+                                return 'right'  # ▶ Opponent team has ball
+                                
+                    elif triangle_type == "territory":
+                        # Vertical pointing triangles (▲ ▼)
+                        if aspect_ratio < 0.8:  # Tall triangle
+                            topmost_idx = np.argmin(vertices[:, 1])
+                            bottommost_idx = np.argmax(vertices[:, 1])
+                            
+                            # Check if topmost point is actually pointing up
+                            if vertices[topmost_idx, 1] < cy:
+                                return 'up'  # ▲ Own territory
+                            else:
+                                return 'down'  # ▼ Opponent territory
+            
+            # Fallback to template matching if contour analysis fails
+            return self._template_match_triangles(region_roi, triangle_type)
+            
+        except Exception as e:
+            logger.error(f"Error analyzing triangle direction: {e}")
+            return None
+
+    def _template_match_triangles(self, roi, triangle_type):
+        """
+        Template matching for specific triangle shapes as fallback.
+        """
+        try:
+            if roi is None or roi.size == 0:
+                return None
+                
+            # Convert to grayscale
+            if len(roi.shape) == 3:
+                gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+            else:
+                gray = roi
+                
+            # Create triangle templates
+            template_size = min(roi.shape[0], roi.shape[1], 20)
+            if template_size < 8:
+                return None
+                
+            templates = {}
+            
+            # Left pointing triangle ◀
+            left_template = np.zeros((template_size, template_size), dtype=np.uint8)
+            points = np.array([[template_size-2, 2], [2, template_size//2], [template_size-2, template_size-2]])
+            cv2.fillPoly(left_template, [points], 255)
+            templates['left'] = left_template
+            
+            # Right pointing triangle ▶
+            right_template = np.zeros((template_size, template_size), dtype=np.uint8)
+            points = np.array([[2, 2], [template_size-2, template_size//2], [2, template_size-2]])
+            cv2.fillPoly(right_template, [points], 255)
+            templates['right'] = right_template
+            
+            # Up pointing triangle ▲
+            up_template = np.zeros((template_size, template_size), dtype=np.uint8)
+            points = np.array([[template_size//2, 2], [2, template_size-2], [template_size-2, template_size-2]])
+            cv2.fillPoly(up_template, [points], 255)
+            templates['up'] = up_template
+            
+            # Down pointing triangle ▼
+            down_template = np.zeros((template_size, template_size), dtype=np.uint8)
+            points = np.array([[2, 2], [template_size-2, 2], [template_size//2, template_size-2]])
+            cv2.fillPoly(down_template, [points], 255)
+            templates['down'] = down_template
+            
+            # Match templates based on triangle type
+            best_match = None
+            best_score = 0.3  # Minimum threshold
+            
+            for direction, template in templates.items():
+                # Skip irrelevant directions based on triangle type
+                if triangle_type == "possession" and direction in ['up', 'down']:
+                    continue
+                if triangle_type == "territory" and direction in ['left', 'right']:
+                    continue
+                    
+                try:
+                    result = cv2.matchTemplate(gray, template, cv2.TM_CCOEFF_NORMED)
+                    _, max_val, _, _ = cv2.minMaxLoc(result)
+                    
+                    if max_val > best_score:
+                        best_score = max_val
+                        best_match = direction
+                except:
+                    continue
+                    
+            return best_match
+            
+        except Exception as e:
+            logger.error(f"Error in template matching: {e}")
+            return None
+
+    def _analyze_possession_triangles(self, detections, frame):
+        """
+        Analyze possession triangles to determine which team has the ball.
+        
+        Args:
+            detections: List of YOLO detections
+            frame: Current frame for region extraction
+            
+        Returns:
+            String: "user", "opponent", or None
+        """
+        try:
+            for detection in detections:
+                if detection["class_name"] == "possession_triangle_area":
+                    # Extract the region containing the possession triangle
+                    bbox = detection["bbox"]
+                    region_roi = self._extract_region(frame, bbox)
+                    
+                    if region_roi is not None:
+                        # Analyze triangle direction
+                        direction = self._analyze_triangle_direction(region_roi, "possession")
+                        
+                        if direction == "left":
+                            return "user"  # User team has the ball
+                        elif direction == "right":
+                            return "opponent"  # Opponent team has the ball
+                        else:
+                            print(f"⚠️ Unknown possession triangle direction: {direction}")
+                            return None
+                            
+            return None  # No possession triangle detected
+            
+        except Exception as e:
+            logger.error(f"Error analyzing possession triangles: {e}")
+            return None
+
+    def _analyze_territory_triangles(self, detections, frame):
+        """
+        Analyze territory triangles to determine field position context.
+        
+        Args:
+            detections: List of YOLO detections
+            frame: Current frame for region extraction
+            
+        Returns:
+            String: "own", "opponent", or None
+        """
+        try:
+            for detection in detections:
+                if detection["class_name"] == "territory_triangle_area":
+                    # Extract the region containing the territory triangle
+                    bbox = detection["bbox"]
+                    region_roi = self._extract_region(frame, bbox)
+                    
+                    if region_roi is not None:
+                        # Analyze triangle direction
+                        direction = self._analyze_triangle_direction(region_roi, "territory")
+                        
+                        if direction == "up":
+                            return "opponent"  # In opponent's territory
+                        elif direction == "down":
+                            return "own"  # In own territory
+                        else:
+                            print(f"⚠️ Unknown territory triangle direction: {direction}")
+                            return None
+                            
+            return None  # No territory triangle detected
+            
+        except Exception as e:
+            logger.error(f"Error analyzing territory triangles: {e}")
             return None
 
     def _store_clip_detection_data(self, game_state, frame_number):
@@ -801,28 +1179,28 @@ class EnhancedGameAnalyzer:
         This prevents data contamination from subsequent frames.
         """
         try:
-            if not hasattr(self, '_clip_detection_data'):
+            if not hasattr(self, "_clip_detection_data"):
                 self._clip_detection_data = {}
-                
+
             # Store with frame number as key
             self._clip_detection_data[frame_number] = {
-                'game_state': game_state,
-                'down': game_state.down,
-                'distance': game_state.distance,
-                'yard_line': game_state.yard_line,
-                'territory': game_state.territory,
-                'quarter': game_state.quarter,
-                'game_clock': game_state.time,  # Fixed: use 'time' field
-                'confidence': game_state.confidence,
-                'stored_at': time.time(),
-                'data_source': 'fresh_ocr_for_clip'
+                "game_state": game_state,
+                "down": game_state.down,
+                "distance": game_state.distance,
+                "yard_line": game_state.yard_line,
+                "territory": game_state.territory,
+                "quarter": game_state.quarter,
+                "game_clock": game_state.time,  # Fixed: use 'time' field
+                "confidence": game_state.confidence,
+                "stored_at": time.time(),
+                "data_source": "fresh_ocr_for_clip",
             }
-            
+
             # Keep only recent data (last 100 frames)
             if len(self._clip_detection_data) > 100:
                 oldest_frame = min(self._clip_detection_data.keys())
                 del self._clip_detection_data[oldest_frame]
-                
+
         except Exception as e:
             logger.error(f"Error storing clip detection data: {e}")
 
@@ -831,7 +1209,7 @@ class EnhancedGameAnalyzer:
         Retrieve the authoritative game state data for a specific frame.
         This is used by the clip creation system to get contamination-free data.
         """
-        if hasattr(self, '_clip_detection_data'):
+        if hasattr(self, "_clip_detection_data"):
             return self._clip_detection_data.get(frame_number)
         return None
 
@@ -841,21 +1219,21 @@ class EnhancedGameAnalyzer:
         """
         if not text or len(text.strip()) == 0:
             return 0.0
-            
+
         confidence = 0.5  # Base confidence
-        
+
         # Length factor (reasonable length text is more confident)
         if 2 <= len(text.strip()) <= 10:
             confidence += 0.2
-            
+
         # Character type factor (alphanumeric is more confident)
         if any(c.isdigit() for c in text):
             confidence += 0.2
-            
+
         # Common patterns factor
-        if any(pattern in text.upper() for pattern in ['ST', 'ND', 'RD', 'TH', '&']):
+        if any(pattern in text.upper() for pattern in ["ST", "ND", "RD", "TH", "&"]):
             confidence += 0.1
-            
+
         return min(confidence, 1.0)
 
     def _calculate_overall_confidence(self, fresh_ocr_data):
@@ -863,11 +1241,11 @@ class EnhancedGameAnalyzer:
         Calculate overall confidence based on all extracted OCR data.
         """
         confidences = []
-        
-        for key in ['down_distance_confidence', 'yard_line_confidence', 'clock_confidence']:
+
+        for key in ["down_distance_confidence", "yard_line_confidence", "clock_confidence"]:
             if key in fresh_ocr_data:
                 confidences.append(fresh_ocr_data[key])
-                
+
         if confidences:
             return sum(confidences) / len(confidences)
         else:
@@ -1176,9 +1554,38 @@ class EnhancedGameAnalyzer:
                     color,
                     2,
                 )
+                
+                # Update state indicators for play state tracking
+                if class_name == "preplay_indicator":
+                    game_state.state_indicators["preplay_indicator"] = True
+                    print(f"🎮 PREPLAY INDICATOR DETECTED (confidence: {conf:.2f})")
+                elif class_name == "play_call_screen":
+                    game_state.state_indicators["play_call_screen"] = True
+                    print(f"📋 PLAY CALL SCREEN DETECTED (confidence: {conf:.2f})")
 
         # Update overall confidence
         game_state.confidence = total_confidence / num_detections if num_detections > 0 else 0.0
+        
+        # Set additional state indicators for play state tracking
+        game_state.state_indicators["hud_visible"] = any(
+            detection["class_name"] == "hud" for detection in detections
+        )
+        game_state.state_indicators["possession_triangle"] = any(
+            detection["class_name"] == "possession_triangle_area" for detection in detections
+        )
+        game_state.state_indicators["territory_triangle"] = any(
+            detection["class_name"] == "territory_triangle_area" for detection in detections
+        )
+        
+        # Update play state indicators for play tracking
+        current_state_dict = {
+            "preplay_detected": game_state.state_indicators.get("preplay_indicator", False),
+            "play_call_screen": game_state.state_indicators.get("play_call_screen", False),
+            "hud_visible": game_state.state_indicators.get("hud_visible", False),
+            "possession_triangle_detected": game_state.state_indicators.get("possession_triangle", False),
+            "territory_triangle_detected": game_state.state_indicators.get("territory_triangle", False),
+        }
+        self._update_state_indicators(current_state_dict)
 
         return game_state
 
@@ -1835,13 +2242,21 @@ class EnhancedGameAnalyzer:
         """Extract complete game state from a frame."""
         # FIXED: Removed circular call to analyze_frame to prevent infinite recursion
         # Instead, directly process the frame using YOLO and OCR
-        
+
         # Direct YOLO detection without calling analyze_frame
         detections = self.model.detect(frame)
-        
+
+        # Create required visualization layers for _process_detections
+        h, w = frame.shape[:2]
+        layers = {
+            "original_frame": frame,
+            "triangle_detection": np.zeros((h, w, 3), dtype=np.uint8),
+            "ocr_results": np.zeros((h, w, 3), dtype=np.uint8),
+        }
+
         # Process detections to get game state
-        game_state_obj = self._process_detections(detections, {}, None)
-        
+        game_state_obj = self._process_detections(detections, layers, None)
+
         # Convert GameState object to dictionary
         game_state = {}
         if game_state_obj:
@@ -1870,13 +2285,13 @@ class EnhancedGameAnalyzer:
 
                 # Track zone change
                 current_zone_full = f"{current_territory}_{current_zone}"
-                if hasattr(self, 'last_zone') and self.last_zone != current_zone_full:
-                    if not hasattr(self, 'tracking_metrics'):
+                if hasattr(self, "last_zone") and self.last_zone != current_zone_full:
+                    if not hasattr(self, "tracking_metrics"):
                         self.tracking_metrics = {"zone_changes": [], "formation_sequences": []}
                     self.tracking_metrics["zone_changes"].append(
                         {
                             "timestamp": time.time(),
-                            "from_zone": getattr(self, 'last_zone', None),
+                            "from_zone": getattr(self, "last_zone", None),
                             "to_zone": current_zone_full,
                             "yard_line": game_state["yard_line"],
                         }
@@ -1887,20 +2302,23 @@ class EnhancedGameAnalyzer:
                 self._update_zone_stats(game_state)
 
                 # Add zone info to game state
-                game_state["field_zone"] = {"territory": current_territory, "zone_name": current_zone}
+                game_state["field_zone"] = {
+                    "territory": current_territory,
+                    "zone_name": current_zone,
+                }
 
             # Track formation matches internally
             if game_state.get("formation"):
                 formation_matched = self._detect_formation_match(game_state["formation"])
                 if formation_matched:
-                    if not hasattr(self, 'tracking_metrics'):
+                    if not hasattr(self, "tracking_metrics"):
                         self.tracking_metrics = {"zone_changes": [], "formation_sequences": []}
                     self.tracking_metrics["formation_sequences"].append(
                         {
                             "timestamp": time.time(),
                             "formation": game_state["formation"],
-                            "previous_formation": getattr(self, 'last_formation', None),
-                            "field_zone": getattr(self, 'last_zone', None),  # Include zone context
+                            "previous_formation": getattr(self, "last_formation", None),
+                            "field_zone": getattr(self, "last_zone", None),  # Include zone context
                         }
                     )
 
@@ -2362,13 +2780,13 @@ class EnhancedGameAnalyzer:
             # HUD is visible - reset counters and update state
             self.hud_state["is_visible"] = True
             self.hud_state["frames_since_visible"] = 0
-            
+
     def detect_objects(self, frame: np.ndarray) -> list[dict]:
         """Detect objects in frame using YOLO model."""
         try:
             # Run YOLO detection
             results = self.model(frame)
-            
+
             detections = []
             for r in results:
                 if r.boxes is not None:
@@ -2376,39 +2794,43 @@ class EnhancedGameAnalyzer:
                         detection = {
                             "class": self.model.names[int(box.cls)],
                             "confidence": float(box.conf),
-                            "bbox": box.xyxy[0].tolist() if hasattr(box, 'xyxy') else box.xywh[0].tolist()
+                            "bbox": (
+                                box.xyxy[0].tolist()
+                                if hasattr(box, "xyxy")
+                                else box.xywh[0].tolist()
+                            ),
                         }
                         detections.append(detection)
-            
+
             return detections
         except Exception as e:
             logger.error(f"Error in object detection: {e}")
             return []
-            
+
     def parse_detections(self, detections: list[dict]) -> GameState:
         """Parse detections into a GameState object."""
         game_state = self._get_pooled_game_state()
-        
+
         # Initialize state indicators
         game_state.state_indicators = {}
-        
+
         for detection in detections:
             class_name = detection["class"]
             confidence = detection["confidence"]
-            
+
             # Update state indicators
             if class_name in self.ui_classes:
                 game_state.state_indicators[class_name] = confidence > self.confidence_threshold
-                
+
         return game_state
-        
+
     def update_play_state(self, current_state: GameState) -> None:
         """Update play state based on current game state."""
         # This is a simplified version - the full implementation would track play boundaries
-        if hasattr(current_state, 'state_indicators'):
+        if hasattr(current_state, "state_indicators"):
             preplay_visible = current_state.state_indicators.get("preplay_indicator", False)
             playcall_visible = current_state.state_indicators.get("play_call_screen", False)
-            
+
             # Update play state tracking
             if preplay_visible:
                 self.play_state["last_preplay_time"] = time.time()
@@ -5262,3 +5684,59 @@ class EnhancedGameAnalyzer:
         """Estimate confidence of yard line OCR result."""
         if not text:
             return 0.0
+
+        # Base confidence for having text
+        confidence = 0.3
+
+        # Length-based confidence
+        if 2 <= len(text) <= 4:
+            confidence += 0.3
+        elif len(text) == 1:
+            confidence += 0.1
+
+        # Pattern-based confidence
+        import re
+        if re.match(r"^[AH]\d+$", text):  # A35, H22 format
+            confidence += 0.4
+        elif re.match(r"^\d+$", text):  # 50 format
+            confidence += 0.3
+
+        # Penalty for unusual characters
+        if re.search(r"[^AH0-9]", text):
+            confidence -= 0.3
+
+        return max(0.0, min(1.0, confidence))
+
+    def _calculate_yard_line_quality_score(self, text: str) -> float:
+        """Calculate quality score for yard line text based on format and content."""
+        if not text:
+            return 0.0
+
+        score = 0.0
+
+        # Base score for having text
+        score += 0.3
+
+        # Score for valid format patterns
+        import re
+        if re.match(r"^[AH]\d+$", text):  # A35, H22 format
+            score += 0.4
+        elif re.match(r"^\d+$", text):  # 50 format (midfield)
+            score += 0.3
+
+        # Score for reasonable yard line numbers
+        numbers = re.findall(r"\d+", text)
+        if numbers:
+            yard_num = int(numbers[0])
+            if 0 <= yard_num <= 50:
+                score += 0.3
+                # Bonus for common yard lines
+                if yard_num in [20, 25, 30, 35, 40, 45, 50]:
+                    score += 0.1
+
+        # Penalty for unusual characters
+        if re.search(r"[^AH0-9]", text):
+            score -= 0.2
+
+        # Ensure score is between 0 and 1
+        return max(0.0, min(1.0, score))

@@ -71,6 +71,13 @@ sys.path.insert(0, str(current_dir))
 sys.path.insert(0, str(current_dir / "src"))
 sys.path.insert(0, str(current_dir / "src" / "spygate"))
 
+# Import clip segmentation fix
+try:
+    from integrate_clip_fix import integrate_clip_fix_simple
+except ImportError:
+    print("⚠️ Clip segmentation fix not available")
+    integrate_clip_fix_simple = None
+
 # Import project modules with fallbacks
 try:
     from formation_editor import FormationEditor
@@ -3158,6 +3165,13 @@ class SpygateDesktop(QMainWindow):
 
         # Use enhanced analysis worker with fresh OCR data preservation
         self.analysis_worker = AnalysisWorker(video_path, situation_preferences=clip_preferences)
+
+        # Apply clip segmentation fix
+        if integrate_clip_fix_simple:
+            print("🎯 Applying clip segmentation fix...")
+            self.analysis_worker = integrate_clip_fix_simple(self.analysis_worker)
+        else:
+            print("⚠️ Clip segmentation fix not available - using default behavior")
 
         # Enable enhanced OCR data preservation mode
         if hasattr(self.analysis_worker, "analyzer") and hasattr(
